@@ -1,5 +1,6 @@
 package com.musicode.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,9 +23,11 @@ public class Artist {
 
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonIgnoreProperties({"artist", "tracks"})
     private List<Album> albums = new ArrayList<>();
 
     @OneToMany(mappedBy = "artist")
     @Builder.Default
+    @JsonIgnoreProperties({"artist", "album"})
     private List<Track> tracks = new ArrayList<>();
 }

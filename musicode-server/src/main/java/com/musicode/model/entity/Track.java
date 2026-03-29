@@ -1,5 +1,6 @@
 package com.musicode.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -44,11 +45,13 @@ public class Track {
 
     private String genre;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "album_id")
+    @JsonIgnoreProperties({"tracks", "artist"})
     private Album album;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "artist_id")
+    @JsonIgnoreProperties({"albums", "tracks"})
     private Artist artist;
 }

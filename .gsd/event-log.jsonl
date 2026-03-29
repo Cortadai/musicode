@@ -1,3 +1,4 @@
 {"cmd":"plan-milestone","params":{"milestoneId":"M001"},"ts":"2026-03-29T18:18:21.618Z","actor":"agent","hash":"e7646f64e62daa33","session_id":"6d1b0fa6-8db6-46fd-bde8-84b3f7952416"}
 {"cmd":"plan-slice","params":{"milestoneId":"M001","sliceId":"S01"},"ts":"2026-03-29T18:20:30.823Z","actor":"agent","hash":"b4e65a48e7b42f57","session_id":"6d1b0fa6-8db6-46fd-bde8-84b3f7952416"}
 {"cmd":"complete-task","params":{"milestoneId":"M001","sliceId":"S01","taskId":"T01"},"ts":"2026-03-29T18:48:32.807Z","actor":"agent","hash":"5a804380eb33710e","session_id":"6d1b0fa6-8db6-46fd-bde8-84b3f7952416"}
+{"cmd":"complete-task","params":{"milestoneId":"M001","sliceId":"S01","taskId":"T02"},"ts":"2026-03-29T19:07:55.433Z","actor":"agent","hash":"d7113e203a3707cb","session_id":"6d1b0fa6-8db6-46fd-bde8-84b3f7952416"}

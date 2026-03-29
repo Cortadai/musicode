@@ -15,7 +15,7 @@ Steps:
   - Estimate: 1h
   - Files: musicode-server/pom.xml, musicode-server/src/main/java/com/musicode/model/entity/Track.java, musicode-server/src/main/java/com/musicode/model/entity/Album.java, musicode-server/src/main/java/com/musicode/model/entity/Artist.java, musicode-server/src/main/java/com/musicode/model/entity/LibraryFolder.java, musicode-server/src/main/java/com/musicode/repository/TrackRepository.java, musicode-server/src/main/java/com/musicode/repository/AlbumRepository.java, musicode-server/src/main/java/com/musicode/repository/ArtistRepository.java, musicode-server/src/main/java/com/musicode/repository/LibraryFolderRepository.java, musicode-server/src/main/resources/application.yml
   - Verify: cd musicode-server && mvn spring-boot:run — app starts on :8080, H2 console shows TRACK, ALBUM, ARTIST, LIBRARY_FOLDER tables
-- [ ] **T02: MetadataService — Read FLAC tags with JAudioTagger** — Create MetadataService that reads FLAC file metadata using JAudioTagger 3.x. Extract: title, artist, album, year, track number, disc number, duration, genre, bitrate, sample rate, bits per sample, and embedded cover art (as byte array).
+- [x] **T02: MetadataService reads FLAC metadata (title, artist, album, duration, cover art) using JAudioTagger 2.2.5.** — Create MetadataService that reads FLAC file metadata using JAudioTagger 3.x. Extract: title, artist, album, year, track number, disc number, duration, genre, bitrate, sample rate, bits per sample, and embedded cover art (as byte array).
 
 Steps:
 1. Add jaudiotagger dependency to pom.xml
