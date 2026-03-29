@@ -4,7 +4,7 @@
 **Demo:** After this: Point browser at a test HTML page served by Spring Boot. Select a FLAC from the scanned library. Audio plays with working seek.
 
 ## Tasks
-- [ ] **T01: Scaffold Spring Boot project with JPA entities and H2** — Create the musicode-server Maven project with Spring Boot 3 + Java 21. Define JPA entities (Track, Album, Artist, LibraryFolder) and Spring Data repositories. Configure H2 in file mode with auto-DDL.
+- [x] **T01: Scaffolded Spring Boot 3 + Java 21 project with 4 JPA entities, repositories, and H2 file-mode database.** — Create the musicode-server Maven project with Spring Boot 3 + Java 21. Define JPA entities (Track, Album, Artist, LibraryFolder) and Spring Data repositories. Configure H2 in file mode with auto-DDL.
 
 Steps:
 1. Generate Spring Boot project (spring-boot-starter-web, data-jpa, h2, devtools, validation, lombok)

@@ -60,6 +60,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Audio metadata -->
+        <dependency>
+            <groupId>net.jthink</groupId>
+            <artifactId>jaudiotagger</artifactId>
+            <version>2.2.5</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

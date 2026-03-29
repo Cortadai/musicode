@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-29T18:20:30.818Z",
+  "exported_at": "2026-03-29T18:48:32.801Z",
   "milestones": [
     {
       "id": "M001",
@@ -189,19 +189,28 @@
       "milestone_id": "M001",
       "slice_id": "S01",
       "id": "T01",
-      "title": "Scaffold Spring Boot project with JPA entities and H2",
-      "status": "pending",
-      "one_liner": "",
-      "narrative": "",
-      "verification_result": "",
+      "title": "Scaffolded Spring Boot 3 + Java 21 project with 4 JPA entities, repositories, and H2 file-mode database.",
+      "status": "complete",
+      "one_liner": "Scaffolded Spring Boot 3 + Java 21 project with 4 JPA entities, repositories, and H2 file-mode database.",
+      "narrative": "Created the musicode-server Maven project with Spring Boot 3.4.4, Java 21, and all required dependencies (web, data-jpa, h2, validation, lombok, devtools). Defined 4 JPA entities: Artist (name, unique), Album (title + artist_id unique constraint, year, coverArtPath), Track (title, trackNumber, discNumber, duration, filePath unique, bitRate, sampleRate, bitsPerSample, genre, year), and LibraryFolder (path unique, lastScannedAt, trackCount). Created Spring Data repositories with custom query methods (findByNameIgnoreCase, findByTitleIgnoreCaseAndArtistId, findByFilePath, existsByFilePath). H2 configured in file mode at ./data/musicode-db. Hit one issue: 'year' is a reserved word in H2 causing SQL syntax errors on table creation. Fixed by mapping to 'release_year' column name in both Album and Track entities.",
+      "verification_result": "App starts on port 8080. H2 console accessible at /h2-console (200 OK). Direct H2 Shell query confirms all 4 tables created: ALBUMS, ARTISTS, LIBRARY_FOLDERS, TRACKS.",
       "duration": "",
-      "completed_at": null,
+      "completed_at": "2026-03-29T18:48:32.747Z",
       "blocker_discovered": false,
-      "deviations": "",
-      "known_issues": "",
-      "key_files": [],
-      "key_decisions": [],
-      "full_summary_md": "",
+      "deviations": "Campo 'year' es palabra reservada en H2 — mapeado a columna 'release_year' en Album y Track con @Column(name = \"release_year\").",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/pom.xml",
+        "musicode-server/src/main/java/com/musicode/model/entity/Track.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/Album.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/Artist.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/LibraryFolder.java",
+        "musicode-server/src/main/resources/application.yml"
+      ],
+      "key_decisions": [
+        "Map 'year' field to 'release_year' column to avoid H2 reserved word conflict"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S01\nmilestone: M001\nkey_files:\n  - musicode-server/pom.xml\n  - musicode-server/src/main/java/com/musicode/model/entity/Track.java\n  - musicode-server/src/main/java/com/musicode/model/entity/Album.java\n  - musicode-server/src/main/java/com/musicode/model/entity/Artist.java\n  - musicode-server/src/main/java/com/musicode/model/entity/LibraryFolder.java\n  - musicode-server/src/main/resources/application.yml\nkey_decisions:\n  - Map 'year' field to 'release_year' column to avoid H2 reserved word conflict\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-29T18:48:32.748Z\nblocker_discovered: false\n---\n\n# T01: Scaffolded Spring Boot 3 + Java 21 project with 4 JPA entities, repositories, and H2 file-mode database.\n\n**Scaffolded Spring Boot 3 + Java 21 project with 4 JPA entities, repositories, and H2 file-mode database.**\n\n## What Happened\n\nCreated the musicode-server Maven project with Spring Boot 3.4.4, Java 21, and all required dependencies (web, data-jpa, h2, validation, lombok, devtools). Defined 4 JPA entities: Artist (name, unique), Album (title + artist_id unique constraint, year, coverArtPath), Track (title, trackNumber, discNumber, duration, filePath unique, bitRate, sampleRate, bitsPerSample, genre, year), and LibraryFolder (path unique, lastScannedAt, trackCount). Created Spring Data repositories with custom query methods (findByNameIgnoreCase, findByTitleIgnoreCaseAndArtistId, findByFilePath, existsByFilePath). H2 configured in file mode at ./data/musicode-db. Hit one issue: 'year' is a reserved word in H2 causing SQL syntax errors on table creation. Fixed by mapping to 'release_year' column name in both Album and Track entities.\n\n## Verification\n\nApp starts on port 8080. H2 console accessible at /h2-console (200 OK). Direct H2 Shell query confirms all 4 tables created: ALBUMS, ARTISTS, LIBRARY_FOLDERS, TRACKS.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn compile -q` | 0 | ✅ pass | 8700ms |\n| 2 | `mvn spring-boot:run (startup)` | 0 | ✅ pass — app started on :8080 | 6000ms |\n| 3 | `curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/h2-console/` | 0 | ✅ pass — 200 OK | 200ms |\n| 4 | `java -cp h2.jar org.h2.tools.Shell -sql 'SHOW TABLES'` | 0 | ✅ pass — 4 tables: ALBUMS, ARTISTS, LIBRARY_FOLDERS, TRACKS | 500ms |\n\n\n## Deviations\n\nCampo 'year' es palabra reservada en H2 — mapeado a columna 'release_year' en Album y Track con @Column(name = \"release_year\").\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/pom.xml`\n- `musicode-server/src/main/java/com/musicode/model/entity/Track.java`\n- `musicode-server/src/main/java/com/musicode/model/entity/Album.java`\n- `musicode-server/src/main/java/com/musicode/model/entity/Artist.java`\n- `musicode-server/src/main/java/com/musicode/model/entity/LibraryFolder.java`\n- `musicode-server/src/main/resources/application.yml`\n",
       "description": "Create the musicode-server Maven project with Spring Boot 3 + Java 21. Define JPA entities (Track, Album, Artist, LibraryFolder) and Spring Data repositories. Configure H2 in file mode with auto-DDL.\n\nSteps:\n1. Generate Spring Boot project (spring-boot-starter-web, data-jpa, h2, devtools, validation, lombok)\n2. Create entity classes with JPA annotations and relationships\n3. Create Spring Data JPA repositories\n4. Configure application.yml: H2 file mode, show-sql, ddl-auto=update\n5. Verify app starts and tables are created",
       "estimate": "1h",
       "files": [
@@ -514,5 +523,50 @@
       "superseded_by": null
     }
   ],
-  "verification_evidence": []
+  "verification_evidence": [
+    {
+      "id": 1,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M001",
+      "command": "mvn compile -q",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 8700,
+      "created_at": "2026-03-29T18:48:32.747Z"
+    },
+    {
+      "id": 2,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M001",
+      "command": "mvn spring-boot:run (startup)",
+      "exit_code": 0,
+      "verdict": "✅ pass — app started on :8080",
+      "duration_ms": 6000,
+      "created_at": "2026-03-29T18:48:32.747Z"
+    },
+    {
+      "id": 3,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M001",
+      "command": "curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/h2-console/",
+      "exit_code": 0,
+      "verdict": "✅ pass — 200 OK",
+      "duration_ms": 200,
+      "created_at": "2026-03-29T18:48:32.747Z"
+    },
+    {
+      "id": 4,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M001",
+      "command": "java -cp h2.jar org.h2.tools.Shell -sql 'SHOW TABLES'",
+      "exit_code": 0,
+      "verdict": "✅ pass — 4 tables: ALBUMS, ARTISTS, LIBRARY_FOLDERS, TRACKS",
+      "duration_ms": 500,
+      "created_at": "2026-03-29T18:48:32.747Z"
+    }
+  ]
 }
