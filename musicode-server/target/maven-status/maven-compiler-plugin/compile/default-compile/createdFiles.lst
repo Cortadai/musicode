@@ -1,0 +1,13 @@
+com\musicode\model\entity\Track$TrackBuilder.class
+com\musicode\model\entity\Track.class
+com\musicode\model\entity\Album$AlbumBuilder.class
+com\musicode\repository\AlbumRepository.class
+com\musicode\model\entity\LibraryFolder$LibraryFolderBuilder.class
+com\musicode\model\entity\Artist$ArtistBuilder.class
+com\musicode\model\entity\LibraryFolder.class
+com\musicode\repository\ArtistRepository.class
+com\musicode\repository\TrackRepository.class
+com\musicode\model\entity\Album.class
+com\musicode\MusicodeApplication.class
+com\musicode\model\entity\Artist.class
+com\musicode\repository\LibraryFolderRepository.class
