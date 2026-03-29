@@ -1,0 +1,18 @@
+# Decisions Register
+
+<!-- Append-only. Never edit or remove existing rows.
+     To reverse a decision, add a new row that supersedes it.
+     Read this file at the start of any planning or research phase. -->
+
+| # | When | Scope | Decision | Choice | Rationale | Revisable? | Made By |
+|---|------|-------|----------|--------|-----------|------------|---------|
+| D001 |  | architecture | Audio playback mechanism | HTML5 Audio element with HTTP Range streaming (206 Partial Content) | FLAC is natively supported in Chrome, Edge, and Firefox. No transcoding needed for desktop use. Range headers enable seeking in large files (30-80MB FLACs) without full download. | Yes | human |
+| D002 |  | architecture | Frontend framework and tooling | React 19 + Vite + TypeScript + Tailwind CSS + TanStack Query | Modern, fast dev experience. Vite for instant HMR. TypeScript for type safety. Tailwind for rapid styling. TanStack Query for server state management with caching and pagination. User's preferred stack per PLAN.md. | Yes | human |
+| D003 |  | architecture | Frontend framework and tooling | React 19 + Vite + TypeScript + Tailwind CSS + TanStack Query | Modern, fast dev experience. Vite for instant HMR. TypeScript for type safety. Tailwind for rapid styling. TanStack Query for server state. User's preferred stack. | Yes | human |
+| D004 |  | architecture | Backend framework and runtime | Spring Boot 3 + Java 21 + Gradle (Kotlin DSL) | User's habitual stack. Modern Java features, virtual threads potential, native compilation path. Gradle Kotlin DSL for type-safe build config. | Yes | human |
+| D005 |  | architecture | Database choice | H2 in file mode (embedded) | Zero config, ships as JAR dependency, no external server. Sufficient for single-user personal media library. | Yes | human |
+| D006 |  | architecture | Audio metadata reading library | JAudioTagger 3.x | Pure Java, supports ID3/Vorbis/MP4 tags and embedded cover art under a unified API. Standard in the Java audio ecosystem. | Yes | human |
+| D007 |  | architecture | Audio playback and streaming mechanism | HTML5 Audio element + HTTP Range headers (206 Partial Content) | FLAC natively supported in Chrome/Edge/Firefox. Range headers enable seeking in large files without full download. No transcoding needed for desktop. | Yes | human |
+| D008 |  | architecture | Backend build tool | Maven (supersedes D004 which said Gradle) | Maven es el stack habitual del usuario. En un proyecto donde el frontend ya es aprendizaje nuevo (React), mantener el backend en terreno conocido reduce la carga cognitiva. Gradle Kotlin DSL tiene curva de aprendizaje innecesaria aquí. | Yes | human |
+| D009 |  | architecture | Audio format support scope for MVP | Solo FLAC en MVP, multi-formato diferido | Reducir alcance del MVP a un solo formato simplifica el desarrollo. FLAC es lossless y el caso de uso principal del usuario. MP3/OGG/M4A se añaden después del MVP. | Yes | human |
+| D010 |  | architecture | Target operating system | Windows 11 como entorno de desarrollo y ejecución principal | El usuario desarrolla y usará Musicode en Windows 11. Afecta rutas de filesystem (backslash, letras de unidad), volume mounts en Docker Desktop (WSL2), y testing. El backend debe usar java.nio.file.Path para abstracción de rutas cross-platform. | Yes | human |

@@ -1,0 +1,311 @@
+{
+  "version": 1,
+  "exported_at": "2026-03-29T18:18:21.614Z",
+  "milestones": [
+    {
+      "id": "M001",
+      "title": "",
+      "status": "queued",
+      "depends_on": [],
+      "created_at": "2026-03-29T18:16:51.183Z",
+      "completed_at": null,
+      "vision": "A working personal music player: scan a folder of FLACs, browse the library by artist/album/track with cover art, and play music from the browser with seek, queue, and a polished dark UI. Runs via Docker Compose on Windows 11.",
+      "success_criteria": [
+        "User adds a folder of FLACs in Settings, triggers scan, and sees tracks/albums/artists populated with metadata and cover art",
+        "User browses library by albums (grid with covers), artists, and tracks. Search returns combined results across all three.",
+        "User clicks a track → audio plays in the browser. Seeking to any position works instantly (HTTP Range). Volume control works.",
+        "User plays an album → remaining tracks are queued. Shuffle and repeat modes work.",
+        "Player bar is always visible at bottom with now-playing info, progress bar, and controls. Navigation doesn't interrupt playback.",
+        "docker-compose up on a fresh Windows 11 machine serves the full app at localhost, with a mounted music folder"
+      ],
+      "key_risks": [
+        {
+          "risk": "FLAC streaming with HTTP Range seek may not work smoothly in all browsers",
+          "whyItMatters": "If seek doesn't work, the player is unusable for 30-80MB files. This is the core technical bet."
+        },
+        {
+          "risk": "JAudioTagger may have edge cases with certain FLAC metadata or embedded cover art",
+          "whyItMatters": "Bad metadata parsing means broken library data. Need to validate with real-world FLAC files early."
+        },
+        {
+          "risk": "React is new to the developer — unfamiliar patterns may slow frontend work",
+          "whyItMatters": "PlayerContext, useReducer, hooks, TanStack Query — all new. Frontend slices may take longer than estimated."
+        },
+        {
+          "risk": "Docker volume mounts on Windows 11 may have permission or path issues",
+          "whyItMatters": "If Docker can't read the music folder, the containerized deployment doesn't work."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "FLAC Range streaming",
+          "retireIn": "S01",
+          "whatWillBeProven": "A FLAC file served by Spring Boot plays in Chrome with working seek via a minimal test page"
+        },
+        {
+          "riskOrUnknown": "JAudioTagger metadata parsing",
+          "retireIn": "S01",
+          "whatWillBeProven": "Real FLAC files are scanned and metadata (title, artist, album, duration, cover art) is correctly persisted in H2"
+        },
+        {
+          "riskOrUnknown": "React learning curve",
+          "retireIn": "S03",
+          "whatWillBeProven": "A functional React app with routing, TanStack Query, and API integration renders library data correctly"
+        },
+        {
+          "riskOrUnknown": "Docker Windows volume mounts",
+          "retireIn": "S05",
+          "whatWillBeProven": "docker-compose up on Windows 11 serves the app and reads FLACs from a mounted host folder"
+        }
+      ],
+      "verification_contract": "Backend: JPA entity tests, API endpoint tests (pagination, filters, search), Range header response tests. Frontend: component renders, hook behavior, API integration.",
+      "verification_integration": "Full API round-trip: scan folder → browse tracks → stream audio → verify 206 response with correct byte ranges. Frontend-to-backend: React app fetches and displays real data from Spring Boot.",
+      "verification_operational": "Docker Compose: cold start on Windows 11, volume mount permissions, H2 data persistence across container restarts.",
+      "verification_uat": "Manual: add a real FLAC folder, scan, browse library, play tracks, verify seek/queue/shuffle work as a real listening session. Visual: UI looks clean and polished with dark theme.",
+      "definition_of_done": [
+        "All 5 slices complete with passing verification",
+        "All 9 active requirements (R001-R009) are covered by at least one slice",
+        "A real folder of FLACs can be scanned, browsed, and played end-to-end",
+        "Player bar persists across navigation, seek works on large files, queue functions correctly",
+        "docker-compose up serves the full app from a clean state",
+        "No hardcoded paths, credentials, or TODO stubs in shipped code"
+      ],
+      "requirement_coverage": "Covers: R001, R002, R003, R004, R005, R006, R007, R008, R009 (all active). Leaves for later: R010-R015 (deferred features). Out of scope: R016.",
+      "boundary_map_markdown": "### S01 → S02\nProduces:\n- JPA entities: Track, Album, Artist, LibraryFolder with Spring Data repositories\n- MetadataService: reads FLAC tags and returns structured data\n- LibraryScanService: async folder scan, upsert logic\n- AudioStreamService: HTTP Range streaming (206 Partial Content)\n- H2 database with scanned data\n\nConsumes:\n- Nothing (first slice)\n\n### S02 → S03\nProduces:\n- Full REST API: /api/tracks, /api/albums, /api/artists, /api/search (paginated, filterable)\n- /api/covers/{albumId} endpoint with cached cover art JPGs\n- /api/library/folders CRUD + /api/library/scan endpoints\n- DTOs and consistent API response shapes\n\nConsumes:\n- S01 entities, repositories, scan and stream services\n\n### S03 → S04\nProduces:\n- React app shell: sidebar navigation, routing, dark theme, responsive layout\n- Library pages: Tracks, Albums, AlbumDetail, Artists, ArtistDetail, Search, Settings\n- TanStack Query hooks wired to all API endpoints\n- TypeScript interfaces matching API DTOs\n- API client layer (Axios)\n\nConsumes:\n- S02 REST API endpoints and response shapes\n\n### S04 → S05\nProduces:\n- PlayerContext with useReducer: global playback state\n- usePlayer hook: HTMLAudioElement lifecycle, events, seek, volume\n- PlayerBar component: now playing, controls, progress, volume\n- Queue system: play album/artist context, shuffle, repeat, next/prev\n- Click-to-play wiring from all library views\n\nConsumes:\n- S03 UI shell, pages, components, API layer\n- S01 /api/stream/{trackId} endpoint\n\n### S05 (final)\nProduces:\n- Loading skeletons, error boundaries, empty states across all pages\n- Keyboard shortcuts (Space, arrows)\n- docker-compose.yml with multi-stage build\n- Dockerfile for backend (Maven + JRE) and frontend (nginx)\n- Complete integrated system\n\nConsumes:\n- Everything from S01-S04"
+    }
+  ],
+  "slices": [
+    {
+      "milestone_id": "M001",
+      "id": "S01",
+      "title": "Backend Foundation — Scan FLACs and Stream Audio",
+      "status": "pending",
+      "risk": "high",
+      "depends": [],
+      "demo": "Point browser at a test HTML page served by Spring Boot. Select a FLAC from the scanned library. Audio plays with working seek.",
+      "created_at": "2026-03-29T18:18:21.582Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Prove the core technical bet: JAudioTagger reads FLAC metadata, Spring Boot stores it in H2, and streams audio with HTTP Range support. A FLAC plays in Chrome with seek.",
+      "success_criteria": "- Spring Boot starts with H2, entities auto-created\n- Scan a folder of real FLACs → metadata persisted correctly (title, artist, album, duration, track number)\n- GET /api/stream/{id} with Range header → 206 Partial Content\n- Audio plays and seeks in Chrome via a minimal test HTML page",
+      "proof_level": "Integration test + manual browser playback",
+      "integration_closure": "Backend starts, scans real FLACs, serves audio stream. Verified via browser.",
+      "observability_impact": "Scan progress logging (files found, processed, errors). Stream request logging with byte ranges.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M001",
+      "id": "S02",
+      "title": "Browse API + Cover Art",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "API calls via browser/curl return paginated tracks, albums with cover art URLs, artists, and search results.",
+      "created_at": "2026-03-29T18:18:21.582Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Complete REST API for browsing the library. Cover art extracted during scan and served as cached JPGs. Folder management endpoints.",
+      "success_criteria": "- GET /api/tracks?page=0&size=20 → paginated tracks with metadata\n- GET /api/albums → albums with cover art URLs\n- GET /api/artists → artists with album counts\n- GET /api/search?q=radiohead → combined results\n- GET /api/covers/{albumId} → JPG image\n- POST/GET/DELETE /api/library/folders → CRUD works",
+      "proof_level": "API tests + manual verification with curl/browser",
+      "integration_closure": "All API endpoints return correctly shaped data from real scanned library.",
+      "observability_impact": "API request logging. Cover art cache hit/miss logging.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M001",
+      "id": "S03",
+      "title": "React UI Shell + Library Pages",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S02"
+      ],
+      "demo": "Browse the full music library in the browser: album grid with covers, track lists, artist pages, search, and settings with folder management.",
+      "created_at": "2026-03-29T18:18:21.582Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Functional React frontend with dark theme, routing, and all library browsing pages connected to the real API.",
+      "success_criteria": "- React app loads with dark theme and sidebar navigation\n- Albums page shows grid with real cover art from API\n- Track list shows sortable tracks with metadata\n- Artist pages show albums and tracks\n- Search returns combined results\n- Settings page: add/remove folders, trigger scan",
+      "proof_level": "Visual verification in browser against running backend",
+      "integration_closure": "React app fetches and renders real library data from Spring Boot API.",
+      "observability_impact": "TanStack Query devtools available in dev mode. API error states visible in UI.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M001",
+      "id": "S04",
+      "title": "Player + Queue — Full Playback Experience",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S03"
+      ],
+      "demo": "Click any track in the library → audio plays in the persistent player bar. Seek, volume, next/prev, shuffle, and repeat all work. Playing an album queues all its tracks.",
+      "created_at": "2026-03-29T18:18:21.582Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Complete playback experience with global player state, queue management, and all playback controls.",
+      "success_criteria": "- Click track → plays via PlayerBar at bottom\n- Seek bar works (dragging jumps to position)\n- Volume control works\n- Next/Previous navigate the queue\n- Click album → all tracks queued in order\n- Shuffle randomizes queue, repeat loops\n- Navigation between pages doesn't interrupt playback",
+      "proof_level": "Manual end-to-end playback session",
+      "integration_closure": "Player consumes stream API, UI stays synced with playback state across navigation.",
+      "observability_impact": "Player state transitions logged. Queue operations traceable.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M001",
+      "id": "S05",
+      "title": "Polish + Docker Compose",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S04"
+      ],
+      "demo": "docker-compose up on a clean Windows 11 machine → open localhost → full app works. UI has loading states, error handling, and empty states. Keyboard shortcuts work.",
+      "created_at": "2026-03-29T18:18:21.582Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Production-ready packaging and UI polish. The app feels complete and runs anywhere with one command.",
+      "success_criteria": "- docker-compose up builds and serves the full app\n- Music folder mounted as read-only volume works on Windows 11\n- H2 data persists across container restarts\n- Loading skeletons shown during data fetches\n- Error boundaries catch and display failures gracefully\n- Empty states for no tracks/albums/results\n- Space key toggles play/pause",
+      "proof_level": "Docker cold-start test + visual UI audit",
+      "integration_closure": "Containerized app is functionally identical to dev environment. All features verified in Docker.",
+      "observability_impact": "Docker health check endpoint. Startup banner with version and config summary.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    }
+  ],
+  "tasks": [],
+  "decisions": [
+    {
+      "seq": 5,
+      "id": "D001",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Audio playback mechanism",
+      "choice": "HTML5 Audio element with HTTP Range streaming (206 Partial Content)",
+      "rationale": "FLAC is natively supported in Chrome, Edge, and Firefox. No transcoding needed for desktop use. Range headers enable seeking in large files (30-80MB FLACs) without full download.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 6,
+      "id": "D002",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Frontend framework and tooling",
+      "choice": "React 19 + Vite + TypeScript + Tailwind CSS + TanStack Query",
+      "rationale": "Modern, fast dev experience. Vite for instant HMR. TypeScript for type safety. Tailwind for rapid styling. TanStack Query for server state management with caching and pagination. User's preferred stack per PLAN.md.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 7,
+      "id": "D003",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Frontend framework and tooling",
+      "choice": "React 19 + Vite + TypeScript + Tailwind CSS + TanStack Query",
+      "rationale": "Modern, fast dev experience. Vite for instant HMR. TypeScript for type safety. Tailwind for rapid styling. TanStack Query for server state. User's preferred stack.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 8,
+      "id": "D004",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Backend framework and runtime",
+      "choice": "Spring Boot 3 + Java 21 + Gradle (Kotlin DSL)",
+      "rationale": "User's habitual stack. Modern Java features, virtual threads potential, native compilation path. Gradle Kotlin DSL for type-safe build config.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 9,
+      "id": "D005",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Database choice",
+      "choice": "H2 in file mode (embedded)",
+      "rationale": "Zero config, ships as JAR dependency, no external server. Sufficient for single-user personal media library.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 10,
+      "id": "D006",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Audio metadata reading library",
+      "choice": "JAudioTagger 3.x",
+      "rationale": "Pure Java, supports ID3/Vorbis/MP4 tags and embedded cover art under a unified API. Standard in the Java audio ecosystem.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 11,
+      "id": "D007",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Audio playback and streaming mechanism",
+      "choice": "HTML5 Audio element + HTTP Range headers (206 Partial Content)",
+      "rationale": "FLAC natively supported in Chrome/Edge/Firefox. Range headers enable seeking in large files without full download. No transcoding needed for desktop.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 12,
+      "id": "D008",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Backend build tool",
+      "choice": "Maven (supersedes D004 which said Gradle)",
+      "rationale": "Maven es el stack habitual del usuario. En un proyecto donde el frontend ya es aprendizaje nuevo (React), mantener el backend en terreno conocido reduce la carga cognitiva. Gradle Kotlin DSL tiene curva de aprendizaje innecesaria aquí.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 15,
+      "id": "D009",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Audio format support scope for MVP",
+      "choice": "Solo FLAC en MVP, multi-formato diferido",
+      "rationale": "Reducir alcance del MVP a un solo formato simplifica el desarrollo. FLAC es lossless y el caso de uso principal del usuario. MP3/OGG/M4A se añaden después del MVP.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 16,
+      "id": "D010",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Target operating system",
+      "choice": "Windows 11 como entorno de desarrollo y ejecución principal",
+      "rationale": "El usuario desarrolla y usará Musicode en Windows 11. Afecta rutas de filesystem (backslash, letras de unidad), volume mounts en Docker Desktop (WSL2), y testing. El backend debe usar java.nio.file.Path para abstracción de rutas cross-platform.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    }
+  ],
+  "verification_evidence": []
+}
