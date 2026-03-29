@@ -26,7 +26,7 @@ Steps:
   - Estimate: 45m
   - Files: musicode-server/pom.xml, musicode-server/src/main/java/com/musicode/service/MetadataService.java, musicode-server/src/main/java/com/musicode/model/dto/TrackMetadata.java
   - Verify: mvn test -pl musicode-server -Dtest=MetadataServiceTest — test passes reading metadata from a real FLAC file
-- [ ] **T03: LibraryScanService — Async folder scanning with upsert** — Create LibraryScanService that asynchronously walks a directory tree, filters .flac files, reads metadata via MetadataService, and upserts Artist/Album/Track entities in H2. Deduplicates artists by name and albums by (title + artist).
+- [x] **T03: LibraryScanService scans FLAC folders asynchronously, upserts Artist/Album/Track entities, extracts cover art, and exposes scan progress via REST API.** — Create LibraryScanService that asynchronously walks a directory tree, filters .flac files, reads metadata via MetadataService, and upserts Artist/Album/Track entities in H2. Deduplicates artists by name and albums by (title + artist).
 
 Steps:
 1. Enable @Async in Spring config

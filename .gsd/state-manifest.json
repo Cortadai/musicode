@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-29T19:07:55.429Z",
+  "exported_at": "2026-03-29T19:13:40.490Z",
   "milestones": [
     {
       "id": "M001",
@@ -290,19 +290,30 @@
       "milestone_id": "M001",
       "slice_id": "S01",
       "id": "T03",
-      "title": "LibraryScanService — Async folder scanning with upsert",
-      "status": "pending",
-      "one_liner": "",
-      "narrative": "",
-      "verification_result": "",
+      "title": "LibraryScanService scans FLAC folders asynchronously, upserts Artist/Album/Track entities, extracts cover art, and exposes scan progress via REST API.",
+      "status": "complete",
+      "one_liner": "LibraryScanService scans FLAC folders asynchronously, upserts Artist/Album/Track entities, extracts cover art, and exposes scan progress via REST API.",
+      "narrative": "Built the full library scanning pipeline. AsyncConfig enables @Async. LibraryScanService walks directories, filters .flac files, reads metadata via MetadataService, and upserts Artist/Album/Track entities with deduplication (artist by name, album by title+artist). CoverArtService extracts embedded cover art during scan and caches as JPG at data/covers/{albumId}.jpg. ScanStatus DTO tracks progress (total, processed, errors, new/updated counts). LibraryController provides folder CRUD (POST/GET/DELETE /api/library/folders), scan trigger (POST /api/library/scan), and status polling (GET /api/library/scan/status). Added TrackController with GET /api/tracks for verification. Hit and fixed two serialization issues: LazyInitializationException (switched to EAGER for Track→Album/Artist) and JSON infinite recursion (added @JsonIgnoreProperties on bidirectional relations). Verified against 17 real FLACs: first scan creates 17 tracks, re-scan correctly updates 17 with 0 new. Cover art extracted (101KB JPEG).",
+      "verification_result": "Full integration test: POST folder → POST scan → scan completes (17 files, 0 errors) → GET /api/tracks returns 17 tracks with correct metadata, album, and artist. Re-scan correctly shows 0 new, 17 updated. Cover art file exists at data/covers/1.jpg. All prior tests still pass.",
       "duration": "",
-      "completed_at": null,
+      "completed_at": "2026-03-29T19:13:40.442Z",
       "blocker_discovered": false,
-      "deviations": "",
-      "known_issues": "",
-      "key_files": [],
-      "key_decisions": [],
-      "full_summary_md": "",
+      "deviations": "Added TrackController (GET /api/tracks) ahead of plan — needed for verification and will be needed by T05. Changed Track and Album fetch strategy from LAZY to EAGER for album/artist relations to avoid LazyInitializationException when serializing to JSON. Added @JsonIgnoreProperties to all bidirectional JPA relationships to prevent infinite recursion in Jackson serialization.",
+      "known_issues": "ScanStatus is in-memory only — lost on restart. Not a problem for MVP since H2 data persists and re-scan is fast.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/service/LibraryScanService.java",
+        "musicode-server/src/main/java/com/musicode/service/CoverArtService.java",
+        "musicode-server/src/main/java/com/musicode/controller/LibraryController.java",
+        "musicode-server/src/main/java/com/musicode/controller/TrackController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/ScanStatus.java",
+        "musicode-server/src/main/java/com/musicode/config/AsyncConfig.java"
+      ],
+      "key_decisions": [
+        "EAGER fetch for Track→Album and Track→Artist (always needed when displaying a track)",
+        "@JsonIgnoreProperties for bidirectional JPA relations instead of DTOs (simpler for MVP)",
+        "Added TrackController early since it was needed for verification"
+      ],
+      "full_summary_md": "---\nid: T03\nparent: S01\nmilestone: M001\nkey_files:\n  - musicode-server/src/main/java/com/musicode/service/LibraryScanService.java\n  - musicode-server/src/main/java/com/musicode/service/CoverArtService.java\n  - musicode-server/src/main/java/com/musicode/controller/LibraryController.java\n  - musicode-server/src/main/java/com/musicode/controller/TrackController.java\n  - musicode-server/src/main/java/com/musicode/model/dto/ScanStatus.java\n  - musicode-server/src/main/java/com/musicode/config/AsyncConfig.java\nkey_decisions:\n  - EAGER fetch for Track→Album and Track→Artist (always needed when displaying a track)\n  - @JsonIgnoreProperties for bidirectional JPA relations instead of DTOs (simpler for MVP)\n  - Added TrackController early since it was needed for verification\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-29T19:13:40.442Z\nblocker_discovered: false\n---\n\n# T03: LibraryScanService scans FLAC folders asynchronously, upserts Artist/Album/Track entities, extracts cover art, and exposes scan progress via REST API.\n\n**LibraryScanService scans FLAC folders asynchronously, upserts Artist/Album/Track entities, extracts cover art, and exposes scan progress via REST API.**\n\n## What Happened\n\nBuilt the full library scanning pipeline. AsyncConfig enables @Async. LibraryScanService walks directories, filters .flac files, reads metadata via MetadataService, and upserts Artist/Album/Track entities with deduplication (artist by name, album by title+artist). CoverArtService extracts embedded cover art during scan and caches as JPG at data/covers/{albumId}.jpg. ScanStatus DTO tracks progress (total, processed, errors, new/updated counts). LibraryController provides folder CRUD (POST/GET/DELETE /api/library/folders), scan trigger (POST /api/library/scan), and status polling (GET /api/library/scan/status). Added TrackController with GET /api/tracks for verification. Hit and fixed two serialization issues: LazyInitializationException (switched to EAGER for Track→Album/Artist) and JSON infinite recursion (added @JsonIgnoreProperties on bidirectional relations). Verified against 17 real FLACs: first scan creates 17 tracks, re-scan correctly updates 17 with 0 new. Cover art extracted (101KB JPEG).\n\n## Verification\n\nFull integration test: POST folder → POST scan → scan completes (17 files, 0 errors) → GET /api/tracks returns 17 tracks with correct metadata, album, and artist. Re-scan correctly shows 0 new, 17 updated. Cover art file exists at data/covers/1.jpg. All prior tests still pass.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `POST /api/library/folders` | 0 | ✅ pass — folder registered | 200ms |\n| 2 | `POST /api/library/scan + GET /api/library/scan/status` | 0 | ✅ pass — 17 files, 17 new, 0 errors, COMPLETED | 3200ms |\n| 3 | `GET /api/tracks | count` | 0 | ✅ pass — 17 tracks returned with metadata | 300ms |\n| 4 | `POST /api/library/scan (re-scan)` | 0 | ✅ pass — 0 new, 17 updated | 3200ms |\n| 5 | `ls data/covers/1.jpg` | 0 | ✅ pass — 101KB cover art extracted | 50ms |\n| 6 | `mvn test -q` | 0 | ✅ pass — all tests pass | 6700ms |\n\n\n## Deviations\n\nAdded TrackController (GET /api/tracks) ahead of plan — needed for verification and will be needed by T05. Changed Track and Album fetch strategy from LAZY to EAGER for album/artist relations to avoid LazyInitializationException when serializing to JSON. Added @JsonIgnoreProperties to all bidirectional JPA relationships to prevent infinite recursion in Jackson serialization.\n\n## Known Issues\n\nScanStatus is in-memory only — lost on restart. Not a problem for MVP since H2 data persists and re-scan is fast.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/service/LibraryScanService.java`\n- `musicode-server/src/main/java/com/musicode/service/CoverArtService.java`\n- `musicode-server/src/main/java/com/musicode/controller/LibraryController.java`\n- `musicode-server/src/main/java/com/musicode/controller/TrackController.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/ScanStatus.java`\n- `musicode-server/src/main/java/com/musicode/config/AsyncConfig.java`\n",
       "description": "Create LibraryScanService that asynchronously walks a directory tree, filters .flac files, reads metadata via MetadataService, and upserts Artist/Album/Track entities in H2. Deduplicates artists by name and albums by (title + artist).\n\nSteps:\n1. Enable @Async in Spring config\n2. Create LibraryScanService with scanFolder(String path) method\n3. Walk directory tree with Files.walk(), filter .flac\n4. For each file: read metadata, find-or-create Artist, find-or-create Album, create/update Track\n5. Extract cover art during scan, save as JPG to data/covers/{albumId}.jpg\n6. Track scan progress: files found, processed, errors, completion status\n7. Create ScanStatus DTO for progress reporting\n8. Create LibraryController with POST /api/library/scan and GET /api/library/scan/status",
       "estimate": "1.5h",
       "files": [
@@ -585,6 +596,72 @@
       "verdict": "✅ pass — 3 tests, 0 failures",
       "duration_ms": 6900,
       "created_at": "2026-03-29T19:07:55.382Z"
+    },
+    {
+      "id": 6,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M001",
+      "command": "POST /api/library/folders",
+      "exit_code": 0,
+      "verdict": "✅ pass — folder registered",
+      "duration_ms": 200,
+      "created_at": "2026-03-29T19:13:40.442Z"
+    },
+    {
+      "id": 7,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M001",
+      "command": "POST /api/library/scan + GET /api/library/scan/status",
+      "exit_code": 0,
+      "verdict": "✅ pass — 17 files, 17 new, 0 errors, COMPLETED",
+      "duration_ms": 3200,
+      "created_at": "2026-03-29T19:13:40.442Z"
+    },
+    {
+      "id": 8,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M001",
+      "command": "GET /api/tracks | count",
+      "exit_code": 0,
+      "verdict": "✅ pass — 17 tracks returned with metadata",
+      "duration_ms": 300,
+      "created_at": "2026-03-29T19:13:40.442Z"
+    },
+    {
+      "id": 9,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M001",
+      "command": "POST /api/library/scan (re-scan)",
+      "exit_code": 0,
+      "verdict": "✅ pass — 0 new, 17 updated",
+      "duration_ms": 3200,
+      "created_at": "2026-03-29T19:13:40.442Z"
+    },
+    {
+      "id": 10,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M001",
+      "command": "ls data/covers/1.jpg",
+      "exit_code": 0,
+      "verdict": "✅ pass — 101KB cover art extracted",
+      "duration_ms": 50,
+      "created_at": "2026-03-29T19:13:40.442Z"
+    },
+    {
+      "id": 11,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M001",
+      "command": "mvn test -q",
+      "exit_code": 0,
+      "verdict": "✅ pass — all tests pass",
+      "duration_ms": 6700,
+      "created_at": "2026-03-29T19:13:40.442Z"
     }
   ]
 }
