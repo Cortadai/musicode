@@ -40,7 +40,7 @@ Steps:
   - Estimate: 1.5h
   - Files: musicode-server/src/main/java/com/musicode/service/LibraryScanService.java, musicode-server/src/main/java/com/musicode/config/AsyncConfig.java, musicode-server/src/main/java/com/musicode/model/dto/ScanStatus.java, musicode-server/src/main/java/com/musicode/controller/LibraryController.java, musicode-server/src/main/java/com/musicode/service/CoverArtService.java
   - Verify: Start app, POST /api/library/scan with a folder containing FLACs, GET /api/library/scan/status shows completion, query H2 console to verify tracks/albums/artists persisted correctly
-- [ ] **T04: AudioStreamService — HTTP Range streaming for FLACs** — Create AudioStreamService that serves FLAC files with HTTP Range header support (206 Partial Content). This enables seeking in 30-80MB files without full download.
+- [x] **T04: AudioStreamService streams FLAC files with HTTP 206 Range support; StreamController exposes GET /api/stream/{trackId}.** — Create AudioStreamService that serves FLAC files with HTTP Range header support (206 Partial Content). This enables seeking in 30-80MB files without full download.
 
 Steps:
 1. Create AudioStreamService with streamTrack(Long trackId, HttpServletRequest, HttpServletResponse)
@@ -53,7 +53,7 @@ Steps:
   - Estimate: 1h
   - Files: musicode-server/src/main/java/com/musicode/service/AudioStreamService.java, musicode-server/src/main/java/com/musicode/controller/StreamController.java
   - Verify: curl -H 'Range: bytes=0-1023' http://localhost:8080/api/stream/1 — returns 206 with Content-Range header and 1024 bytes of audio data
-- [ ] **T05: Test page — End-to-end playback proof in browser** — Create a minimal HTML test page served by Spring Boot that proves the full chain works: lists scanned tracks from the API, and plays them via an HTML5 <audio> element with seek.
+- [x] **T05: Test page proves end-to-end chain: 17 tracks listed, click-to-play with working seek via HTTP Range streaming.** — Create a minimal HTML test page served by Spring Boot that proves the full chain works: lists scanned tracks from the API, and plays them via an HTML5 <audio> element with seek.
 
 Steps:
 1. Create a static HTML page at src/main/resources/static/test.html
