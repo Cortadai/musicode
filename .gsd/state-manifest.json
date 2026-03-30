@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "exported_at": "2026-03-30T09:59:23.647Z",
+  "exported_at": "2026-03-30T10:37:11.639Z",
   "milestones": [
     {
       "id": "M001",
       "title": "",
-      "status": "queued",
+      "status": "complete",
       "depends_on": [],
       "created_at": "2026-03-29T18:16:51.183Z",
-      "completed_at": null,
+      "completed_at": "2026-03-30T10:36:30.299Z",
       "vision": "A working personal music player: scan a folder of FLACs, browse the library by artist/album/track with cover art, and play music from the browser with seek, queue, and a polished dark UI. Runs via Docker Compose on Windows 11.",
       "success_criteria": [
         "User adds a folder of FLACs in Settings, triggers scan, and sees tracks/albums/artists populated with metadata and cover art",
@@ -72,6 +72,60 @@
       ],
       "requirement_coverage": "Covers: R001, R002, R003, R004, R005, R006, R007, R008, R009 (all active). Leaves for later: R010-R015 (deferred features). Out of scope: R016.",
       "boundary_map_markdown": "### S01 → S02\nProduces:\n- JPA entities: Track, Album, Artist, LibraryFolder with Spring Data repositories\n- MetadataService: reads FLAC tags and returns structured data\n- LibraryScanService: async folder scan, upsert logic\n- AudioStreamService: HTTP Range streaming (206 Partial Content)\n- H2 database with scanned data\n\nConsumes:\n- Nothing (first slice)\n\n### S02 → S03\nProduces:\n- Full REST API: /api/tracks, /api/albums, /api/artists, /api/search (paginated, filterable)\n- /api/covers/{albumId} endpoint with cached cover art JPGs\n- /api/library/folders CRUD + /api/library/scan endpoints\n- DTOs and consistent API response shapes\n\nConsumes:\n- S01 entities, repositories, scan and stream services\n\n### S03 → S04\nProduces:\n- React app shell: sidebar navigation, routing, dark theme, responsive layout\n- Library pages: Tracks, Albums, AlbumDetail, Artists, ArtistDetail, Search, Settings\n- TanStack Query hooks wired to all API endpoints\n- TypeScript interfaces matching API DTOs\n- API client layer (Axios)\n\nConsumes:\n- S02 REST API endpoints and response shapes\n\n### S04 → S05\nProduces:\n- PlayerContext with useReducer: global playback state\n- usePlayer hook: HTMLAudioElement lifecycle, events, seek, volume\n- PlayerBar component: now playing, controls, progress, volume\n- Queue system: play album/artist context, shuffle, repeat, next/prev\n- Click-to-play wiring from all library views\n\nConsumes:\n- S03 UI shell, pages, components, API layer\n- S01 /api/stream/{trackId} endpoint\n\n### S05 (final)\nProduces:\n- Loading skeletons, error boundaries, empty states across all pages\n- Keyboard shortcuts (Space, arrows)\n- docker-compose.yml with multi-stage build\n- Dockerfile for backend (Maven + JRE) and frontend (nginx)\n- Complete integrated system\n\nConsumes:\n- Everything from S01-S04"
+    },
+    {
+      "id": "M002",
+      "title": "",
+      "status": "queued",
+      "depends_on": [],
+      "created_at": "2026-03-30T10:36:35.425Z",
+      "completed_at": null,
+      "vision": "Clean up M001 rough edges, add missing playback features (shuffle, repeat, keyboard shortcuts), support all common audio formats, and add the navigation polish that makes the app feel complete. Cover art click navigates to album. Basic test coverage establishes quality baseline.",
+      "success_criteria": [
+        "Duplicate tracks from Windows paths cleaned up",
+        "Click cover art in player bar navigates to the playing album",
+        "Shuffle and repeat modes work in player",
+        "Keyboard shortcuts: Space (play/pause), arrow keys (next/prev), M (mute)",
+        "Scanner processes MP3, OGG, M4A, WAV in addition to FLAC",
+        "Backend has integration tests for all API endpoints",
+        "Frontend has component tests for player and key pages"
+      ],
+      "key_risks": [
+        {
+          "risk": "JAudioTagger may not handle all MP3/M4A tag formats consistently",
+          "whyItMatters": "Bad metadata means wrong artist/album/duration in the UI"
+        },
+        {
+          "risk": "Shuffle state adds complexity to the queue reducer",
+          "whyItMatters": "Shuffle + repeat + next/prev interactions can produce confusing behavior if not designed carefully"
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "Multi-format metadata reading",
+          "retireIn": "S01",
+          "whatWillBeProven": "JAudioTagger reads MP3/OGG/M4A tags correctly with a real file test"
+        },
+        {
+          "riskOrUnknown": "Shuffle/repeat state complexity",
+          "retireIn": "S02",
+          "whatWillBeProven": "All shuffle+repeat+next/prev combinations produce expected behavior"
+        }
+      ],
+      "verification_contract": "All fixes verified against running Docker deployment with real music library.",
+      "verification_integration": "Backend tests cover all API endpoints. Frontend tests cover player state transitions.",
+      "verification_operational": "Docker Compose still works after all changes.",
+      "verification_uat": "Manual playback test: shuffle album, repeat track, keyboard controls, navigate via player bar.",
+      "definition_of_done": [
+        "All fixes verified with real data",
+        "Shuffle/repeat work correctly",
+        "Multi-format scanning tested with real MP3/OGG files",
+        "Backend integration tests pass",
+        "Frontend component tests pass",
+        "Docker Compose builds and runs clean"
+      ],
+      "requirement_coverage": "Extends R001 (scan) to multi-format. Extends R004 (playback) with shuffle/repeat. New: keyboard shortcuts, player bar navigation.",
+      "boundary_map_markdown": "```\\nM002 scope:\\n  IN:  fixes, shuffle/repeat, multi-format, keyboard, player nav, basic tests\\n  OUT: playlists, queue UI, visualizer, themes, scrobbling (→ M003/M004)\\n```"
     }
   ],
   "slices": [
@@ -180,6 +234,71 @@
       "proof_level": "visual + docker — browser verification + docker-compose up works",
       "integration_closure": "S05 polishes everything from S01-S04 and adds Docker packaging. Closes M001.",
       "observability_impact": "Loading and error states visible in UI.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M002",
+      "id": "S01",
+      "title": "Fixes + Multi-format Scanner",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [],
+      "demo": "Scanner processes a folder with mixed FLAC/MP3/OGG/M4A files. No duplicate tracks. Cover art paths consistent.",
+      "created_at": "2026-03-30T10:37:11.615Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Clean up M001 data issues and extend scanner to all common audio formats.",
+      "success_criteria": "- Duplicate Windows-path tracks removed\\n- Scanner handles .mp3, .ogg, .m4a, .wav\\n- Cover art paths normalized\\n- Integration tests for scan + browse endpoints",
+      "proof_level": "integration — tests + curl verification",
+      "integration_closure": "Fixes data layer issues from M001. Multi-format scanner is backward compatible.",
+      "observability_impact": "Scan status reports format breakdown (X flac, Y mp3, etc)",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M002",
+      "id": "S02",
+      "title": "Player Polish — Shuffle, Repeat, Keyboard, Navigation",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Click cover in player bar → navigates to album. Shuffle an album. Repeat a track. Use Space/arrows to control playback.",
+      "created_at": "2026-03-30T10:37:11.615Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Complete the playback experience with shuffle, repeat, keyboard shortcuts, and player bar album navigation.",
+      "success_criteria": "- Shuffle mode randomizes queue order\\n- Repeat modes: off, repeat-all, repeat-one\\n- Keyboard: Space=play/pause, Left/Right=prev/next, M=mute\\n- Click cover art in player bar → /albums/{id}\\n- Component tests for player state transitions",
+      "proof_level": "visual — browser verification of all controls",
+      "integration_closure": "Player features are additive — no breaking changes to existing behavior.",
+      "observability_impact": "Shuffle/repeat state visible in player bar UI",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M002",
+      "id": "S03",
+      "title": "Test Suite Foundation",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S01",
+        "S02"
+      ],
+      "demo": "npm test and mvn test both pass with meaningful coverage of core features.",
+      "created_at": "2026-03-30T10:37:11.616Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Establish test baseline: backend integration tests for API endpoints, frontend component tests for player and key pages.",
+      "success_criteria": "- Backend: tests for scan, browse, stream, search endpoints\\n- Frontend: tests for PlayerContext reducer, TrackList, PlayerBar\\n- All tests pass in CI-compatible way (no manual setup needed)",
+      "proof_level": "automated — test runner output",
+      "integration_closure": "Tests validate S01 and S02 changes plus M001 core behavior.",
+      "observability_impact": "Test results in CI output",
       "sequence": 0,
       "replan_triggered_at": null
     }
@@ -1110,6 +1229,18 @@
       "decision": "Target operating system",
       "choice": "Windows 11 como entorno de desarrollo y ejecución principal",
       "rationale": "El usuario desarrolla y usará Musicode en Windows 11. Afecta rutas de filesystem (backslash, letras de unidad), volume mounts en Docker Desktop (WSL2), y testing. El backend debe usar java.nio.file.Path para abstracción de rutas cross-platform.",
+      "revisable": "Yes",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 17,
+      "id": "D011",
+      "when_context": "",
+      "scope": "design",
+      "decision": "UI theme direction",
+      "choice": "Keep current dark theme (zinc + indigo accents). No light mode. Custom themes deferred to future milestone.",
+      "rationale": "User likes the current dark palette (zinc grays + indigo blues). Light mode not needed. Custom themes are a future possibility but not priority.",
       "revisable": "Yes",
       "made_by": "human",
       "superseded_by": null
