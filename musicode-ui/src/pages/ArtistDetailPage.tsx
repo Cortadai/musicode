@@ -4,6 +4,7 @@ import { getArtist } from '../api/artists';
 import AlbumCard from '../components/library/AlbumCard';
 import { ArrowLeft, User } from 'lucide-react';
 import type { Album } from '../types';
+import Spinner from '../components/common/Spinner';
 
 export default function ArtistDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,10 +16,9 @@ export default function ArtistDetailPage() {
     enabled: !isNaN(artistId),
   });
 
-  if (isLoading) return <p className="text-zinc-500">Loading…</p>;
+  if (isLoading) return <Spinner text="Loading artist…" />;
   if (error || !artist) return <p className="text-red-400">Artist not found</p>;
 
-  // Artist detail returns albums from EntityGraph — they might be a Set (no guaranteed order)
   const albums: Album[] = artist.albums ? [...artist.albums] : [];
 
   return (
@@ -38,12 +38,14 @@ export default function ArtistDetailPage() {
         </div>
       </div>
 
-      {albums.length > 0 && (
+      {albums.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {albums.map((album) => (
             <AlbumCard key={album.id} album={album} />
           ))}
         </div>
+      ) : (
+        <p className="text-zinc-500">No albums found for this artist.</p>
       )}
     </div>
   );

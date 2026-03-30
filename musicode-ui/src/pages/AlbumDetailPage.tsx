@@ -4,6 +4,7 @@ import { getAlbum, getCoverUrl } from '../api/albums';
 import TrackList from '../components/library/TrackList';
 import { usePlayer } from '../hooks/usePlayer';
 import { ArrowLeft, Disc3 } from 'lucide-react';
+import Spinner from '../components/common/Spinner';
 
 export default function AlbumDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,7 +17,7 @@ export default function AlbumDetailPage() {
     enabled: !isNaN(albumId),
   });
 
-  if (isLoading) return <p className="text-zinc-500">Loading…</p>;
+  if (isLoading) return <Spinner text="Loading album…" />;
   if (error || !album) return <p className="text-red-400">Album not found</p>;
 
   const tracks = album.tracks ?? [];

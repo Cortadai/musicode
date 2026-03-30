@@ -1,0 +1,18 @@
+services:
+  backend:
+    build: ./musicode-server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./musicode-server/data:/app/data
+      - ${MUSIC_DIR:-C:/Users/david/Music}:/music:ro
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - MUSICODE_COVERS_DIR=/app/data/covers
+
+  frontend:
+    build: ./musicode-ui
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

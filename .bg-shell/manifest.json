@@ -1,19 +1,5 @@
 [
   {
-    "id": "a5e017c7",
-    "label": "spring-boot",
-    "command": "cd \"C:/Users/david/Desktop/music player/musicode-server\" && mvn spring-boot:run -q 2>&1",
-    "cwd": "C:\\Users\\david\\Desktop\\music player",
-    "ownerSessionFile": "C:\\Users\\david\\.gsd\\sessions\\--C--Users-david-Desktop-music player--\\2026-03-30T08-22-23-126Z_c1d17ef2-8f75-4354-a75f-c5b43f131039.jsonl",
-    "persistAcrossSessions": false,
-    "startedAt": 1774863791707,
-    "processType": "server",
-    "group": null,
-    "readyPattern": null,
-    "readyPort": 8080,
-    "pid": 35216
-  },
-  {
     "id": "391dcffb",
     "label": "vite-dev",
     "command": "cd \"C:/Users/david/Desktop/music player/musicode-ui\" && npm run dev 2>&1",

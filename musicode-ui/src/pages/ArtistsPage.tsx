@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getArtists } from '../api/artists';
 import { Link } from 'react-router';
 import { User } from 'lucide-react';
+import Spinner from '../components/common/Spinner';
 
 export default function ArtistsPage() {
   const { data, isLoading, error } = useQuery({
@@ -9,9 +10,17 @@ export default function ArtistsPage() {
     queryFn: () => getArtists(0, 100),
   });
 
-  if (isLoading) return <p className="text-zinc-500">Loading artists…</p>;
+  if (isLoading) return <Spinner text="Loading artists…" />;
   if (error) return <p className="text-red-400">Failed to load artists</p>;
-  if (!data?.content.length) return <p className="text-zinc-500">No artists found.</p>;
+
+  if (!data?.content.length) {
+    return (
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Artists</h2>
+        <p className="text-zinc-500">No artists found. Scan a music folder in Settings.</p>
+      </div>
+    );
+  }
 
   return (
     <div>

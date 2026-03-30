@@ -39,6 +39,6 @@ public class Album {
     @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @OrderBy("discNumber ASC, trackNumber ASC")
-    @JsonIgnoreProperties({"album", "artist"})
+    @JsonIgnoreProperties({"album"})
     private List<Track> tracks = new ArrayList<>();
 }

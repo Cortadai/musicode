@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAlbums } from '../api/albums';
 import AlbumCard from '../components/library/AlbumCard';
+import Spinner from '../components/common/Spinner';
 
 export default function AlbumsPage() {
   const { data, isLoading, error } = useQuery({
@@ -8,9 +9,17 @@ export default function AlbumsPage() {
     queryFn: () => getAlbums(0, 100),
   });
 
-  if (isLoading) return <p className="text-zinc-500">Loading albums…</p>;
+  if (isLoading) return <Spinner text="Loading albums…" />;
   if (error) return <p className="text-red-400">Failed to load albums</p>;
-  if (!data?.content.length) return <p className="text-zinc-500">No albums found. Scan a folder in Settings.</p>;
+
+  if (!data?.content.length) {
+    return (
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Albums</h2>
+        <p className="text-zinc-500">No albums found. Add a music folder in Settings and scan your library.</p>
+      </div>
+    );
+  }
 
   return (
     <div>
