@@ -67,13 +67,13 @@ public class LibraryScanService {
         log.info("Starting library scan of {} folder(s)", folders.size());
 
         try {
-            // Count total FLAC files across all folders
+            // Count total audio files across all folders
             int totalFiles = 0;
             for (LibraryFolder folder : folders) {
-                totalFiles += countFlacFiles(Paths.get(folder.getPath()));
+                totalFiles += countAudioFiles(Paths.get(folder.getPath()));
             }
             scanStatus.setTotalFiles(totalFiles);
-            log.info("Found {} FLAC files to process", totalFiles);
+            log.info("Found {} audio files to process", totalFiles);
 
             // Process each folder
             for (LibraryFolder folder : folders) {
@@ -106,7 +106,7 @@ public class LibraryScanService {
         log.info("Scanning folder: {}", folder.getPath());
 
         try (Stream<Path> files = Files.walk(folderPath)) {
-            files.filter(this::isFlacFile)
+            files.filter(this::isAudioFile)
                  .forEach(this::processFile);
         } catch (IOException e) {
             log.error("Error walking folder {}: {}", folder.getPath(), e.getMessage());
@@ -199,15 +199,20 @@ public class LibraryScanService {
         scanStatus.setProcessedFiles(scanStatus.getProcessedFiles() + 1);
     }
 
-    private boolean isFlacFile(Path path) {
-        return Files.isRegularFile(path)
-                && path.getFileName().toString().toLowerCase().endsWith(".flac");
+    private static final java.util.Set<String> AUDIO_EXTENSIONS = java.util.Set.of(
+            ".flac", ".mp3", ".ogg", ".m4a", ".wav"
+    );
+
+    private boolean isAudioFile(Path path) {
+        if (!Files.isRegularFile(path)) return false;
+        String name = path.getFileName().toString().toLowerCase();
+        return AUDIO_EXTENSIONS.stream().anyMatch(name::endsWith);
     }
 
-    private int countFlacFiles(Path folderPath) {
+    private int countAudioFiles(Path folderPath) {
         if (!Files.isDirectory(folderPath)) return 0;
         try (Stream<Path> files = Files.walk(folderPath)) {
-            return (int) files.filter(this::isFlacFile).count();
+            return (int) files.filter(this::isAudioFile).count();
         } catch (IOException e) {
             log.error("Error counting files in {}: {}", folderPath, e.getMessage());
             return 0;

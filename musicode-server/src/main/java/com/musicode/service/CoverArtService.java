@@ -35,14 +35,14 @@ public class CoverArtService {
 
         Path coverFile = coversDir.resolve(albumId + ".jpg");
         if (Files.exists(coverFile)) {
-            // Already extracted — skip
-            return coverFile.toString();
+            // Already extracted — return normalized path
+            return albumId + ".jpg";
         }
 
         try {
             Files.write(coverFile, imageData);
             log.debug("Saved cover art for album {}: {} bytes", albumId, imageData.length);
-            return coverFile.toString();
+            return albumId + ".jpg";
         } catch (IOException e) {
             log.error("Failed to save cover art for album {}: {}", albumId, e.getMessage());
             return null;
