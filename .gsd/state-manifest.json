@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-30T08:27:39.583Z",
+  "exported_at": "2026-03-30T09:07:20.096Z",
   "milestones": [
     {
       "id": "M001",
@@ -99,21 +99,21 @@
       "milestone_id": "M001",
       "id": "S02",
       "title": "Browse API + Cover Art",
-      "status": "pending",
+      "status": "complete",
       "risk": "medium",
       "depends": [
         "S01"
       ],
       "demo": "API calls via browser/curl return paginated tracks, albums with cover art URLs, artists, and search results.",
       "created_at": "2026-03-29T18:18:21.582Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
-      "goal": "Complete REST API for browsing the library. Cover art extracted during scan and served as cached JPGs. Folder management endpoints.",
-      "success_criteria": "- GET /api/tracks?page=0&size=20 → paginated tracks with metadata\n- GET /api/albums → albums with cover art URLs\n- GET /api/artists → artists with album counts\n- GET /api/search?q=radiohead → combined results\n- GET /api/covers/{albumId} → JPG image\n- POST/GET/DELETE /api/library/folders → CRUD works",
-      "proof_level": "API tests + manual verification with curl/browser",
-      "integration_closure": "All API endpoints return correctly shaped data from real scanned library.",
-      "observability_impact": "API request logging. Cover art cache hit/miss logging.",
+      "completed_at": "2026-03-30T09:07:20.037Z",
+      "full_summary_md": "---\nid: S02\nparent: M001\nmilestone: M001\nprovides:\n  - GET /api/albums (paginated) + GET /api/albums/{id} (with tracks)\n  - GET /api/artists (paginated) + GET /api/artists/{id} (with albums)\n  - GET /api/tracks (paginated, sortable) + GET /api/tracks/{id}\n  - GET /api/covers/{albumId} (image/jpeg)\n  - GET /api/search?q= (tracks + albums + artists)\nrequires:\n  - slice: S01\n    provides: Track/Album/Artist entities and repositories\naffects:\n  - S03\nkey_files:\n  - musicode-server/src/main/java/com/musicode/controller/AlbumController.java\n  - musicode-server/src/main/java/com/musicode/controller/ArtistController.java\n  - musicode-server/src/main/java/com/musicode/controller/CoverArtController.java\n  - musicode-server/src/main/java/com/musicode/controller/SearchController.java\n  - musicode-server/src/main/java/com/musicode/config/JacksonConfig.java\nkey_decisions:\n  - jackson-datatype-hibernate6 for lazy proxy handling instead of open-in-view\n  - Artist collections as Set to avoid MultipleBagFetchException\n  - Cover art cached 7 days via Cache-Control\npatterns_established:\n  - EntityGraph for detail views, Hibernate6Module for list views (lazy = null)\n  - Cover art served via Spring Resource with Cache-Control\nobservability_surfaces:\n  - All endpoints return structured JSON errors with status codes\ndrill_down_paths:\n  - .gsd/milestones/M001/slices/S02/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M001/slices/S02/tasks/T02-SUMMARY.md\n  - .gsd/milestones/M001/slices/S02/tasks/T03-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-30T09:07:20.038Z\nblocker_discovered: false\n---\n\n# S02: Browse API + Cover Art\n\n**Complete browse API: paginated tracks/albums/artists, album+artist detail, cover art serving, and global search.**\n\n## What Happened\n\nBuilt the complete browse API across 3 tasks. T01 created paginated endpoints for tracks, albums, and artists with EntityGraph-based detail views, resolving Hibernate lazy loading issues along the way. T02 added cover art serving with proper Cache-Control headers. T03 implemented global search across all three entity types. All endpoints verified via curl against the running server with 17 pre-scanned tracks.\n\n## Verification\n\nAll 3 tasks verified via curl. Albums list+detail, artists list+detail, tracks paginated+sorted, cover art 200/404, search with matches/empty/no-matches all return correct responses.\n\n## Requirements Advanced\n\n- R003 — Paginated browse endpoints for tracks, albums, artists\n- R002 — Cover art served via /api/covers/{albumId} with caching\n- R005 — Global search across tracks, albums, artists\n\n## Requirements Validated\n\n- R003 — All browse endpoints return paginated JSON with correct data\n- R002 — Cover art extracted during scan and served as cached JPGs via /api/covers/{albumId}\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nAdded jackson-datatype-hibernate6 dependency and JacksonConfig to handle lazy proxy serialization (not originally planned). Changed Artist entity collections from List to Set to fix Hibernate MultipleBagFetchException.\n\n## Known Limitations\n\nSearch uses LIKE queries — fine for personal libraries but won't scale to millions of tracks.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/controller/TrackController.java` — Paginated tracks with GET /{id} detail\n- `musicode-server/src/main/java/com/musicode/controller/AlbumController.java` — Paginated albums list + album detail with EntityGraph tracks\n- `musicode-server/src/main/java/com/musicode/controller/ArtistController.java` — Paginated artists list + artist detail with EntityGraph albums\n- `musicode-server/src/main/java/com/musicode/controller/CoverArtController.java` — Serve cover art JPGs with 7-day cache\n- `musicode-server/src/main/java/com/musicode/controller/SearchController.java` — Global search across tracks/albums/artists\n- `musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java` — Search results DTO\n- `musicode-server/src/main/java/com/musicode/config/JacksonConfig.java` — Hibernate6Module for lazy proxy handling\n- `musicode-server/src/main/java/com/musicode/model/entity/Artist.java` — Artist collections changed from List to Set\n- `musicode-server/src/main/java/com/musicode/repository/AlbumRepository.java` — Added EntityGraph and search queries\n- `musicode-server/src/main/java/com/musicode/repository/ArtistRepository.java` — Added EntityGraph and search queries\n- `musicode-server/src/main/java/com/musicode/repository/TrackRepository.java` — Added search query\n- `musicode-server/pom.xml` — Added jackson-datatype-hibernate6 dependency\n",
+      "full_uat_md": "# S02: Browse API + Cover Art — UAT\n\n**Milestone:** M001\n**Written:** 2026-03-30T09:07:20.039Z\n\n## UAT: S02 — Browse API + Cover Art\\n\\n### Test 1: Albums Browse\\n1. GET `http://localhost:8080/api/albums?page=0&size=10`\\n2. **Expected:** Paginated JSON with album objects (title, year, hasCoverArt, artist)\\n\\n### Test 2: Album Detail\\n1. GET `http://localhost:8080/api/albums/1`\\n2. **Expected:** Album with tracks array (17 tracks, ordered by disc/track number)\\n\\n### Test 3: Artists Browse\\n1. GET `http://localhost:8080/api/artists`\\n2. **Expected:** Paginated JSON with artist objects\\n\\n### Test 4: Artist Detail\\n1. GET `http://localhost:8080/api/artists/1`\\n2. **Expected:** Artist with albums array\\n\\n### Test 5: Cover Art\\n1. GET `http://localhost:8080/api/covers/1`\\n2. **Expected:** image/jpeg response with Cache-Control: max-age=604800\\n\\n### Test 6: Search\\n1. GET `http://localhost:8080/api/search?q=dark`\\n2. **Expected:** JSON with tracks, albums, artists arrays containing matches\"\n",
+      "goal": "Complete REST API for browsing the library: paginated tracks/albums/artists, album and artist detail, cover art serving, and global search.",
+      "success_criteria": "- GET /api/albums returns paginated album list with cover art URLs\\n- GET /api/albums/{id} returns album with its tracks\\n- GET /api/artists returns paginated artist list\\n- GET /api/artists/{id} returns artist with albums\\n- GET /api/tracks returns paginated tracks with sorting\\n- GET /api/covers/{albumId} serves cover art image\\n- GET /api/search?q=... returns matching tracks, albums, artists",
+      "proof_level": "integration — curl/browser against running server with real scanned data",
+      "integration_closure": "S02 builds on S01 entities and repositories. Provides the full browse API that S03 (React UI) will consume.",
+      "observability_impact": "All endpoints return structured JSON with consistent error responses.",
       "sequence": 0,
       "replan_triggered_at": null
     },
@@ -426,6 +426,140 @@
         "musicode-server/src/main/resources/static/test.html",
         "musicode-server/src/main/java/com/musicode/config/WebConfig.java",
         "musicode-server/src/main/java/com/musicode/controller/TrackController.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M001",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "Paginated browse endpoints for tracks, albums (with detail), and artists (with detail).",
+      "status": "complete",
+      "one_liner": "Paginated browse endpoints for tracks, albums (with detail), and artists (with detail).",
+      "narrative": "Upgraded TrackController to support pagination via Spring Data Pageable. Created AlbumController (paginated list + detail with tracks via EntityGraph) and ArtistController (paginated list + detail with albums via EntityGraph). Hit LazyInitializationException — resolved with jackson-datatype-hibernate6. Then hit MultipleBagFetchException — resolved by changing Artist.albums/tracks from List to Set.",
+      "verification_result": "All endpoints verified via curl: paginated albums, album detail with tracks, artists, artist detail with albums, sorted tracks, 404 for non-existent IDs.",
+      "duration": "",
+      "completed_at": "2026-03-30T09:06:26.578Z",
+      "blocker_discovered": false,
+      "deviations": "Added jackson-datatype-hibernate6 and JacksonConfig to handle lazy proxy serialization. Changed Artist collections from List to Set to fix MultipleBagFetchException.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/controller/AlbumController.java",
+        "musicode-server/src/main/java/com/musicode/controller/ArtistController.java",
+        "musicode-server/src/main/java/com/musicode/controller/TrackController.java",
+        "musicode-server/src/main/java/com/musicode/config/JacksonConfig.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/Artist.java"
+      ],
+      "key_decisions": [
+        "jackson-datatype-hibernate6 for lazy proxy handling",
+        "Artist collections changed from List to Set",
+        "EntityGraph with albums-only for artist detail"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S02\nmilestone: M001\nkey_files:\n  - musicode-server/src/main/java/com/musicode/controller/AlbumController.java\n  - musicode-server/src/main/java/com/musicode/controller/ArtistController.java\n  - musicode-server/src/main/java/com/musicode/controller/TrackController.java\n  - musicode-server/src/main/java/com/musicode/config/JacksonConfig.java\n  - musicode-server/src/main/java/com/musicode/model/entity/Artist.java\nkey_decisions:\n  - jackson-datatype-hibernate6 for lazy proxy handling\n  - Artist collections changed from List to Set\n  - EntityGraph with albums-only for artist detail\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-30T09:06:26.579Z\nblocker_discovered: false\n---\n\n# T01: Paginated browse endpoints for tracks, albums (with detail), and artists (with detail).\n\n**Paginated browse endpoints for tracks, albums (with detail), and artists (with detail).**\n\n## What Happened\n\nUpgraded TrackController to support pagination via Spring Data Pageable. Created AlbumController (paginated list + detail with tracks via EntityGraph) and ArtistController (paginated list + detail with albums via EntityGraph). Hit LazyInitializationException — resolved with jackson-datatype-hibernate6. Then hit MultipleBagFetchException — resolved by changing Artist.albums/tracks from List to Set.\n\n## Verification\n\nAll endpoints verified via curl: paginated albums, album detail with tracks, artists, artist detail with albums, sorted tracks, 404 for non-existent IDs.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `curl http://localhost:8080/api/albums?size=2` | 0 | ✅ pass | 200ms |\n| 2 | `curl http://localhost:8080/api/albums/1` | 0 | ✅ pass | 100ms |\n| 3 | `curl http://localhost:8080/api/artists/1` | 0 | ✅ pass | 100ms |\n| 4 | `curl http://localhost:8080/api/albums/999` | 0 | ✅ pass — 404 | 50ms |\n\n\n## Deviations\n\nAdded jackson-datatype-hibernate6 and JacksonConfig to handle lazy proxy serialization. Changed Artist collections from List to Set to fix MultipleBagFetchException.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/controller/AlbumController.java`\n- `musicode-server/src/main/java/com/musicode/controller/ArtistController.java`\n- `musicode-server/src/main/java/com/musicode/controller/TrackController.java`\n- `musicode-server/src/main/java/com/musicode/config/JacksonConfig.java`\n- `musicode-server/src/main/java/com/musicode/model/entity/Artist.java`\n",
+      "description": "Upgrade TrackController to support pagination and sorting. Create AlbumController with paginated album list and album detail (with tracks). Create ArtistController with paginated artist list and artist detail (with albums). Add necessary repository query methods.\n\nSteps:\n1. Add Spring Data Pageable support to repositories\n2. Upgrade TrackController: GET /api/tracks with page, size, sort params\n3. Create AlbumController: GET /api/albums (paginated), GET /api/albums/{id} (with tracks)\n4. Create ArtistController: GET /api/artists (paginated), GET /api/artists/{id} (with albums)\n5. Test all endpoints with curl",
+      "estimate": "1h",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/controller/TrackController.java",
+        "musicode-server/src/main/java/com/musicode/controller/AlbumController.java",
+        "musicode-server/src/main/java/com/musicode/controller/ArtistController.java",
+        "musicode-server/src/main/java/com/musicode/repository/TrackRepository.java",
+        "musicode-server/src/main/java/com/musicode/repository/AlbumRepository.java",
+        "musicode-server/src/main/java/com/musicode/repository/ArtistRepository.java"
+      ],
+      "verify": "curl http://localhost:8080/api/albums?page=0&size=10 returns paginated JSON; curl http://localhost:8080/api/albums/1 returns album with tracks array; curl http://localhost:8080/api/artists returns artist list; curl http://localhost:8080/api/tracks?sort=title,asc returns sorted tracks",
+      "inputs": [
+        "musicode-server/src/main/java/com/musicode/model/entity/Track.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/Album.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/Artist.java"
+      ],
+      "expected_output": [
+        "musicode-server/src/main/java/com/musicode/controller/AlbumController.java",
+        "musicode-server/src/main/java/com/musicode/controller/ArtistController.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M001",
+      "slice_id": "S02",
+      "id": "T02",
+      "title": "Cover art endpoint serves album JPGs with 7-day cache control.",
+      "status": "complete",
+      "one_liner": "Cover art endpoint serves album JPGs with 7-day cache control.",
+      "narrative": "Created CoverArtController with GET /api/covers/{albumId}. Uses CoverArtService to locate the JPG file on disk, returns it as image/jpeg with Cache-Control max-age=7 days. Returns 404 if no cover art exists for the album.",
+      "verification_result": "GET /api/covers/1 returns 200 image/jpeg (101KB) with Cache-Control: max-age=604800. GET /api/covers/999 returns 404.",
+      "duration": "",
+      "completed_at": "2026-03-30T09:06:35.853Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/controller/CoverArtController.java"
+      ],
+      "key_decisions": [
+        "Cache-Control max-age 7 days for cover art (covers don't change between scans)"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S02\nmilestone: M001\nkey_files:\n  - musicode-server/src/main/java/com/musicode/controller/CoverArtController.java\nkey_decisions:\n  - Cache-Control max-age 7 days for cover art (covers don't change between scans)\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-30T09:06:35.853Z\nblocker_discovered: false\n---\n\n# T02: Cover art endpoint serves album JPGs with 7-day cache control.\n\n**Cover art endpoint serves album JPGs with 7-day cache control.**\n\n## What Happened\n\nCreated CoverArtController with GET /api/covers/{albumId}. Uses CoverArtService to locate the JPG file on disk, returns it as image/jpeg with Cache-Control max-age=7 days. Returns 404 if no cover art exists for the album.\n\n## Verification\n\nGET /api/covers/1 returns 200 image/jpeg (101KB) with Cache-Control: max-age=604800. GET /api/covers/999 returns 404.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `curl -o /dev/null -w '%{http_code} %{content_type}' http://localhost:8080/api/covers/1` | 0 | ✅ pass — 200 image/jpeg 101KB | 100ms |\n| 2 | `curl -o /dev/null -w '%{http_code}' http://localhost:8080/api/covers/999` | 0 | ✅ pass — 404 | 50ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/controller/CoverArtController.java`\n",
+      "description": "Create endpoint to serve album cover art images. Uses CoverArtService to locate the file, returns image/jpeg with caching headers.\n\nSteps:\n1. Create CoverArtController with GET /api/covers/{albumId}\n2. Return image/jpeg with Cache-Control headers (covers don't change often)\n3. Return 404 if no cover art exists\n4. Test with curl and browser",
+      "estimate": "30m",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/controller/CoverArtController.java"
+      ],
+      "verify": "curl -o /dev/null -w '%{http_code} %{content_type}' http://localhost:8080/api/covers/1 returns 200 image/jpeg; curl for non-existent album returns 404",
+      "inputs": [
+        "musicode-server/src/main/java/com/musicode/service/CoverArtService.java"
+      ],
+      "expected_output": [
+        "musicode-server/src/main/java/com/musicode/controller/CoverArtController.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M001",
+      "slice_id": "S02",
+      "id": "T03",
+      "title": "Global search endpoint queries tracks, albums, and artists by title/name with LIKE.",
+      "status": "complete",
+      "one_liner": "Global search endpoint queries tracks, albums, and artists by title/name with LIKE.",
+      "narrative": "Created SearchController with GET /api/search?q= that queries tracks (by title), albums (by title), and artists (by name) using case-insensitive LIKE. Returns structured SearchResults DTO with three arrays. Empty or blank queries return empty arrays.",
+      "verification_result": "Search 'dark' returns 24 matches (tracks with Dark in title). Search 'echo' finds Echo Synth artist. Empty query returns empty arrays. Non-matching query returns empty arrays.",
+      "duration": "",
+      "completed_at": "2026-03-30T09:06:46.167Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/controller/SearchController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java"
+      ],
+      "key_decisions": [
+        "Search queries all three entity types (tracks, albums, artists) in parallel with LIKE queries",
+        "Empty query returns empty arrays rather than error"
+      ],
+      "full_summary_md": "---\nid: T03\nparent: S02\nmilestone: M001\nkey_files:\n  - musicode-server/src/main/java/com/musicode/controller/SearchController.java\n  - musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java\nkey_decisions:\n  - Search queries all three entity types (tracks, albums, artists) in parallel with LIKE queries\n  - Empty query returns empty arrays rather than error\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-30T09:06:46.167Z\nblocker_discovered: false\n---\n\n# T03: Global search endpoint queries tracks, albums, and artists by title/name with LIKE.\n\n**Global search endpoint queries tracks, albums, and artists by title/name with LIKE.**\n\n## What Happened\n\nCreated SearchController with GET /api/search?q= that queries tracks (by title), albums (by title), and artists (by name) using case-insensitive LIKE. Returns structured SearchResults DTO with three arrays. Empty or blank queries return empty arrays.\n\n## Verification\n\nSearch 'dark' returns 24 matches (tracks with Dark in title). Search 'echo' finds Echo Synth artist. Empty query returns empty arrays. Non-matching query returns empty arrays.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `curl 'http://localhost:8080/api/search?q=dark'` | 0 | ✅ pass — 24 matches | 100ms |\n| 2 | `curl 'http://localhost:8080/api/search?q=echo'` | 0 | ✅ pass — 1 artist | 50ms |\n| 3 | `curl 'http://localhost:8080/api/search?q='` | 0 | ✅ pass — empty arrays | 50ms |\n| 4 | `curl 'http://localhost:8080/api/search?q=zzzzz'` | 0 | ✅ pass — empty arrays | 50ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/controller/SearchController.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java`\n",
+      "description": "Create search endpoint that queries tracks, albums, and artists by a search term. Returns combined results.\n\nSteps:\n1. Add search query methods to repositories (LIKE queries on title/name)\n2. Create SearchController with GET /api/search?q=...\n3. Return structured response with tracks, albums, artists arrays\n4. Handle empty query and no results\n5. Test with curl",
+      "estimate": "45m",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/controller/SearchController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java",
+        "musicode-server/src/main/java/com/musicode/repository/TrackRepository.java",
+        "musicode-server/src/main/java/com/musicode/repository/AlbumRepository.java",
+        "musicode-server/src/main/java/com/musicode/repository/ArtistRepository.java"
+      ],
+      "verify": "curl 'http://localhost:8080/api/search?q=dark' returns JSON with matching tracks, albums, and artists; empty query returns empty arrays",
+      "inputs": [
+        "musicode-server/src/main/java/com/musicode/repository/TrackRepository.java",
+        "musicode-server/src/main/java/com/musicode/repository/AlbumRepository.java",
+        "musicode-server/src/main/java/com/musicode/repository/ArtistRepository.java"
+      ],
+      "expected_output": [
+        "musicode-server/src/main/java/com/musicode/controller/SearchController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java"
       ],
       "observability_impact": "",
       "full_plan_md": "",
@@ -763,6 +897,116 @@
       "verdict": "✅ pass — player bar visible with now-playing info and progress at 0:29/4:09",
       "duration_ms": 500,
       "created_at": "2026-03-30T08:26:45.390Z"
+    },
+    {
+      "id": 20,
+      "task_id": "T01",
+      "slice_id": "S02",
+      "milestone_id": "M001",
+      "command": "curl http://localhost:8080/api/albums?size=2",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 200,
+      "created_at": "2026-03-30T09:06:26.578Z"
+    },
+    {
+      "id": 21,
+      "task_id": "T01",
+      "slice_id": "S02",
+      "milestone_id": "M001",
+      "command": "curl http://localhost:8080/api/albums/1",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 100,
+      "created_at": "2026-03-30T09:06:26.578Z"
+    },
+    {
+      "id": 22,
+      "task_id": "T01",
+      "slice_id": "S02",
+      "milestone_id": "M001",
+      "command": "curl http://localhost:8080/api/artists/1",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 100,
+      "created_at": "2026-03-30T09:06:26.578Z"
+    },
+    {
+      "id": 23,
+      "task_id": "T01",
+      "slice_id": "S02",
+      "milestone_id": "M001",
+      "command": "curl http://localhost:8080/api/albums/999",
+      "exit_code": 0,
+      "verdict": "✅ pass — 404",
+      "duration_ms": 50,
+      "created_at": "2026-03-30T09:06:26.578Z"
+    },
+    {
+      "id": 24,
+      "task_id": "T02",
+      "slice_id": "S02",
+      "milestone_id": "M001",
+      "command": "curl -o /dev/null -w '%{http_code} %{content_type}' http://localhost:8080/api/covers/1",
+      "exit_code": 0,
+      "verdict": "✅ pass — 200 image/jpeg 101KB",
+      "duration_ms": 100,
+      "created_at": "2026-03-30T09:06:35.853Z"
+    },
+    {
+      "id": 25,
+      "task_id": "T02",
+      "slice_id": "S02",
+      "milestone_id": "M001",
+      "command": "curl -o /dev/null -w '%{http_code}' http://localhost:8080/api/covers/999",
+      "exit_code": 0,
+      "verdict": "✅ pass — 404",
+      "duration_ms": 50,
+      "created_at": "2026-03-30T09:06:35.853Z"
+    },
+    {
+      "id": 26,
+      "task_id": "T03",
+      "slice_id": "S02",
+      "milestone_id": "M001",
+      "command": "curl 'http://localhost:8080/api/search?q=dark'",
+      "exit_code": 0,
+      "verdict": "✅ pass — 24 matches",
+      "duration_ms": 100,
+      "created_at": "2026-03-30T09:06:46.167Z"
+    },
+    {
+      "id": 27,
+      "task_id": "T03",
+      "slice_id": "S02",
+      "milestone_id": "M001",
+      "command": "curl 'http://localhost:8080/api/search?q=echo'",
+      "exit_code": 0,
+      "verdict": "✅ pass — 1 artist",
+      "duration_ms": 50,
+      "created_at": "2026-03-30T09:06:46.167Z"
+    },
+    {
+      "id": 28,
+      "task_id": "T03",
+      "slice_id": "S02",
+      "milestone_id": "M001",
+      "command": "curl 'http://localhost:8080/api/search?q='",
+      "exit_code": 0,
+      "verdict": "✅ pass — empty arrays",
+      "duration_ms": 50,
+      "created_at": "2026-03-30T09:06:46.167Z"
+    },
+    {
+      "id": 29,
+      "task_id": "T03",
+      "slice_id": "S02",
+      "milestone_id": "M001",
+      "command": "curl 'http://localhost:8080/api/search?q=zzzzz'",
+      "exit_code": 0,
+      "verdict": "✅ pass — empty arrays",
+      "duration_ms": 50,
+      "created_at": "2026-03-30T09:06:46.167Z"
     }
   ]
 }

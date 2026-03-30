@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "artists")
@@ -24,10 +24,10 @@ public class Artist {
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @JsonIgnoreProperties({"artist", "tracks"})
-    private List<Album> albums = new ArrayList<>();
+    private Set<Album> albums = new HashSet<>();
 
     @OneToMany(mappedBy = "artist")
     @Builder.Default
     @JsonIgnoreProperties({"artist", "album"})
-    private List<Track> tracks = new ArrayList<>();
+    private Set<Track> tracks = new HashSet<>();
 }

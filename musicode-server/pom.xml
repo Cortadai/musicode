@@ -60,6 +60,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Jackson Hibernate module — handles lazy proxies gracefully -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-hibernate6</artifactId>
+        </dependency>
+
         <!-- Audio metadata -->
         <dependency>
             <groupId>net.jthink</groupId>
