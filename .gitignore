@@ -30,3 +30,10 @@ node_modules/
 
 # Background shell
 .bg-shell/
+
+# Session artifacts
+.artifacts/
+
+# Coverage reports
+musicode-ui/coverage/
+musicode-server/target/

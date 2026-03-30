@@ -18,7 +18,7 @@ export interface PlayerState {
   repeatMode: RepeatMode;
 }
 
-const initialState: PlayerState = {
+export const initialState: PlayerState = {
   currentTrack: null,
   queue: [],
   originalQueue: [],
@@ -33,7 +33,7 @@ const initialState: PlayerState = {
 
 // --- Actions ---
 
-type PlayerAction =
+export type PlayerAction =
   | { type: 'PLAY_TRACK'; track: Track; queue?: Track[]; queueIndex?: number }
   | { type: 'PAUSE' }
   | { type: 'RESUME' }
@@ -57,7 +57,7 @@ function shuffleArray<T>(arr: T[], keepIndex: number): { shuffled: T[]; newIndex
   return { shuffled: [current, ...rest], newIndex: 0 };
 }
 
-function playerReducer(state: PlayerState, action: PlayerAction): PlayerState {
+export function playerReducer(state: PlayerState, action: PlayerAction): PlayerState {
   switch (action.type) {
     case 'PLAY_TRACK': {
       const queue = action.queue ?? [action.track];
