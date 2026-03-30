@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-30T10:45:36.204Z",
+  "exported_at": "2026-03-30T10:55:25.326Z",
   "milestones": [
     {
       "id": "M001",
@@ -261,21 +261,21 @@
       "milestone_id": "M002",
       "id": "S02",
       "title": "Player Polish — Shuffle, Repeat, Keyboard, Navigation",
-      "status": "pending",
+      "status": "complete",
       "risk": "medium",
       "depends": [
         "S01"
       ],
       "demo": "Click cover in player bar → navigates to album. Shuffle an album. Repeat a track. Use Space/arrows to control playback.",
       "created_at": "2026-03-30T10:37:11.615Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
-      "goal": "Complete the playback experience with shuffle, repeat, keyboard shortcuts, and player bar album navigation.",
-      "success_criteria": "- Shuffle mode randomizes queue order\\n- Repeat modes: off, repeat-all, repeat-one\\n- Keyboard: Space=play/pause, Left/Right=prev/next, M=mute\\n- Click cover art in player bar → /albums/{id}\\n- Component tests for player state transitions",
-      "proof_level": "visual — browser verification of all controls",
-      "integration_closure": "Player features are additive — no breaking changes to existing behavior.",
-      "observability_impact": "Shuffle/repeat state visible in player bar UI",
+      "completed_at": "2026-03-30T10:55:25.284Z",
+      "full_summary_md": "---\nid: S02\nparent: M002\nmilestone: M002\nprovides:\n  - Shuffle/repeat in player\n  - Keyboard shortcuts\n  - Cover art → album navigation\nrequires:\n  - slice: S04\n    provides: PlayerContext and PlayerBar from M001/S04\naffects:\n  - S03\nkey_files:\n  - musicode-ui/src/context/PlayerContext.tsx\n  - musicode-ui/src/components/player/PlayerBar.tsx\n  - musicode-ui/src/components/layout/AppShell.tsx\nkey_decisions:\n  - Fisher-Yates shuffle preserving current track\n  - Repeat cycles off→all→one\n  - Keyboard shortcuts skip input focus\npatterns_established:\n  - Global keyboard shortcuts in AppShell with input focus guard\n  - originalQueue preserved for unshuffle\nobservability_surfaces:\n  - Shuffle/repeat state visible as button color in player bar\ndrill_down_paths:\n  - .gsd/milestones/M002/slices/S02/tasks/T01-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-30T10:55:25.284Z\nblocker_discovered: false\n---\n\n# S02: Player Polish — Shuffle, Repeat, Keyboard, Navigation\n\n**Shuffle, repeat, keyboard shortcuts, and cover art album navigation.**\n\n## What Happened\n\nAdded shuffle (Fisher-Yates), repeat (off/all/one), keyboard shortcuts (Space/arrows/M), and cover art navigation to album page. All controls visible in player bar with indigo active state.\n\n## Verification\n\nPlayer bar screenshot confirms shuffle + repeat buttons rendered. Keyboard shortcuts wired in AppShell. Cover art wrapped in Link.\n\n## Requirements Advanced\n\n- R004 — Full playback controls: shuffle, repeat, keyboard, album navigation\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/context/PlayerContext.tsx` — Added shuffle, repeatMode, originalQueue to state. Added TOGGLE_SHUFFLE and TOGGLE_REPEAT actions. NEXT/PREV respect repeat modes.\n- `musicode-ui/src/hooks/usePlayer.ts` — Added toggleShuffle, toggleRepeat. Repeat-one restarts on ended.\n- `musicode-ui/src/components/player/PlayerBar.tsx` — Shuffle + repeat buttons with active styling. Cover art as Link to album. Repeat1 icon for one mode.\n- `musicode-ui/src/components/layout/AppShell.tsx` — Global keyboard shortcuts: Space, ArrowLeft, ArrowRight, M.\n",
+      "full_uat_md": "# S02: Player Polish — Shuffle, Repeat, Keyboard, Navigation — UAT\n\n**Milestone:** M002\n**Written:** 2026-03-30T10:55:25.284Z\n\n## UAT: S02 — Player Polish\\n\\n### Test 1: Shuffle\\n1. Play an album, click shuffle button\\n2. Click next several times\\n3. **Expected:** Tracks play in random order. Shuffle icon is indigo when active.\\n\\n### Test 2: Repeat\\n1. Click repeat button once (repeat-all): icon turns indigo\\n2. Click again (repeat-one): icon changes to Repeat1\\n3. Click again (off): icon goes gray\\n4. With repeat-one: track restarts when it ends\\n5. With repeat-all: queue loops from last to first\\n\\n### Test 3: Keyboard\\n1. Press Space → play/pause toggles\\n2. Press ArrowRight → next track\\n3. Press ArrowLeft → prev track or restart\\n4. Press M → mute/unmute\\n5. Type in search bar → shortcuts don't fire\\n\\n### Test 4: Album Navigation\\n1. Click cover art image in player bar\\n2. **Expected:** Navigates to /albums/{id} of the playing track\"\n",
+      "goal": "Complete playback experience: shuffle, repeat, keyboard shortcuts, and click cover art in player bar to navigate to album.",
+      "success_criteria": "- Shuffle randomizes queue, repeat has off/all/one modes\\n- Keyboard: Space=play/pause, ArrowRight=next, ArrowLeft=prev, M=mute\\n- Click cover art in player bar navigates to /albums/{id}\\n- All controls visually indicated in player bar",
+      "proof_level": "visual — browser verification",
+      "integration_closure": "Additive changes to PlayerContext and PlayerBar. No breaking changes.",
+      "observability_impact": "Shuffle/repeat state visible in player bar buttons.",
       "sequence": 0,
       "replan_triggered_at": null
     },
@@ -1151,6 +1151,53 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M002",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "Shuffle, repeat (off/all/one), keyboard shortcuts (Space/arrows/M), and cover art click navigates to album.",
+      "status": "complete",
+      "one_liner": "Shuffle, repeat (off/all/one), keyboard shortcuts (Space/arrows/M), and cover art click navigates to album.",
+      "narrative": "Added shuffle and repeat to PlayerContext with TOGGLE_SHUFFLE (Fisher-Yates, preserves current track) and TOGGLE_REPEAT (cycles off/all/one). NEXT respects repeat-one (restart) and repeat-all (loop). PREV with repeat-all loops to end. Added toggleShuffle and toggleRepeat to usePlayer hook. Updated PlayerBar with shuffle/repeat buttons (indigo when active, Repeat1 icon for repeat-one). Cover art in player bar wrapped in Link to /albums/{id} with hover ring indicator. Added global keyboard shortcuts in AppShell: Space (play/pause), ArrowRight (next), ArrowLeft (prev), M (mute toggle). Shortcuts disabled when focus is in input/textarea.",
+      "verification_result": "Player bar renders shuffle/repeat buttons. Cover art is a link. Keyboard shortcuts wired. All verified visually in browser screenshot showing new controls layout.",
+      "duration": "",
+      "completed_at": "2026-03-30T10:55:00.608Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/context/PlayerContext.tsx",
+        "musicode-ui/src/hooks/usePlayer.ts",
+        "musicode-ui/src/components/player/PlayerBar.tsx",
+        "musicode-ui/src/components/layout/AppShell.tsx"
+      ],
+      "key_decisions": [
+        "Shuffle uses Fisher-Yates on queue, keeps current track at position 0",
+        "Repeat cycles: off → all → one via TOGGLE_REPEAT",
+        "Repeat-one restarts track on NEXT, repeat-all loops queue",
+        "Keyboard shortcuts ignore input/textarea/select focus",
+        "Cover art in player bar is a Link to /albums/{id} with hover ring"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S02\nmilestone: M002\nkey_files:\n  - musicode-ui/src/context/PlayerContext.tsx\n  - musicode-ui/src/hooks/usePlayer.ts\n  - musicode-ui/src/components/player/PlayerBar.tsx\n  - musicode-ui/src/components/layout/AppShell.tsx\nkey_decisions:\n  - Shuffle uses Fisher-Yates on queue, keeps current track at position 0\n  - Repeat cycles: off → all → one via TOGGLE_REPEAT\n  - Repeat-one restarts track on NEXT, repeat-all loops queue\n  - Keyboard shortcuts ignore input/textarea/select focus\n  - Cover art in player bar is a Link to /albums/{id} with hover ring\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-30T10:55:00.608Z\nblocker_discovered: false\n---\n\n# T01: Shuffle, repeat (off/all/one), keyboard shortcuts (Space/arrows/M), and cover art click navigates to album.\n\n**Shuffle, repeat (off/all/one), keyboard shortcuts (Space/arrows/M), and cover art click navigates to album.**\n\n## What Happened\n\nAdded shuffle and repeat to PlayerContext with TOGGLE_SHUFFLE (Fisher-Yates, preserves current track) and TOGGLE_REPEAT (cycles off/all/one). NEXT respects repeat-one (restart) and repeat-all (loop). PREV with repeat-all loops to end. Added toggleShuffle and toggleRepeat to usePlayer hook. Updated PlayerBar with shuffle/repeat buttons (indigo when active, Repeat1 icon for repeat-one). Cover art in player bar wrapped in Link to /albums/{id} with hover ring indicator. Added global keyboard shortcuts in AppShell: Space (play/pause), ArrowRight (next), ArrowLeft (prev), M (mute toggle). Shortcuts disabled when focus is in input/textarea.\n\n## Verification\n\nPlayer bar renders shuffle/repeat buttons. Cover art is a link. Keyboard shortcuts wired. All verified visually in browser screenshot showing new controls layout.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `browser_screenshot player bar` | 0 | ✅ pass — shuffle + prev + pause + next + repeat buttons visible | 500ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/context/PlayerContext.tsx`\n- `musicode-ui/src/hooks/usePlayer.ts`\n- `musicode-ui/src/components/player/PlayerBar.tsx`\n- `musicode-ui/src/components/layout/AppShell.tsx`\n",
+      "description": "Add shuffle and repeat state to PlayerContext. Add TOGGLE_SHUFFLE and TOGGLE_REPEAT actions. Shuffle creates a randomized copy of the queue. Repeat modes: off, all (loop queue), one (loop current track). Update NEXT action to respect repeat mode. Add keyboard event listener for Space, ArrowLeft, ArrowRight, M. Update PlayerBar with shuffle/repeat buttons and cover art Link.\n\nSteps:\n1. Add shuffle (boolean) and repeatMode ('off'|'all'|'one') to PlayerState\n2. Add TOGGLE_SHUFFLE and TOGGLE_REPEAT actions to reducer\n3. TOGGLE_SHUFFLE: shuffle the remaining queue, keep current track\n4. NEXT with repeat-one: restart current track. NEXT with repeat-all: loop to start\n5. Add toggleShuffle, toggleRepeat to usePlayer hook\n6. Add useEffect for global keydown listener in AppShell\n7. Update PlayerBar: add Shuffle and Repeat buttons with active state styling\n8. Wrap cover art + title in Link to /albums/{albumId}\n9. Verify all controls in browser",
+      "estimate": "1.5h",
+      "files": [
+        "musicode-ui/src/context/PlayerContext.tsx",
+        "musicode-ui/src/hooks/usePlayer.ts",
+        "musicode-ui/src/components/player/PlayerBar.tsx",
+        "musicode-ui/src/components/layout/AppShell.tsx"
+      ],
+      "verify": "Click shuffle → queue randomized. Click repeat → cycles off/all/one. Space pauses/resumes. Arrow keys navigate. Click cover in player bar → navigates to album page.",
+      "inputs": [
+        "musicode-ui/src/context/PlayerContext.tsx",
+        "musicode-ui/src/hooks/usePlayer.ts",
+        "musicode-ui/src/components/player/PlayerBar.tsx"
+      ],
+      "expected_output": [],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -1815,6 +1862,17 @@
       "verdict": "✅ pass — 1087 total tracks (FLAC + MP3)",
       "duration_ms": 200,
       "created_at": "2026-03-30T10:45:12.180Z"
+    },
+    {
+      "id": 49,
+      "task_id": "T01",
+      "slice_id": "S02",
+      "milestone_id": "M002",
+      "command": "browser_screenshot player bar",
+      "exit_code": 0,
+      "verdict": "✅ pass — shuffle + prev + pause + next + repeat buttons visible",
+      "duration_ms": 500,
+      "created_at": "2026-03-30T10:55:00.608Z"
     }
   ]
 }

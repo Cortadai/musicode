@@ -1,9 +1,46 @@
+import { useEffect } from 'react';
 import { Outlet } from 'react-router';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import PlayerBar from '../player/PlayerBar';
+import { usePlayer } from '../../hooks/usePlayer';
 
 export default function AppShell() {
+  const { isPlaying, currentTrack, pause, resume, next, prev, setVolume, volume } = usePlayer();
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Don't capture keys when typing in inputs
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      switch (e.key) {
+        case ' ':
+          e.preventDefault();
+          if (!currentTrack) return;
+          isPlaying ? pause() : resume();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          next();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          prev();
+          break;
+        case 'm':
+        case 'M':
+          e.preventDefault();
+          setVolume(volume > 0 ? 0 : 0.8);
+          break;
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPlaying, currentTrack, pause, resume, next, prev, setVolume, volume]);
+
   return (
     <div className="h-screen flex bg-zinc-950 text-zinc-100">
       <Sidebar />

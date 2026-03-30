@@ -1,7 +1,12 @@
 import { usePlayer } from '../../hooks/usePlayer';
 import { getCoverUrl } from '../../api/albums';
 import { formatDuration } from '../../utils/format';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Disc3 } from 'lucide-react';
+import { Link } from 'react-router';
+import {
+  Play, Pause, SkipBack, SkipForward,
+  Volume2, VolumeX, Disc3,
+  Shuffle, Repeat, Repeat1,
+} from 'lucide-react';
 import { useCallback, useRef } from 'react';
 
 export default function PlayerBar() {
@@ -13,12 +18,16 @@ export default function PlayerBar() {
     volume,
     queue,
     queueIndex,
+    shuffle,
+    repeatMode,
     pause,
     resume,
     next,
     prev,
     seek,
     setVolume,
+    toggleShuffle,
+    toggleRepeat,
   } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
@@ -49,14 +58,20 @@ export default function PlayerBar() {
   const albumId = currentTrack.album?.id;
   const hasCover = currentTrack.album?.hasCoverArt;
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-  const hasNext = queueIndex < queue.length - 1;
-  const hasPrev = queueIndex > 0 || currentTime > 3;
+  const hasNext = queueIndex < queue.length - 1 || repeatMode === 'all';
+  const hasPrev = queueIndex > 0 || currentTime > 3 || repeatMode === 'all';
+
+  const RepeatIcon = repeatMode === 'one' ? Repeat1 : Repeat;
 
   return (
     <div className="h-20 bg-zinc-900 border-t border-zinc-800 flex items-center px-4 gap-4 shrink-0">
-      {/* Track info */}
+      {/* Track info — cover art links to album */}
       <div className="flex items-center gap-3 w-56 shrink-0">
-        <div className="w-12 h-12 rounded-lg overflow-hidden bg-zinc-800 shrink-0">
+        <Link
+          to={albumId ? `/albums/${albumId}` : '#'}
+          className="w-12 h-12 rounded-lg overflow-hidden bg-zinc-800 shrink-0 hover:ring-2 hover:ring-indigo-500/50 transition-all"
+          title="Go to album"
+        >
           {hasCover && albumId ? (
             <img src={getCoverUrl(albumId)} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -64,7 +79,7 @@ export default function PlayerBar() {
               <Disc3 className="w-6 h-6 text-zinc-600" />
             </div>
           )}
-        </div>
+        </Link>
         <div className="min-w-0">
           <p className="text-sm font-medium text-zinc-100 truncate">{currentTrack.title}</p>
           <p className="text-xs text-zinc-500 truncate">
@@ -76,7 +91,14 @@ export default function PlayerBar() {
       {/* Controls + progress */}
       <div className="flex-1 flex flex-col items-center gap-1 max-w-2xl mx-auto">
         {/* Buttons */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={toggleShuffle}
+            className={`transition-colors ${shuffle ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            title={shuffle ? 'Shuffle on' : 'Shuffle off'}
+          >
+            <Shuffle className="w-4 h-4" />
+          </button>
           <button
             onClick={prev}
             disabled={!hasPrev}
@@ -96,6 +118,13 @@ export default function PlayerBar() {
             className="text-zinc-400 hover:text-zinc-100 disabled:text-zinc-700 transition-colors"
           >
             <SkipForward className="w-4 h-4" />
+          </button>
+          <button
+            onClick={toggleRepeat}
+            className={`transition-colors ${repeatMode !== 'off' ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            title={`Repeat: ${repeatMode}`}
+          >
+            <RepeatIcon className="w-4 h-4" />
           </button>
         </div>
 

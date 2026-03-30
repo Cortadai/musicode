@@ -14,7 +14,7 @@ export function usePlayer() {
   const dispatch = usePlayerDispatch();
   const ownerSymbol = useRef(Symbol('player-owner'));
 
-  // Only one usePlayer instance wires audio events (the first to mount — PlayerBar)
+  // Only one usePlayer instance wires audio events
   useEffect(() => {
     if (audioOwnerRef !== null) return;
     audioOwnerRef = ownerSymbol.current;
@@ -43,12 +43,12 @@ export function usePlayer() {
     };
   }, [dispatch]);
 
-  // Sync volume — safe to run from any instance
+  // Sync volume
   useEffect(() => {
     globalAudio.volume = state.volume;
   }, [state.volume]);
 
-  // Load and play when currentTrack changes — only from the owner
+  // Load and play when currentTrack changes
   useEffect(() => {
     if (audioOwnerRef !== ownerSymbol.current) return;
     if (!state.currentTrack) return;
@@ -68,7 +68,7 @@ export function usePlayer() {
     }
   }, [state.currentTrack?.id]);
 
-  // Sync play/pause — only from the owner
+  // Sync play/pause
   useEffect(() => {
     if (audioOwnerRef !== ownerSymbol.current) return;
     if (!state.currentTrack) return;
@@ -80,11 +80,14 @@ export function usePlayer() {
     }
   }, [state.isPlaying]);
 
-  // Handle PREV restarting current track — only from the owner
+  // Handle PREV/repeat-one restarting current track
   useEffect(() => {
     if (audioOwnerRef !== ownerSymbol.current) return;
     if (state.currentTime === 0 && globalAudio.currentTime > 0 && state.currentTrack) {
       globalAudio.currentTime = 0;
+      if (state.isPlaying) {
+        globalAudio.play().catch(() => {});
+      }
     }
   }, [state.currentTime]);
 
@@ -112,6 +115,8 @@ export function usePlayer() {
   const resume = useCallback(() => dispatch({ type: 'RESUME' }), [dispatch]);
   const next = useCallback(() => dispatch({ type: 'NEXT' }), [dispatch]);
   const prev = useCallback(() => dispatch({ type: 'PREV' }), [dispatch]);
+  const toggleShuffle = useCallback(() => dispatch({ type: 'TOGGLE_SHUFFLE' }), [dispatch]);
+  const toggleRepeat = useCallback(() => dispatch({ type: 'TOGGLE_REPEAT' }), [dispatch]);
 
   const seek = useCallback(
     (time: number) => {
@@ -136,5 +141,7 @@ export function usePlayer() {
     prev,
     seek,
     setVolume,
+    toggleShuffle,
+    toggleRepeat,
   };
 }
