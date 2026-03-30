@@ -20,7 +20,11 @@ export default function AlbumDetailPage() {
   if (isLoading) return <Spinner text="Loading album…" />;
   if (error || !album) return <p className="text-red-400">Album not found</p>;
 
-  const tracks = album.tracks ?? [];
+  const tracks = (album.tracks ?? []).map(t => ({
+    ...t,
+    album: { id: album.id, title: album.title, year: album.year, hasCoverArt: album.hasCoverArt },
+    artist: t.artist ?? album.artist,
+  }));
 
   return (
     <div>

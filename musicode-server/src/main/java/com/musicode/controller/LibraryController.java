@@ -84,4 +84,11 @@ public class LibraryController {
     public ScanStatus getScanStatus() {
         return libraryScanService.getStatus();
     }
+
+    @PostMapping("/cleanup")
+    public ResponseEntity<?> cleanupOrphans() {
+        int removed = libraryScanService.removeOrphanTracks();
+        log.info("Cleanup complete: {} orphan tracks removed", removed);
+        return ResponseEntity.ok(Map.of("removed", removed));
+    }
 }

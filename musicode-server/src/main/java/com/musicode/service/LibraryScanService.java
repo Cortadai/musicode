@@ -231,4 +231,21 @@ public class LibraryScanService {
         scanStatus.setStartedAt(null);
         scanStatus.setCompletedAt(null);
     }
+
+    /**
+     * Remove tracks whose files no longer exist on disk.
+     */
+    public int removeOrphanTracks() {
+        List<Track> allTracks = trackRepository.findAll();
+        int removed = 0;
+        for (Track track : allTracks) {
+            Path path = Paths.get(track.getFilePath());
+            if (!Files.exists(path)) {
+                log.debug("Removing orphan track: {} ({})", track.getTitle(), track.getFilePath());
+                trackRepository.delete(track);
+                removed++;
+            }
+        }
+        return removed;
+    }
 }
