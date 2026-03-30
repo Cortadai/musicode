@@ -1,90 +1,96 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { usePlayerState, usePlayerDispatch } from '../context/PlayerContext';
 import type { Track } from '../types';
+
+// Single global Audio element — shared across all usePlayer() calls
+const globalAudio = new Audio();
+globalAudio.preload = 'metadata';
+
+// Track which component instance owns the audio event wiring
+let audioOwnerRef: symbol | null = null;
 
 export function usePlayer() {
   const state = usePlayerState();
   const dispatch = usePlayerDispatch();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ownerSymbol = useRef(Symbol('player-owner'));
 
-  // Create audio element once
-  if (!audioRef.current) {
-    audioRef.current = new Audio();
-    audioRef.current.preload = 'metadata';
-  }
-
-  const audio = audioRef.current;
-
-  // Sync volume
+  // Only one usePlayer instance wires audio events (the first to mount — PlayerBar)
   useEffect(() => {
-    audio.volume = state.volume;
-  }, [audio, state.volume]);
+    if (audioOwnerRef !== null) return;
+    audioOwnerRef = ownerSymbol.current;
 
-  // Wire audio events
-  useEffect(() => {
     const onTimeUpdate = () => {
-      dispatch({ type: 'SET_TIME', time: audio.currentTime });
+      dispatch({ type: 'SET_TIME', time: globalAudio.currentTime });
     };
     const onLoadedMetadata = () => {
-      dispatch({ type: 'SET_DURATION', duration: audio.duration });
+      dispatch({ type: 'SET_DURATION', duration: globalAudio.duration });
     };
     const onEnded = () => {
       dispatch({ type: 'NEXT' });
     };
 
-    audio.addEventListener('timeupdate', onTimeUpdate);
-    audio.addEventListener('loadedmetadata', onLoadedMetadata);
-    audio.addEventListener('ended', onEnded);
+    globalAudio.addEventListener('timeupdate', onTimeUpdate);
+    globalAudio.addEventListener('loadedmetadata', onLoadedMetadata);
+    globalAudio.addEventListener('ended', onEnded);
 
     return () => {
-      audio.removeEventListener('timeupdate', onTimeUpdate);
-      audio.removeEventListener('loadedmetadata', onLoadedMetadata);
-      audio.removeEventListener('ended', onEnded);
+      globalAudio.removeEventListener('timeupdate', onTimeUpdate);
+      globalAudio.removeEventListener('loadedmetadata', onLoadedMetadata);
+      globalAudio.removeEventListener('ended', onEnded);
+      if (audioOwnerRef === ownerSymbol.current) {
+        audioOwnerRef = null;
+      }
     };
-  }, [audio, dispatch]);
+  }, [dispatch]);
 
-  // Load and play when currentTrack changes
+  // Sync volume — safe to run from any instance
   useEffect(() => {
+    globalAudio.volume = state.volume;
+  }, [state.volume]);
+
+  // Load and play when currentTrack changes — only from the owner
+  useEffect(() => {
+    if (audioOwnerRef !== ownerSymbol.current) return;
     if (!state.currentTrack) return;
 
     const src = `/api/stream/${state.currentTrack.id}`;
-    if (audio.src !== window.location.origin + src) {
-      audio.src = src;
-      audio.load();
+    const fullSrc = window.location.origin + src;
+
+    if (globalAudio.src !== fullSrc) {
+      globalAudio.src = src;
+      globalAudio.load();
     }
 
     if (state.isPlaying) {
-      audio.play().catch((err) => {
+      globalAudio.play().catch((err) => {
         console.error('Playback error:', err);
       });
     }
-  }, [audio, state.currentTrack, state.currentTrack?.id]);
+  }, [state.currentTrack?.id]);
 
-  // Sync play/pause state
+  // Sync play/pause — only from the owner
   useEffect(() => {
+    if (audioOwnerRef !== ownerSymbol.current) return;
     if (!state.currentTrack) return;
-    if (state.isPlaying) {
-      audio.play().catch(() => {});
-    } else {
-      audio.pause();
-    }
-  }, [audio, state.isPlaying, state.currentTrack]);
 
-  // Handle PREV restarting current track
-  useEffect(() => {
-    if (state.currentTime === 0 && audio.currentTime > 0 && state.currentTrack) {
-      audio.currentTime = 0;
+    if (state.isPlaying) {
+      globalAudio.play().catch(() => {});
+    } else {
+      globalAudio.pause();
     }
-  }, [audio, state.currentTime, state.currentTrack]);
+  }, [state.isPlaying]);
+
+  // Handle PREV restarting current track — only from the owner
+  useEffect(() => {
+    if (audioOwnerRef !== ownerSymbol.current) return;
+    if (state.currentTime === 0 && globalAudio.currentTime > 0 && state.currentTrack) {
+      globalAudio.currentTime = 0;
+    }
+  }, [state.currentTime]);
 
   const playTrack = useCallback(
     (track: Track, queue?: Track[], queueIndex?: number) => {
-      dispatch({
-        type: 'PLAY_TRACK',
-        track,
-        queue,
-        queueIndex,
-      });
+      dispatch({ type: 'PLAY_TRACK', track, queue, queueIndex });
     },
     [dispatch]
   );
@@ -109,16 +115,14 @@ export function usePlayer() {
 
   const seek = useCallback(
     (time: number) => {
-      audio.currentTime = time;
+      globalAudio.currentTime = time;
       dispatch({ type: 'SET_TIME', time });
     },
-    [audio, dispatch]
+    [dispatch]
   );
 
   const setVolume = useCallback(
-    (volume: number) => {
-      dispatch({ type: 'SET_VOLUME', volume });
-    },
+    (volume: number) => dispatch({ type: 'SET_VOLUME', volume }),
     [dispatch]
   );
 

@@ -25,3 +25,4 @@
 {"cmd":"complete-task","params":{"milestoneId":"M001","sliceId":"S04","taskId":"T02"},"ts":"2026-03-30T09:33:59.580Z","actor":"agent","hash":"3b075142c7eb0af2","session_id":"1aae0052-c15c-4f11-b769-87a5ce1dded2"}
 {"cmd":"complete-task","params":{"milestoneId":"M001","sliceId":"S04","taskId":"T03"},"ts":"2026-03-30T09:34:13.411Z","actor":"agent","hash":"ce24635459849923","session_id":"1aae0052-c15c-4f11-b769-87a5ce1dded2"}
 {"cmd":"complete-slice","params":{"milestoneId":"M001","sliceId":"S04"},"ts":"2026-03-30T09:34:42.249Z","actor":"agent","hash":"293d4c6cc947af64","session_id":"1aae0052-c15c-4f11-b769-87a5ce1dded2"}
+{"cmd":"reassess-roadmap","params":{"milestoneId":"M001","completedSliceId":"S04"},"ts":"2026-03-30T09:34:55.826Z","actor":"agent","hash":"1963dd4bc831764f","session_id":"1aae0052-c15c-4f11-b769-87a5ce1dded2"}
