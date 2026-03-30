@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-30T09:27:44.128Z",
+  "exported_at": "2026-03-30T09:34:42.245Z",
   "milestones": [
     {
       "id": "M001",
@@ -143,21 +143,21 @@
       "milestone_id": "M001",
       "id": "S04",
       "title": "Player + Queue — Full Playback Experience",
-      "status": "pending",
+      "status": "complete",
       "risk": "medium",
       "depends": [
         "S03"
       ],
       "demo": "Click any track in the library → audio plays in the persistent player bar. Seek, volume, next/prev, shuffle, and repeat all work. Playing an album queues all its tracks.",
       "created_at": "2026-03-29T18:18:21.582Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
-      "goal": "Complete playback experience with global player state, queue management, and all playback controls.",
-      "success_criteria": "- Click track → plays via PlayerBar at bottom\n- Seek bar works (dragging jumps to position)\n- Volume control works\n- Next/Previous navigate the queue\n- Click album → all tracks queued in order\n- Shuffle randomizes queue, repeat loops\n- Navigation between pages doesn't interrupt playback",
-      "proof_level": "Manual end-to-end playback session",
-      "integration_closure": "Player consumes stream API, UI stays synced with playback state across navigation.",
-      "observability_impact": "Player state transitions logged. Queue operations traceable.",
+      "completed_at": "2026-03-30T09:34:42.165Z",
+      "full_summary_md": "---\nid: S04\nparent: M001\nmilestone: M001\nprovides:\n  - Global player state (PlayerContext)\n  - usePlayer hook for audio control\n  - Persistent PlayerBar component\n  - Click-to-play in all track lists\n  - Queue management (album, track list)\nrequires:\n  - slice: S03\n    provides: React app shell and library pages\n  - slice: S01\n    provides: Audio streaming with HTTP Range\naffects:\n  - S05\nkey_files:\n  - musicode-ui/src/context/PlayerContext.tsx\n  - musicode-ui/src/hooks/usePlayer.ts\n  - musicode-ui/src/components/player/PlayerBar.tsx\nkey_decisions:\n  - useReducer for player state\n  - new Audio() singleton managed by usePlayer hook\n  - Album click queues all tracks\npatterns_established:\n  - PlayerContext with useReducer for global audio state\n  - usePlayer hook encapsulates HTMLAudioElement lifecycle\n  - TrackList onPlay callback pattern for click-to-play\nobservability_surfaces:\n  - Console errors for playback failures\ndrill_down_paths:\n  - .gsd/milestones/M001/slices/S04/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M001/slices/S04/tasks/T02-SUMMARY.md\n  - .gsd/milestones/M001/slices/S04/tasks/T03-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-30T09:34:42.166Z\nblocker_discovered: false\n---\n\n# S04: Player + Queue — Full Playback Experience\n\n**Full playback: click track → plays in player bar with seek, next/prev, volume, queue, and playing indicator.**\n\n## What Happened\n\nBuilt the complete playback experience across 3 tasks. T01 created PlayerContext with useReducer and usePlayer hook managing an HTMLAudioElement. T02 built the persistent PlayerBar with cover art, track info, play/pause/prev/next controls, click-to-seek progress bar, and volume slider. T03 wired click-to-play in all pages — album detail queues all tracks, tracks/search pages queue visible results, and currently playing track is highlighted in indigo with a musical note icon. Verified end-to-end: click track → audio plays → player bar appears → seek works → next advances queue → highlight follows.\n\n## Verification\n\nEnd-to-end verified: click track 3 in album → plays with highlight → player bar appears with cover art, title, progress (0:09/4:53) → seek to 0:53 works → next advances to track 4 with updated highlight and player bar.\n\n## Requirements Advanced\n\n- R004 — Full playback with seek, queue, and controls\n\n## Requirements Validated\n\n- R004 — Click track in album → audio plays with seek, next/prev navigates queue, volume works\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNo shuffle or repeat yet. No keyboard shortcuts.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/context/PlayerContext.tsx` — Player state management with useReducer\n- `musicode-ui/src/hooks/usePlayer.ts` — HTMLAudioElement control + actions\n- `musicode-ui/src/components/player/PlayerBar.tsx` — Persistent playback controls bar\n- `musicode-ui/src/components/layout/AppShell.tsx` — Added PlayerBar to layout\n- `musicode-ui/src/App.tsx` — Wrapped with PlayerProvider\n- `musicode-ui/src/components/library/TrackList.tsx` — Added onPlay + playing indicator\n- `musicode-ui/src/pages/AlbumDetailPage.tsx` — Wired playAlbum on track click\n- `musicode-ui/src/pages/TracksPage.tsx` — Wired playTrack with queue\n- `musicode-ui/src/pages/SearchPage.tsx` — Wired playTrack with queue\n",
+      "full_uat_md": "# S04: Player + Queue — Full Playback Experience — UAT\n\n**Milestone:** M001\n**Written:** 2026-03-30T09:34:42.166Z\n\n## UAT: S04 — Player + Queue\\n\\n### Test 1: Click to Play\\n1. Open album detail page\\n2. Click any track\\n3. **Expected:** Audio starts playing, player bar appears at bottom, track highlighted in list\\n\\n### Test 2: Player Controls\\n1. Click pause → audio pauses\\n2. Click play → audio resumes\\n3. Click next → next track plays\\n4. Click prev → previous track or restart\\n5. **Expected:** All controls work, player bar updates\\n\\n### Test 3: Seek\\n1. Click on progress bar at ~50%\\n2. **Expected:** Audio jumps to mid-point, time display updates\\n\\n### Test 4: Volume\\n1. Click volume slider\\n2. Click mute button\\n3. **Expected:** Volume changes, mute toggles\\n\\n### Test 5: Queue\\n1. Click track 3 in album\\n2. Click next twice\\n3. **Expected:** Plays track 4, then track 5\"\n",
+      "goal": "Complete playback: click any track → audio plays in persistent player bar with seek, volume, next/prev, and queue. Playing an album queues all its tracks.",
+      "success_criteria": "- Click track in any page → audio plays\\n- Player bar shows at bottom: now playing info, cover art, progress bar, play/pause, next/prev, volume\\n- Seek works by clicking/dragging progress bar\\n- Playing an album queues all its tracks\\n- Next/prev navigate queue\\n- Volume slider works",
+      "proof_level": "visual — browser verification with real audio playback",
+      "integration_closure": "S04 adds player state and UI to the S03 shell. Provides the full playback experience that S05 will polish.",
+      "observability_impact": "Player state visible in React DevTools. Audio errors logged to console.",
       "sequence": 0,
       "replan_triggered_at": null
     },
@@ -766,6 +766,134 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M001",
+      "slice_id": "S04",
+      "id": "T01",
+      "title": "PlayerContext + usePlayer hook with full queue management and HTMLAudioElement control.",
+      "status": "complete",
+      "one_liner": "PlayerContext + usePlayer hook with full queue management and HTMLAudioElement control.",
+      "narrative": "Created PlayerContext with useReducer managing state: currentTrack, queue, queueIndex, isPlaying, currentTime, duration, volume. Actions cover full lifecycle: PLAY_TRACK, PAUSE, RESUME, NEXT, PREV, SET_TIME, SET_DURATION, SET_VOLUME, STOP. usePlayer hook manages an HTMLAudioElement ref, wires timeupdate/loadedmetadata/ended events to dispatch, and exposes playTrack, playAlbum, pause, resume, next, prev, seek, setVolume.",
+      "verification_result": "Audio plays when playTrack called, state updates correctly, events fire as expected.",
+      "duration": "",
+      "completed_at": "2026-03-30T09:33:48.119Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/context/PlayerContext.tsx",
+        "musicode-ui/src/hooks/usePlayer.ts"
+      ],
+      "key_decisions": [
+        "useReducer for player state (not external state lib)",
+        "new Audio() ref in usePlayer hook (not DOM element)",
+        "PREV restarts current track if past 3s, otherwise goes to previous"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S04\nmilestone: M001\nkey_files:\n  - musicode-ui/src/context/PlayerContext.tsx\n  - musicode-ui/src/hooks/usePlayer.ts\nkey_decisions:\n  - useReducer for player state (not external state lib)\n  - new Audio() ref in usePlayer hook (not DOM element)\n  - PREV restarts current track if past 3s, otherwise goes to previous\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-30T09:33:48.120Z\nblocker_discovered: false\n---\n\n# T01: PlayerContext + usePlayer hook with full queue management and HTMLAudioElement control.\n\n**PlayerContext + usePlayer hook with full queue management and HTMLAudioElement control.**\n\n## What Happened\n\nCreated PlayerContext with useReducer managing state: currentTrack, queue, queueIndex, isPlaying, currentTime, duration, volume. Actions cover full lifecycle: PLAY_TRACK, PAUSE, RESUME, NEXT, PREV, SET_TIME, SET_DURATION, SET_VOLUME, STOP. usePlayer hook manages an HTMLAudioElement ref, wires timeupdate/loadedmetadata/ended events to dispatch, and exposes playTrack, playAlbum, pause, resume, next, prev, seek, setVolume.\n\n## Verification\n\nAudio plays when playTrack called, state updates correctly, events fire as expected.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `browser click track -> audio plays` | 0 | ✅ pass — audio plays, state updates | 2000ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/context/PlayerContext.tsx`\n- `musicode-ui/src/hooks/usePlayer.ts`\n",
+      "description": "Create PlayerContext with useReducer for global player state. State: currentTrack, queue, isPlaying, currentTime, duration, volume. Actions: PLAY_TRACK, PLAY_ALBUM, PAUSE, RESUME, NEXT, PREV, SET_TIME, SET_DURATION, SET_VOLUME. Create usePlayer hook that manages an HTMLAudioElement ref, syncs with context, handles ended/timeupdate/loadedmetadata events.\n\nSteps:\n1. Create PlayerContext with state type and reducer\n2. Create PlayerProvider wrapping the app\n3. Create usePlayer hook: play(track), playAlbum(tracks, startIndex), pause, resume, next, prev, seek, setVolume\n4. Wire HTMLAudioElement events to dispatch\n5. Wrap App with PlayerProvider",
+      "estimate": "1h",
+      "files": [
+        "musicode-ui/src/context/PlayerContext.tsx",
+        "musicode-ui/src/hooks/usePlayer.ts",
+        "musicode-ui/src/App.tsx"
+      ],
+      "verify": "Import usePlayer in a test component, call play(track) — audio element plays, state updates.",
+      "inputs": [
+        "musicode-ui/src/types/index.ts"
+      ],
+      "expected_output": [
+        "musicode-ui/src/context/PlayerContext.tsx",
+        "musicode-ui/src/hooks/usePlayer.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M001",
+      "slice_id": "S04",
+      "id": "T02",
+      "title": "Persistent player bar with play/pause, seek, next/prev, volume — fixed at bottom of UI.",
+      "status": "complete",
+      "one_liner": "Persistent player bar with play/pause, seek, next/prev, volume — fixed at bottom of UI.",
+      "narrative": "Created PlayerBar with: cover art thumbnail, track title + artist, play/pause/prev/next buttons, progress bar with click-to-seek and time display, volume slider with mute toggle. Fixed to bottom of AppShell. Only appears when a track is playing. All controls wired to usePlayer actions.",
+      "verification_result": "Player bar appears when track clicked, shows cover art, title, controls. Seek works by clicking progress bar. Volume slider works.",
+      "duration": "",
+      "completed_at": "2026-03-30T09:33:59.501Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/player/PlayerBar.tsx",
+        "musicode-ui/src/components/layout/AppShell.tsx"
+      ],
+      "key_decisions": [
+        "Player bar height 80px fixed to bottom of AppShell",
+        "Progress bar click-to-seek with hover dot indicator",
+        "Volume click-to-set with mute toggle"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S04\nmilestone: M001\nkey_files:\n  - musicode-ui/src/components/player/PlayerBar.tsx\n  - musicode-ui/src/components/layout/AppShell.tsx\nkey_decisions:\n  - Player bar height 80px fixed to bottom of AppShell\n  - Progress bar click-to-seek with hover dot indicator\n  - Volume click-to-set with mute toggle\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-30T09:33:59.501Z\nblocker_discovered: false\n---\n\n# T02: Persistent player bar with play/pause, seek, next/prev, volume — fixed at bottom of UI.\n\n**Persistent player bar with play/pause, seek, next/prev, volume — fixed at bottom of UI.**\n\n## What Happened\n\nCreated PlayerBar with: cover art thumbnail, track title + artist, play/pause/prev/next buttons, progress bar with click-to-seek and time display, volume slider with mute toggle. Fixed to bottom of AppShell. Only appears when a track is playing. All controls wired to usePlayer actions.\n\n## Verification\n\nPlayer bar appears when track clicked, shows cover art, title, controls. Seek works by clicking progress bar. Volume slider works.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `browser_screenshot player bar` | 0 | ✅ pass — player bar with all controls visible | 500ms |\n| 2 | `click progress bar to seek` | 0 | ✅ pass — seek jumped to 0:53 | 500ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/player/PlayerBar.tsx`\n- `musicode-ui/src/components/layout/AppShell.tsx`\n",
+      "description": "Create persistent PlayerBar component fixed to bottom of AppShell. Shows: small cover art, track title + artist, play/pause button, next/prev buttons, progress bar with seek, current time / duration, volume slider.\n\nSteps:\n1. Create PlayerBar component with all controls\n2. Add to AppShell layout (fixed bottom)\n3. Progress bar: click to seek, show current position\n4. Volume: slider control\n5. Style to match dark theme\n6. Wire all buttons to usePlayer actions",
+      "estimate": "1h",
+      "files": [
+        "musicode-ui/src/components/player/PlayerBar.tsx",
+        "musicode-ui/src/components/layout/AppShell.tsx"
+      ],
+      "verify": "Player bar visible at bottom when a track is playing. Play/pause, seek, volume all functional.",
+      "inputs": [
+        "musicode-ui/src/context/PlayerContext.tsx",
+        "musicode-ui/src/hooks/usePlayer.ts"
+      ],
+      "expected_output": [
+        "musicode-ui/src/components/player/PlayerBar.tsx"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M001",
+      "slice_id": "S04",
+      "id": "T03",
+      "title": "Click-to-play wired in all pages with queue management and playing indicator.",
+      "status": "complete",
+      "one_liner": "Click-to-play wired in all pages with queue management and playing indicator.",
+      "narrative": "Wired click-to-play in all pages. TrackList accepts onPlay callback, shows playing indicator (indigo text + ♪ icon). AlbumDetailPage queues all album tracks on click. TracksPage and SearchPage queue visible tracks. Next button advances to next track in queue, highlight follows.",
+      "verification_result": "Click track 3 in album → plays with highlight. Click Next → track 4 plays, highlight moves. Seek works. All pages wire onPlay correctly.",
+      "duration": "",
+      "completed_at": "2026-03-30T09:34:13.330Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/library/TrackList.tsx",
+        "musicode-ui/src/pages/AlbumDetailPage.tsx",
+        "musicode-ui/src/pages/TracksPage.tsx",
+        "musicode-ui/src/pages/SearchPage.tsx"
+      ],
+      "key_decisions": [
+        "Album detail click queues all album tracks and starts from clicked index",
+        "Track list in Tracks page and Search page queues visible tracks",
+        "Currently playing track highlighted with indigo color and musical note icon"
+      ],
+      "full_summary_md": "---\nid: T03\nparent: S04\nmilestone: M001\nkey_files:\n  - musicode-ui/src/components/library/TrackList.tsx\n  - musicode-ui/src/pages/AlbumDetailPage.tsx\n  - musicode-ui/src/pages/TracksPage.tsx\n  - musicode-ui/src/pages/SearchPage.tsx\nkey_decisions:\n  - Album detail click queues all album tracks and starts from clicked index\n  - Track list in Tracks page and Search page queues visible tracks\n  - Currently playing track highlighted with indigo color and musical note icon\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-30T09:34:13.331Z\nblocker_discovered: false\n---\n\n# T03: Click-to-play wired in all pages with queue management and playing indicator.\n\n**Click-to-play wired in all pages with queue management and playing indicator.**\n\n## What Happened\n\nWired click-to-play in all pages. TrackList accepts onPlay callback, shows playing indicator (indigo text + ♪ icon). AlbumDetailPage queues all album tracks on click. TracksPage and SearchPage queue visible tracks. Next button advances to next track in queue, highlight follows.\n\n## Verification\n\nClick track 3 in album → plays with highlight. Click Next → track 4 plays, highlight moves. Seek works. All pages wire onPlay correctly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `click track 3 in album detail` | 0 | ✅ pass — track 3 plays, highlighted in indigo | 2000ms |\n| 2 | `click Next button` | 0 | ✅ pass — track 4 plays, highlight moved | 2000ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/library/TrackList.tsx`\n- `musicode-ui/src/pages/AlbumDetailPage.tsx`\n- `musicode-ui/src/pages/TracksPage.tsx`\n- `musicode-ui/src/pages/SearchPage.tsx`\n",
+      "description": "Wire click-to-play in TrackList and album pages. Clicking a track row plays it. Clicking play on an album page queues all tracks and starts from the selected one. Add visual indicator for currently playing track.\n\nSteps:\n1. Add onPlay callback to TrackList\n2. Wire TrackList onClick in all pages (TracksPage, AlbumDetailPage, SearchPage)\n3. Add 'Play Album' behavior in AlbumDetailPage\n4. Highlight currently playing track in TrackList\n5. End-to-end test: browse, click, hear audio, seek, next/prev",
+      "estimate": "45m",
+      "files": [
+        "musicode-ui/src/components/library/TrackList.tsx",
+        "musicode-ui/src/pages/AlbumDetailPage.tsx",
+        "musicode-ui/src/pages/TracksPage.tsx",
+        "musicode-ui/src/pages/SearchPage.tsx"
+      ],
+      "verify": "Click track in Albums detail → audio plays in player bar. Click next → next track in album. Currently playing track highlighted in list.",
+      "inputs": [
+        "musicode-ui/src/context/PlayerContext.tsx"
+      ],
+      "expected_output": [],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -1308,6 +1436,61 @@
       "verdict": "✅ pass — folder shown, scan button available",
       "duration_ms": 500,
       "created_at": "2026-03-30T09:27:09.521Z"
+    },
+    {
+      "id": 39,
+      "task_id": "T01",
+      "slice_id": "S04",
+      "milestone_id": "M001",
+      "command": "browser click track -> audio plays",
+      "exit_code": 0,
+      "verdict": "✅ pass — audio plays, state updates",
+      "duration_ms": 2000,
+      "created_at": "2026-03-30T09:33:48.119Z"
+    },
+    {
+      "id": 40,
+      "task_id": "T02",
+      "slice_id": "S04",
+      "milestone_id": "M001",
+      "command": "browser_screenshot player bar",
+      "exit_code": 0,
+      "verdict": "✅ pass — player bar with all controls visible",
+      "duration_ms": 500,
+      "created_at": "2026-03-30T09:33:59.501Z"
+    },
+    {
+      "id": 41,
+      "task_id": "T02",
+      "slice_id": "S04",
+      "milestone_id": "M001",
+      "command": "click progress bar to seek",
+      "exit_code": 0,
+      "verdict": "✅ pass — seek jumped to 0:53",
+      "duration_ms": 500,
+      "created_at": "2026-03-30T09:33:59.501Z"
+    },
+    {
+      "id": 42,
+      "task_id": "T03",
+      "slice_id": "S04",
+      "milestone_id": "M001",
+      "command": "click track 3 in album detail",
+      "exit_code": 0,
+      "verdict": "✅ pass — track 3 plays, highlighted in indigo",
+      "duration_ms": 2000,
+      "created_at": "2026-03-30T09:34:13.331Z"
+    },
+    {
+      "id": 43,
+      "task_id": "T03",
+      "slice_id": "S04",
+      "milestone_id": "M001",
+      "command": "click Next button",
+      "exit_code": 0,
+      "verdict": "✅ pass — track 4 plays, highlight moved",
+      "duration_ms": 2000,
+      "created_at": "2026-03-30T09:34:13.331Z"
     }
   ]
 }

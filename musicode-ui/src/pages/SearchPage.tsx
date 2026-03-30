@@ -3,11 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { search } from '../api/search';
 import TrackList from '../components/library/TrackList';
 import AlbumCard from '../components/library/AlbumCard';
+import { usePlayer } from '../hooks/usePlayer';
 import { User } from 'lucide-react';
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') ?? '';
+  const { playTrack } = usePlayer();
 
   const { data, isLoading } = useQuery({
     queryKey: ['search', query],
@@ -69,7 +71,11 @@ export default function SearchPage() {
       {data.tracks.length > 0 && (
         <section>
           <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">Tracks</h3>
-          <TrackList tracks={data.tracks} showAlbum />
+          <TrackList
+            tracks={data.tracks}
+            showAlbum
+            onPlay={(track, index) => playTrack(track, data.tracks, index)}
+          />
         </section>
       )}
     </div>

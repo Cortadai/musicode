@@ -2,11 +2,13 @@ import { useParams, Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getAlbum, getCoverUrl } from '../api/albums';
 import TrackList from '../components/library/TrackList';
+import { usePlayer } from '../hooks/usePlayer';
 import { ArrowLeft, Disc3 } from 'lucide-react';
 
 export default function AlbumDetailPage() {
   const { id } = useParams<{ id: string }>();
   const albumId = Number(id);
+  const { playAlbum } = usePlayer();
 
   const { data: album, isLoading, error } = useQuery({
     queryKey: ['album', albumId],
@@ -16,6 +18,8 @@ export default function AlbumDetailPage() {
 
   if (isLoading) return <p className="text-zinc-500">Loading…</p>;
   if (error || !album) return <p className="text-red-400">Album not found</p>;
+
+  const tracks = album.tracks ?? [];
 
   return (
     <div>
@@ -39,12 +43,15 @@ export default function AlbumDetailPage() {
           <p className="text-sm text-zinc-400">
             {album.artist?.name ?? 'Unknown Artist'}
             {album.year && ` · ${album.year}`}
-            {album.tracks && ` · ${album.tracks.length} tracks`}
+            {` · ${tracks.length} tracks`}
           </p>
         </div>
       </div>
 
-      {album.tracks && <TrackList tracks={album.tracks} />}
+      <TrackList
+        tracks={tracks}
+        onPlay={(_track, index) => playAlbum(tracks, index)}
+      />
     </div>
   );
 }

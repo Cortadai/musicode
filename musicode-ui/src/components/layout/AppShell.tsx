@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import PlayerBar from '../player/PlayerBar';
 
 export default function AppShell() {
   return (
@@ -11,6 +12,7 @@ export default function AppShell() {
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
+        <PlayerBar />
       </div>
     </div>
   );
