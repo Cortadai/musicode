@@ -2,6 +2,7 @@ package com.musicode.service;
 
 import com.musicode.model.entity.Role;
 import com.musicode.model.entity.User;
+import com.musicode.repository.PlaybackEventRepository;
 import com.musicode.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,10 +20,12 @@ class MusicodeUserDetailsServiceTest {
 
     @Autowired private MusicodeUserDetailsService userDetailsService;
     @Autowired private UserRepository userRepository;
+    @Autowired private PlaybackEventRepository playbackEventRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
+        playbackEventRepository.deleteAll();
         userRepository.deleteAll();
     }
 

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T12:41:22.433Z",
+  "exported_at": "2026-03-31T12:44:12.704Z",
   "milestones": [
     {
       "id": "M001",
@@ -3873,6 +3873,160 @@
         "Updated playwright.config.ts",
         "Updated READMEs",
         "Updated .gitignore"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M007",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "PlaybackEvent entity + record play endpoint",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Create PlaybackEvent entity: id, user (ManyToOne), track (ManyToOne), playedAt (Instant), listenDurationSec (Integer)\n2. Create PlaybackEventRepository with JpaRepository\n3. Create PlayController with POST /api/plays/{trackId} — accepts optional listenDurationSec in request body\n4. Endpoint resolves authenticated user from SecurityContext, creates PlaybackEvent\n5. Add OpenAPI annotations\n6. Verify: start server, login, POST to /api/plays/1, check H2 console for row",
+      "estimate": "25min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/model/entity/PlaybackEvent.java",
+        "musicode-server/src/main/java/com/musicode/repository/PlaybackEventRepository.java",
+        "musicode-server/src/main/java/com/musicode/controller/PlayController.java"
+      ],
+      "verify": "mvn compile succeeds. curl POST /api/plays/{trackId} returns 201 with event data.",
+      "inputs": [
+        "Track entity",
+        "User entity",
+        "SecurityConfig"
+      ],
+      "expected_output": [
+        "PlaybackEvent.java",
+        "PlaybackEventRepository.java",
+        "PlayController.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M007",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "Frontend — report play at 50% duration",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. In usePlayer.ts, add a ref to track whether current track has been reported\n2. In the timeupdate handler, check if currentTime > duration * 0.5\n3. If threshold crossed and not yet reported, POST /api/plays/{trackId} with listenDurationSec\n4. Reset the reported flag when track changes\n5. Add the API function in a new api/plays.ts file\n6. Verify: play a track past 50%, check network tab for POST request",
+      "estimate": "20min",
+      "files": [
+        "musicode-ui/src/hooks/usePlayer.ts",
+        "musicode-ui/src/api/plays.ts"
+      ],
+      "verify": "Play a track past 50% in the browser. Network tab shows POST /api/plays/{trackId} with 201 response.",
+      "inputs": [
+        "usePlayer.ts hook",
+        "axios client"
+      ],
+      "expected_output": [
+        "Updated usePlayer.ts",
+        "plays.ts API module"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M007",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "Stats service + API endpoints",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Create StatsService with methods: getTopArtists, getTopAlbums, getTopTracks, getSummary, getHistory\n2. Each method accepts userId and period (WEEK, MONTH, YEAR, ALL_TIME)\n3. Use JPQL or native queries in PlaybackEventRepository for aggregation\n4. Create StatsController with GET endpoints:\n   - /api/stats/top-artists?period=month&limit=10\n   - /api/stats/top-albums?period=month&limit=10\n   - /api/stats/top-tracks?period=month&limit=10\n   - /api/stats/summary?period=month\n   - /api/stats/history?period=month (plays per day)\n5. Create DTO records: TopArtistStat, TopAlbumStat, TopTrackStat, StatsSummary, DailyPlayCount\n6. Add OpenAPI annotations\n7. Verify: seed some PlaybackEvents, call endpoints, verify correct aggregation",
+      "estimate": "40min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/service/StatsService.java",
+        "musicode-server/src/main/java/com/musicode/controller/StatsController.java",
+        "musicode-server/src/main/java/com/musicode/repository/PlaybackEventRepository.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/TopArtistStat.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/TopAlbumStat.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/TopTrackStat.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/StatsSummary.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/DailyPlayCount.java"
+      ],
+      "verify": "curl /api/stats/top-artists?period=month returns JSON array with artist name and play count. curl /api/stats/summary returns totals.",
+      "inputs": [
+        "PlaybackEvent entity",
+        "PlaybackEventRepository"
+      ],
+      "expected_output": [
+        "StatsService.java",
+        "StatsController.java",
+        "DTO records"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M007",
+      "slice_id": "S01",
+      "id": "T04",
+      "title": "Tests + verification",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Write StatsController integration tests: top-artists, top-albums, top-tracks, summary, history\n2. Write PlayController test: record play, duplicate handling\n3. Add Swagger annotations to all new endpoints\n4. Run mvn clean verify — all tests pass, coverage ≥80%\n5. Run npx playwright test — no regressions\n6. Manual verification: play tracks in browser, check stats endpoints return correct data",
+      "estimate": "30min",
+      "files": [
+        "musicode-server/src/test/java/com/musicode/controller/PlayControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/controller/StatsControllerTest.java"
+      ],
+      "verify": "mvn clean verify passes. npx playwright test passes. Stats endpoints return correct aggregations.",
+      "inputs": [
+        "All new controllers and services"
+      ],
+      "expected_output": [
+        "PlayControllerTest.java",
+        "StatsControllerTest.java",
+        "All tests green"
       ],
       "observability_impact": "",
       "full_plan_md": "",

@@ -2,6 +2,7 @@ package com.musicode.controller;
 
 import com.musicode.model.entity.Role;
 import com.musicode.model.entity.User;
+import com.musicode.repository.PlaybackEventRepository;
 import com.musicode.repository.RefreshTokenRepository;
 import com.musicode.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,11 +28,13 @@ class UserControllerTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private UserRepository userRepository;
+    @Autowired private PlaybackEventRepository playbackEventRepository;
     @Autowired private RefreshTokenRepository refreshTokenRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
+        playbackEventRepository.deleteAll();
         refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
 

@@ -5,6 +5,7 @@ import com.musicode.model.entity.Artist;
 import com.musicode.model.entity.Track;
 import com.musicode.repository.AlbumRepository;
 import com.musicode.repository.ArtistRepository;
+import com.musicode.repository.PlaybackEventRepository;
 import com.musicode.repository.TrackRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,11 +30,13 @@ class ArtistControllerTest {
     @Autowired private AlbumRepository albumRepository;
     @Autowired private ArtistRepository artistRepository;
     @Autowired private TrackRepository trackRepository;
+    @Autowired private PlaybackEventRepository playbackEventRepository;
 
     private Artist savedArtist;
 
     @BeforeEach
     void setUp() {
+        playbackEventRepository.deleteAll();
         trackRepository.deleteAll();
         albumRepository.deleteAll();
         artistRepository.deleteAll();

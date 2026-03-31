@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { usePlayerState, usePlayerDispatch } from '../context/PlayerContext';
+import { recordPlay } from '../api/plays';
 import type { Track } from '../types';
 
 /**
@@ -35,6 +36,13 @@ export function usePlayer() {
   const state = usePlayerState();
   const dispatch = usePlayerDispatch();
   const ownerSymbol = useRef(Symbol('player-owner'));
+  const playReportedRef = useRef<number | null>(null); // trackId of last reported play
+  const currentTrackRef = useRef<Track | null>(null);
+
+  // Keep ref in sync with state for use in event handlers (avoids stale closures)
+  useEffect(() => {
+    currentTrackRef.current = state.currentTrack;
+  }, [state.currentTrack]);
 
   // Wire audio events — only one usePlayer instance does this
   useEffect(() => {
@@ -43,6 +51,22 @@ export function usePlayer() {
 
     const onTimeUpdate = () => {
       dispatch({ type: 'SET_TIME', time: globalAudio.currentTime });
+
+      // Report play when user has listened past 50% of the track
+      const track = currentTrackRef.current;
+      if (
+        globalAudio.duration > 0 &&
+        globalAudio.currentTime > globalAudio.duration * 0.5 &&
+        track &&
+        playReportedRef.current !== track.id
+      ) {
+        const listenDuration = Math.round(globalAudio.currentTime);
+        playReportedRef.current = track.id;
+        recordPlay(track.id, listenDuration).catch((err) => {
+          console.debug('[player] Failed to record play:', err.message);
+        });
+        console.debug('[player] Play recorded for track:', track.id);
+      }
     };
     const onLoadedMetadata = () => {
       dispatch({ type: 'SET_DURATION', duration: globalAudio.duration });
@@ -74,6 +98,9 @@ export function usePlayer() {
   useEffect(() => {
     if (audioOwnerRef !== ownerSymbol.current) return;
     if (!state.currentTrack) return;
+
+    // Reset play reporting for the new track
+    playReportedRef.current = null;
 
     const src = `/api/stream/${state.currentTrack.id}`;
     const fullSrc = window.location.origin + src;
