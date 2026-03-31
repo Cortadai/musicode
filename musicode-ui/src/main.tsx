@@ -8,3 +8,16 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// --- Service Worker registration ---
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then((reg) => {
+        console.debug('[sw] Registered, scope:', reg.scope);
+      })
+      .catch((err) => {
+        console.debug('[sw] Registration failed:', err.message);
+      });
+  });
+}

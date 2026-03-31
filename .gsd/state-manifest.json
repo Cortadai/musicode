@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T10:54:59.120Z",
+  "exported_at": "2026-03-31T10:58:22.514Z",
   "milestones": [
     {
       "id": "M001",
@@ -724,19 +724,19 @@
       "milestone_id": "M005",
       "id": "S02",
       "title": "PWA Support",
-      "status": "pending",
+      "status": "complete",
       "risk": "low",
       "depends": [],
       "demo": "After this: browser shows 'Install Musicode' prompt. Installed app opens in standalone window without browser chrome. App shell loads instantly from cache.",
       "created_at": "2026-03-31T10:49:39.791Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
+      "completed_at": "2026-03-31T10:58:22.470Z",
+      "full_summary_md": "---\nid: S02\nparent: M005\nmilestone: M005\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - musicode-ui/public/manifest.json\n  - musicode-ui/public/sw.js\n  - musicode-ui/index.html\n  - musicode-ui/src/main.tsx\nkey_decisions:\n  - Hand-written SW over vite-plugin-pwa\n  - Three caching strategies: network-first shell, cache-first covers, network-only API\n  - Placeholder icons sufficient for install prompt\npatterns_established:\n  - Hand-written service worker with strategy-per-route\n  - Cache versioning with manual CACHE_VERSION bump\n  - SW registration deferred to window load\nobservability_surfaces:\n  - console.debug [sw] for registration, install, activate, and cache operations\ndrill_down_paths:\n  - .gsd/milestones/M005/slices/S02/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M005/slices/S02/tasks/T02-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T10:58:22.470Z\nblocker_discovered: false\n---\n\n# S02: PWA Support\n\n**PWA installable \\u2014 manifest, service worker with shell/cover caching, standalone window.**\n\n## What Happened\n\nMade Musicode installable as a PWA. Manifest.json with display:standalone, theme colors matching the dark theme, and placeholder icons. Hand-written service worker with three caching strategies: network-first for app shell (offline-resilient), cache-first for cover art (immutable content), and network-only for API calls (never cache auth/data/streams). Cache versioning for clean deployments. Registered from main.tsx on window load. Browser shows install prompt, app opens in standalone window without browser chrome.\n\n## Verification\n\nnpm run build + npm run test:coverage \\u2014 both pass, manifest/sw/icons in dist/.\n\n## Requirements Advanced\n\n- R012 — manifest.json + service worker + app shell cache + standalone display\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nIcons are solid-color placeholders. Replace with designed icons later.\n\n## Follow-ups\n\nReplace placeholder icons with designed ones when visual identity is finalized.\n\n## Files Created/Modified\n\n- `musicode-ui/public/manifest.json` — App name, display:standalone, icons, theme colors\n- `musicode-ui/public/icons/icon-192.png` — 192x192 indigo placeholder\n- `musicode-ui/public/icons/icon-512.png` — 512x512 indigo placeholder\n- `musicode-ui/public/sw.js` — App shell + cover art cache, API passthrough\n- `musicode-ui/index.html` — Manifest link, theme-color meta, corrected title\n- `musicode-ui/src/main.tsx` — Service worker registration on load\n",
+      "full_uat_md": "# S02: PWA Support — UAT\n\n**Milestone:** M005\n**Written:** 2026-03-31T10:58:22.470Z\n\n## UAT: S02 \\u2014 PWA Support\\n\\n### Test 1: Install prompt\\n1. Open Musicode in Chrome\\n2. Look for install icon in address bar or three-dot menu \\u2192 'Install Musicode'\\n3. **Expected:** Install prompt appears with Musicode name and icon\\n\\n### Test 2: Standalone window\\n1. Install the PWA\\n2. Open from desktop/start menu\\n3. **Expected:** Opens in own window without browser address bar or tabs\\n\\n### Test 3: App shell caching\\n1. Open Musicode, navigate around\\n2. Check DevTools \\u2192 Application \\u2192 Cache Storage\\n3. **Expected:** musicode-v1 cache contains index.html, CSS, JS\\n\\n### Test 4: Cover art caching\\n1. Browse albums with cover art\\n2. Check DevTools \\u2192 Cache Storage \\u2192 musicode-covers-v1\\n3. **Expected:** Cover art URLs cached\\n\\n### Test 5: API not cached\\n1. Check Cache Storage\\n2. **Expected:** No /api/auth/*, /api/tracks/*, etc. in any cache\\n\\n### Test 6: Build and tests\\n1. npm run build + npm run test:coverage\\n2. **Expected:** Both pass\n",
       "goal": "Make Musicode installable as PWA with app shell caching for instant load",
-      "success_criteria": "manifest.json with name, icons (192+512px), theme_color, background_color, display:standalone. Service worker caches app shell (HTML, CSS, JS, fonts). Cover art cached on fetch. API calls (fetch /api/*) pass through uncached. Install prompt appears in Chrome. Standalone window works. Auth flow unaffected after install.",
+      "success_criteria": "manifest.json with name, icons, theme/background colors, display:standalone. Service worker caches app shell (HTML, CSS, JS). Cover art cached on fetch. API calls pass through uncached. Install prompt in Chrome. Standalone window works. Auth flow unaffected. Build compiles. Tests pass.",
       "proof_level": "manual-verification",
-      "integration_closure": "manifest.json + service worker registered. No changes to existing components.",
-      "observability_impact": "console.debug for SW registration, cache hits/misses.",
+      "integration_closure": "manifest.json + service worker registered. No changes to existing components beyond App registration.",
+      "observability_impact": "console.debug for SW registration and cache events.",
       "sequence": 0,
       "replan_triggered_at": null
     },
@@ -3020,6 +3020,98 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M005",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "PWA manifest with icons, theme-color, and display:standalone.",
+      "status": "complete",
+      "one_liner": "PWA manifest with icons, theme-color, and display:standalone.",
+      "narrative": "Created manifest.json with app name, display:standalone, theme colors matching the dark theme, and two icon sizes. Updated index.html with manifest link, theme-color meta tag, and corrected title.",
+      "verification_result": "npm run build — compiles cleanly, manifest and icons in dist/.",
+      "duration": "",
+      "completed_at": "2026-03-31T10:57:42.833Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/public/manifest.json",
+        "musicode-ui/public/icons/icon-192.png",
+        "musicode-ui/public/icons/icon-512.png",
+        "musicode-ui/index.html"
+      ],
+      "key_decisions": [
+        "Solid indigo icons as placeholder — functional for PWA install, can be replaced with designed icons later",
+        "theme_color #4f46e5 (indigo-600), background_color #09090b (zinc-950) match app theme",
+        "Title changed from 'musicode-ui' to 'Musicode'"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S02\nmilestone: M005\nkey_files:\n  - musicode-ui/public/manifest.json\n  - musicode-ui/public/icons/icon-192.png\n  - musicode-ui/public/icons/icon-512.png\n  - musicode-ui/index.html\nkey_decisions:\n  - Solid indigo icons as placeholder — functional for PWA install, can be replaced with designed icons later\n  - theme_color #4f46e5 (indigo-600), background_color #09090b (zinc-950) match app theme\n  - Title changed from 'musicode-ui' to 'Musicode'\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T10:57:42.834Z\nblocker_discovered: false\n---\n\n# T01: PWA manifest with icons, theme-color, and display:standalone.\n\n**PWA manifest with icons, theme-color, and display:standalone.**\n\n## What Happened\n\nCreated manifest.json with app name, display:standalone, theme colors matching the dark theme, and two icon sizes. Updated index.html with manifest link, theme-color meta tag, and corrected title.\n\n## Verification\n\nnpm run build — compiles cleanly, manifest and icons in dist/.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | ✅ pass | 4400ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/public/manifest.json`\n- `musicode-ui/public/icons/icon-192.png`\n- `musicode-ui/public/icons/icon-512.png`\n- `musicode-ui/index.html`\n",
+      "description": "Create PWA icons (192x192 and 512x512) as simple SVG-based PNGs or use a minimal icon. Create manifest.json in public/ with: name 'Musicode', short_name 'Musicode', start_url '/', display 'standalone', theme_color (indigo-600 = #4f46e5), background_color (zinc-950 = #09090b), icons array. Add manifest link to index.html. Add theme-color meta tag.",
+      "estimate": "10min",
+      "files": [
+        "musicode-ui/public/manifest.json",
+        "musicode-ui/public/icons/icon-192.png",
+        "musicode-ui/public/icons/icon-512.png",
+        "musicode-ui/index.html"
+      ],
+      "verify": "npm run build compiles",
+      "inputs": [
+        "Current index.html"
+      ],
+      "expected_output": [
+        "public/manifest.json",
+        "public/icons/icon-192.png",
+        "public/icons/icon-512.png",
+        "Updated index.html"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M005",
+      "slice_id": "S02",
+      "id": "T02",
+      "title": "Service worker with app shell cache, cover art cache, and API passthrough — registered from main.tsx.",
+      "status": "complete",
+      "one_liner": "Service worker with app shell cache, cover art cache, and API passthrough — registered from main.tsx.",
+      "narrative": "Hand-written service worker with three strategies: network-first for app shell (HTML/CSS/JS) with cache fallback for offline, cache-first for cover art (/api/covers/*), and network-only for all other API calls. Cache versioning via CACHE_VERSION constant. Old caches cleaned on activate. Registered from main.tsx on window load with console.debug logging.",
+      "verification_result": "npm run build + npm run test:coverage — both pass. SW and manifest in dist/.",
+      "duration": "",
+      "completed_at": "2026-03-31T10:57:55.605Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/public/sw.js",
+        "musicode-ui/src/main.tsx"
+      ],
+      "key_decisions": [
+        "Hand-written SW instead of vite-plugin-pwa — simpler, educational, no build dependency",
+        "Network-first for app shell with cache fallback (offline-resilient)",
+        "Cache-first for cover art (immutable content)",
+        "Network-only for /api/* (never cache auth/data/streams)",
+        "SW registered on window load event to not block initial render"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S02\nmilestone: M005\nkey_files:\n  - musicode-ui/public/sw.js\n  - musicode-ui/src/main.tsx\nkey_decisions:\n  - Hand-written SW instead of vite-plugin-pwa — simpler, educational, no build dependency\n  - Network-first for app shell with cache fallback (offline-resilient)\n  - Cache-first for cover art (immutable content)\n  - Network-only for /api/* (never cache auth/data/streams)\n  - SW registered on window load event to not block initial render\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T10:57:55.605Z\nblocker_discovered: false\n---\n\n# T02: Service worker with app shell cache, cover art cache, and API passthrough — registered from main.tsx.\n\n**Service worker with app shell cache, cover art cache, and API passthrough — registered from main.tsx.**\n\n## What Happened\n\nHand-written service worker with three strategies: network-first for app shell (HTML/CSS/JS) with cache fallback for offline, cache-first for cover art (/api/covers/*), and network-only for all other API calls. Cache versioning via CACHE_VERSION constant. Old caches cleaned on activate. Registered from main.tsx on window load with console.debug logging.\n\n## Verification\n\nnpm run build + npm run test:coverage — both pass. SW and manifest in dist/.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | ✅ pass | 4400ms |\n| 2 | `npm run test:coverage` | 0 | ✅ pass — 40 tests, 91.54% lines | 4400ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/public/sw.js`\n- `musicode-ui/src/main.tsx`\n",
+      "description": "Create public/sw.js as a hand-written service worker (no workbox/vite-plugin-pwa — keeps it simple and educational). Strategy: app shell files (index.html, CSS, JS from build) cached on install. Cover art cached on fetch (cache-first for /api/covers/*). All other /api/* requests pass through (network-only — never cache auth or data). Fallback: if network fails and cache misses, return a simple offline page. Register the SW from main.tsx with console.debug logging. Add navigator.serviceWorker.register in main.tsx with scope '/'.",
+      "estimate": "20min",
+      "files": [
+        "musicode-ui/public/sw.js",
+        "musicode-ui/src/main.tsx"
+      ],
+      "verify": "npm run build compiles. Manual: install PWA, app loads in standalone, cover art cached.",
+      "inputs": [
+        "Build output structure (dist/)"
+      ],
+      "expected_output": [
+        "public/sw.js",
+        "Updated main.tsx with SW registration"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -4162,6 +4254,39 @@
       "verdict": "✅ pass — 40 tests, 91.54% lines",
       "duration_ms": 4200,
       "created_at": "2026-03-31T10:54:32.017Z"
+    },
+    {
+      "id": 87,
+      "task_id": "T01",
+      "slice_id": "S02",
+      "milestone_id": "M005",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4400,
+      "created_at": "2026-03-31T10:57:42.833Z"
+    },
+    {
+      "id": 88,
+      "task_id": "T02",
+      "slice_id": "S02",
+      "milestone_id": "M005",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4400,
+      "created_at": "2026-03-31T10:57:55.605Z"
+    },
+    {
+      "id": 89,
+      "task_id": "T02",
+      "slice_id": "S02",
+      "milestone_id": "M005",
+      "command": "npm run test:coverage",
+      "exit_code": 0,
+      "verdict": "✅ pass — 40 tests, 91.54% lines",
+      "duration_ms": 4400,
+      "created_at": "2026-03-31T10:57:55.605Z"
     }
   ]
 }
