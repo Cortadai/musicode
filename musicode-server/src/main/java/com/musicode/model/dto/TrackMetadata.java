@@ -9,6 +9,7 @@ public class TrackMetadata {
 
     private String title;
     private String artist;
+    private String albumArtist;
     private String album;
     private Integer year;
     private Integer trackNumber;

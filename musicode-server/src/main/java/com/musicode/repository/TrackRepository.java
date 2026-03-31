@@ -13,4 +13,8 @@ public interface TrackRepository extends JpaRepository<Track, Long> {
     boolean existsByFilePath(String filePath);
 
     List<Track> findByTitleContainingIgnoreCase(String title);
+
+    long countByAlbumId(Long albumId);
+
+    long countByArtistId(Long artistId);
 }

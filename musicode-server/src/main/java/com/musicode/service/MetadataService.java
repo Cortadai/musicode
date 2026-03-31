@@ -52,6 +52,7 @@ public class MetadataService {
             if (tag != null) {
                 builder.title(getTagField(tag, FieldKey.TITLE))
                        .artist(getTagField(tag, FieldKey.ARTIST))
+                       .albumArtist(getTagField(tag, FieldKey.ALBUM_ARTIST))
                        .album(getTagField(tag, FieldKey.ALBUM))
                        .year(parseInteger(getTagField(tag, FieldKey.YEAR)))
                        .trackNumber(parseInteger(getTagField(tag, FieldKey.TRACK)))

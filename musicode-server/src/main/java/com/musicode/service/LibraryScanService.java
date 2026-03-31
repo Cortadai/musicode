@@ -82,6 +82,10 @@ public class LibraryScanService {
 
             scanStatus.setState(ScanStatus.State.COMPLETED);
             scanStatus.setCompletedAt(LocalDateTime.now());
+
+            // Clean up any albums/artists that became orphans due to regrouping
+            cleanupOrphanAlbumsAndArtists();
+
             log.info("Library scan completed: {} processed, {} new, {} updated, {} errors",
                     scanStatus.getProcessedFiles(),
                     scanStatus.getNewTracks(),
@@ -130,7 +134,7 @@ public class LibraryScanService {
                 return;
             }
 
-            // Find or create Artist
+            // Find or create Artist (per track — this is the track-level artist)
             String artistName = metadata.getArtist() != null ? metadata.getArtist() : "Unknown Artist";
             Artist artist = artistRepository.findByNameIgnoreCase(artistName)
                     .orElseGet(() -> {
@@ -139,16 +143,29 @@ public class LibraryScanService {
                         return artistRepository.save(newArtist);
                     });
 
-            // Find or create Album
+            // Album artist — used for album grouping. Falls back to track artist.
+            // This prevents compilation albums from fragmenting (e.g. "FM-84; Ollie Wride"
+            // vs "FM-84" both map to album artist "FM-84" if ALBUM_ARTIST tag is set).
+            String albumArtistName = metadata.getAlbumArtist() != null
+                    ? metadata.getAlbumArtist() : artistName;
+            Artist albumArtist = albumArtistName.equals(artistName) ? artist
+                    : artistRepository.findByNameIgnoreCase(albumArtistName)
+                            .orElseGet(() -> {
+                                Artist newArtist = Artist.builder().name(albumArtistName).build();
+                                log.debug("New album artist: {}", albumArtistName);
+                                return artistRepository.save(newArtist);
+                            });
+
+            // Find or create Album — keyed by (title, album artist), not track artist
             String albumTitle = metadata.getAlbum() != null ? metadata.getAlbum() : "Unknown Album";
-            Album album = albumRepository.findByTitleIgnoreCaseAndArtistId(albumTitle, artist.getId())
+            Album album = albumRepository.findByTitleIgnoreCaseAndArtistId(albumTitle, albumArtist.getId())
                     .orElseGet(() -> {
                         Album newAlbum = Album.builder()
                                 .title(albumTitle)
-                                .artist(artist)
+                                .artist(albumArtist)
                                 .year(metadata.getYear())
                                 .build();
-                        log.debug("New album: {} by {}", albumTitle, artistName);
+                        log.debug("New album: {} by {}", albumTitle, albumArtistName);
                         return albumRepository.save(newAlbum);
                     });
 
@@ -246,6 +263,40 @@ public class LibraryScanService {
                 removed++;
             }
         }
+        cleanupOrphanAlbumsAndArtists();
         return removed;
+    }
+
+    /**
+     * Remove albums with no tracks and artists with no tracks and no albums.
+     * Called after track deletion or full rescan to keep the library clean.
+     */
+    public void cleanupOrphanAlbumsAndArtists() {
+        // Remove albums with no tracks
+        var allAlbums = albumRepository.findAll();
+        int albumsRemoved = 0;
+        for (var album : allAlbums) {
+            if (trackRepository.countByAlbumId(album.getId()) == 0) {
+                log.debug("Removing orphan album: {} (id={})", album.getTitle(), album.getId());
+                albumRepository.delete(album);
+                albumsRemoved++;
+            }
+        }
+
+        // Remove artists with no tracks and no albums
+        var allArtists = artistRepository.findAll();
+        int artistsRemoved = 0;
+        for (var art : allArtists) {
+            if (trackRepository.countByArtistId(art.getId()) == 0
+                    && albumRepository.countByArtistId(art.getId()) == 0) {
+                log.debug("Removing orphan artist: {} (id={})", art.getName(), art.getId());
+                artistRepository.delete(art);
+                artistsRemoved++;
+            }
+        }
+
+        if (albumsRemoved > 0 || artistsRemoved > 0) {
+            log.info("Cleanup: {} orphan albums, {} orphan artists removed", albumsRemoved, artistsRemoved);
+        }
     }
 }
