@@ -7,6 +7,7 @@ Spring Boot 3 backend for Musicode. Scans local music folders, reads metadata, s
 - Java 21 + Spring Boot 3.4
 - Spring Security + JWT (JJWT 0.12.6)
 - Spring Data JPA + H2 (embedded)
+- SpringDoc OpenAPI 2.8.14 (Swagger UI)
 - JAudioTagger 2.2.5 (audio metadata)
 - Logback with MDC request IDs
 - JaCoCo ≥80% coverage enforcement
@@ -17,6 +18,7 @@ Spring Boot 3 backend for Musicode. Scans local music folders, reads metadata, s
 # Dev mode
 mvn spring-boot:run
 # http://localhost:8080
+# Swagger UI: http://localhost:8080/swagger-ui.html
 
 # Tests
 mvn clean verify

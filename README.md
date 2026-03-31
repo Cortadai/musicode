@@ -65,6 +65,7 @@ npm run dev
 - **Media Session** — OS media keys (play/pause/next/prev), now-playing notification with cover art, OS seek bar
 - **PWA** — Installable as a standalone app, service worker caches app shell and cover art for offline-ready loading
 - **Spectrum Visualizer** — Real-time frequency bars via Web Audio API, toggleable from the player bar
+- **API Documentation** — Swagger UI at `/swagger-ui.html`, auto-generated OpenAPI 3.0 spec
 - **HTTPS** — Caddy reverse proxy with automatic TLS, HTTP→HTTPS redirect
 
 ## Project Structure
@@ -94,11 +95,15 @@ See `.env.example` for full documentation.
 ## Tests
 
 ```bash
-# Backend — 97 tests, JaCoCo ≥80% coverage
+# Backend — 98 tests, JaCoCo ≥80% coverage
 cd musicode-server && mvn clean verify
 
-# Frontend — 40 tests, Vitest v8 coverage thresholds
+# Frontend — 40 unit tests, Vitest v8 coverage thresholds
 cd musicode-ui && npm run test:coverage
+
+# E2E — 19 Playwright tests (requires backend running on :8080)
+cd musicode-server && mvn spring-boot:run &
+cd musicode-ui && npm run test:e2e
 ```
 
 ## License

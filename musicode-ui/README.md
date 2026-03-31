@@ -94,25 +94,16 @@ src/
 ## Tests
 
 ```bash
-npm run test:coverage
+npm run test:coverage    # 40 unit tests with coverage thresholds
+npm run test:e2e         # 19 Playwright E2E tests (requires backend on :8080)
+npm run test:e2e:ui      # Playwright E2E with interactive UI
 ```
 
+### Unit Tests (Vitest)
 Coverage thresholds enforced on `context/` and `utils/` (lines ≥80%, branches ≥80%, functions ≥50%).
-
 Components, pages, hooks, and API layer excluded from thresholds — tested via integration.
-auses rendering when tab is hidden
 
-### Auth
-- Cookies managed by browser — frontend never sees tokens directly
-- Axios interceptor handles transparent refresh with request queuing
-- `useAuth()` provides `isAdmin` for conditional UI rendering
-
-## Tests
-
-```bash
-npm run test:coverage
-```
-
-Coverage thresholds enforced on `context/` and `utils/` (lines ≥80%, branches ≥80%, functions ≥50%).
-
-Components, pages, hooks, and API layer excluded from thresholds — tested via integration.
+### E2E Tests (Playwright)
+19 tests covering all major flows: auth, browse, playback, admin, search, navigation, settings, error states.
+Config: single worker, sequential, HTML reporter, screenshots + traces on failure.
+Backend must be running on `:8080` before E2E tests.
