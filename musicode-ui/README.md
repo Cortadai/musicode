@@ -36,6 +36,7 @@ The dev server proxies `/api` requests to `http://localhost:8080` (Spring Boot).
 | `/artists/:id` | ArtistDetailPage | any |
 | `/tracks` | TracksPage | any |
 | `/search` | SearchPage | any |
+| `/stats` | StatsPage | any |
 | `/settings` | SettingsPage | ADMIN |
 | `/users` | UsersPage | ADMIN |
 
@@ -57,16 +58,17 @@ src/
 ├── components/
 │   ├── auth/         ProtectedRoute
 │   ├── common/       Spinner, ErrorMessage, ErrorBoundary
-│   ├── layout/       AppShell, Sidebar, TopBar
+│   ├── layout/       AppShell, Sidebar (+ ActivityFeed), TopBar
 │   ├── library/      AlbumCard, TrackList
-│   └── player/       PlayerBar
+│   ├── player/       PlayerBar, Visualizer
+│   └── activity/     ActivityFeed (SSE real-time)
 ├── context/
 │   ├── AuthContext    User session state (login/logout/restore)
 │   └── PlayerContext  Player state (useReducer + dual contexts)
 ├── hooks/
-│   ├── usePlayer        Singleton Audio element + dispatch bridge + Media Session
+│   ├── usePlayer        Singleton Audio + dispatch + Media Session + play tracking
 │   └── useAudioAnalyser Web Audio API analyser for spectrum visualizer
-├── pages/            Route components
+├── pages/            Route components (Albums, Artists, Tracks, Search, Stats, Settings, Users)
 ├── types/            TypeScript interfaces
 └── utils/
     ├── errors.ts     Error extraction utility
@@ -86,6 +88,12 @@ src/
 - **ErrorMessage** component with optional retry button — replaces inline error strings
 - **getErrorMessage()** extracts backend `ErrorResponse.error` field or provides fallback
 
+### Listening Intelligence
+- **Play tracking** — `usePlayer` fires `POST /api/plays/{trackId}` when `currentTime > 50%` of duration
+- **Stats dashboard** — `/stats` page with Recharts: summary cards, plays-per-day chart, top lists with period selector
+- **Scrobbling** — Last.fm + ListenBrainz configured in Settings, async fire-and-forget on play
+- **Activity feed** — `EventSource` SSE in sidebar showing recent plays across all users in real-time
+
 ### Auth
 - Cookies managed by browser — frontend never sees tokens directly
 - Axios interceptor handles transparent refresh with request queuing
@@ -95,7 +103,7 @@ src/
 
 ```bash
 npm run test:coverage    # 40 unit tests with coverage thresholds
-npm run test:e2e         # 19 Playwright E2E tests (requires backend on :8080)
+npm run test:e2e         # 21 Playwright E2E tests (requires backend on :8080)
 npm run test:e2e:ui      # Playwright E2E with interactive UI
 ```
 
@@ -104,6 +112,6 @@ Coverage thresholds enforced on `context/` and `utils/` (lines ≥80%, branches 
 Components, pages, hooks, and API layer excluded from thresholds — tested via integration.
 
 ### E2E Tests (Playwright)
-19 tests covering all major flows: auth, browse, playback, admin, search, navigation, settings, error states.
+21 tests covering all major flows: auth, browse, playback, admin, search, navigation, settings, stats, error states.
 Config: single worker, sequential, HTML reporter, screenshots + traces on failure.
 Backend must be running on `:8080` before E2E tests.

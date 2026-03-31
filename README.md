@@ -55,7 +55,7 @@ npm run dev
 
 ## Features
 
-- **Library scanning** — Recursive folder scan, reads ID3/Vorbis/MP4 tags, extracts cover art
+- **Library scanning** — Recursive folder scan, reads ID3/Vorbis/MP4 tags (incl. ALBUM_ARTIST), extracts cover art
 - **Audio streaming** — HTTP Range support (206 Partial Content) for instant seeking on large files
 - **Player** — Play/pause, seek, next/prev, volume, shuffle, repeat (off/all/one), keyboard shortcuts
 - **Cover art** — Extracted during scan, cached on disk, served with 7-day cache headers
@@ -65,7 +65,11 @@ npm run dev
 - **Media Session** — OS media keys (play/pause/next/prev), now-playing notification with cover art, OS seek bar
 - **PWA** — Installable as a standalone app, service worker caches app shell and cover art for offline-ready loading
 - **Spectrum Visualizer** — Real-time frequency bars via Web Audio API, toggleable from the player bar
+- **Listening Stats** — Play tracking at 50% duration, top artists/albums/tracks, plays-per-day chart, period selector
+- **Scrobbling** — Last.fm and ListenBrainz integration, per-user config, async with retry
+- **Activity Feed** — Real-time SSE stream showing what users are listening to
 - **API Documentation** — Swagger UI at `/swagger-ui.html`, auto-generated OpenAPI 3.0 spec
+- **E2E Tests** — 21 Playwright tests covering auth, browse, playback, admin, search, stats
 - **HTTPS** — Caddy reverse proxy with automatic TLS, HTTP→HTTPS redirect
 
 ## Project Structure
@@ -89,19 +93,21 @@ musicode/
 | `MUSIC_DIR` | `C:/Users/david/Music` | Host path to music library (mounted read-only) |
 | `MUSICODE_ADMIN_PASSWORD` | `changeme` | Initial admin password |
 | `MUSICODE_JWT_SECRET` | dev default | JWT signing key (≥32 chars, change in prod) |
+| `LASTFM_API_KEY` | _(empty)_ | Last.fm API key for scrobbling (optional) |
+| `LASTFM_API_SECRET` | _(empty)_ | Last.fm API secret for scrobbling (optional) |
 
 See `.env.example` for full documentation.
 
 ## Tests
 
 ```bash
-# Backend — 98 tests, JaCoCo ≥80% coverage
+# Backend — 108 tests, JaCoCo ≥80% coverage
 cd musicode-server && mvn clean verify
 
 # Frontend — 40 unit tests, Vitest v8 coverage thresholds
 cd musicode-ui && npm run test:coverage
 
-# E2E — 19 Playwright tests (requires backend running on :8080)
+# E2E — 21 Playwright tests (requires backend running on :8080)
 cd musicode-server && mvn spring-boot:run &
 cd musicode-ui && npm run test:e2e
 ```
