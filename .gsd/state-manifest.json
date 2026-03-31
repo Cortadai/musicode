@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T13:16:23.362Z",
+  "exported_at": "2026-03-31T13:29:21.004Z",
   "milestones": [
     {
       "id": "M001",
@@ -1032,7 +1032,7 @@
       "full_summary_md": "",
       "full_uat_md": "",
       "goal": "Real-time listening activity feed via SSE. Shows what users are listening to.",
-      "success_criteria": "- GET /api/activity/stream returns SSE event stream\\n- Events pushed when any user records a PlaybackEvent\\n- Event payload: username, track title, artist, album, cover art URL, timestamp\\n- Frontend ActivityFeed component showing recent plays\\n- Accessible from sidebar or dedicated route\\n- SSE connections clean up on client disconnect\\n- Reconnect logic in frontend (EventSource auto-reconnect)\\n- Works with 1-5 concurrent users\\n- mvn clean verify passes",
+      "success_criteria": "- GET /api/activity/stream returns SSE event stream\\n- Events pushed when any user records a PlaybackEvent\\n- Event payload: username, track title, artist, album, cover art URL, timestamp\\n- Frontend ActivityFeed component showing recent plays\\n- SSE connections clean up on client disconnect\\n- Works with 1-5 concurrent users\\n- mvn clean verify passes\\n- npx playwright test passes",
       "proof_level": "contract + integration",
       "integration_closure": "PlaybackEvent creation pushes SSE to all connected clients",
       "observability_impact": "Real-time activity stream, connection count logged",
@@ -4174,6 +4174,84 @@
       ],
       "expected_output": [
         "Updated SettingsPage or new ScrobbleSettings component",
+        "All tests passing"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M007",
+      "slice_id": "S04",
+      "id": "T01",
+      "title": "SSE backend — ActivityService + controller",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Create ActivityService with SseEmitter registry\n2. Methods: addEmitter(SseEmitter), broadcast(ActivityEvent), removeEmitter\n3. Create ActivityEvent record: username, trackTitle, artistName, albumTitle, coverUrl, timestamp\n4. Create ActivityController with GET /api/activity/stream returning SseEmitter\n5. Also GET /api/activity/recent for last 20 events (fallback for clients that miss SSE)\n6. Hook into PlayController: after save, call activityService.broadcast()\n7. Handle emitter cleanup on completion/timeout/error\n8. Verify: curl SSE endpoint, play a track, see event arrive",
+      "estimate": "35min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/service/ActivityService.java",
+        "musicode-server/src/main/java/com/musicode/controller/ActivityController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/ActivityEvent.java",
+        "musicode-server/src/main/java/com/musicode/controller/PlayController.java"
+      ],
+      "verify": "curl /api/activity/stream receives SSE events when a play is recorded.",
+      "inputs": [
+        "PlayController",
+        "SseEmitter docs"
+      ],
+      "expected_output": [
+        "ActivityService.java",
+        "ActivityController.java",
+        "ActivityEvent.java",
+        "Updated PlayController.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M007",
+      "slice_id": "S04",
+      "id": "T02",
+      "title": "Frontend ActivityFeed + SSE client",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Create ActivityFeed component showing recent plays as a timeline\n2. Use EventSource to connect to /api/activity/stream\n3. Auto-reconnect on disconnect (EventSource handles this natively)\n4. Show: avatar/icon, 'username listened to trackTitle by artist' with timestamp\n5. Add to sidebar or as a collapsible panel\n6. Fallback: fetch /api/activity/recent on mount for initial data\n7. Run full test suite, commit",
+      "estimate": "30min",
+      "files": [
+        "musicode-ui/src/components/activity/ActivityFeed.tsx",
+        "musicode-ui/src/components/layout/Sidebar.tsx",
+        "musicode-ui/src/api/activity.ts"
+      ],
+      "verify": "Play a track → activity feed shows the event in real-time. npx playwright test passes. mvn clean verify passes.",
+      "inputs": [
+        "ActivityEvent shape",
+        "SSE endpoint"
+      ],
+      "expected_output": [
+        "ActivityFeed component",
+        "Updated Sidebar or layout",
         "All tests passing"
       ],
       "observability_impact": "",

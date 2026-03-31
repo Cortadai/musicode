@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router';
 import { Disc3, Users, Music, Search, Settings, UserCog, LogOut, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import ActivityFeed from '../activity/ActivityFeed';
 
 export default function Sidebar() {
   const { isAdmin, user, logout } = useAuth();
@@ -72,6 +73,9 @@ export default function Sidebar() {
           </>
         )}
       </nav>
+
+      {/* Activity feed */}
+      <ActivityFeed />
 
       {/* User info + logout */}
       <div className="px-3 pb-4 border-t border-zinc-800 pt-3">

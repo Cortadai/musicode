@@ -5,6 +5,7 @@ import com.musicode.model.entity.PlaybackEvent;
 import com.musicode.repository.PlaybackEventRepository;
 import com.musicode.repository.TrackRepository;
 import com.musicode.repository.UserRepository;
+import com.musicode.service.ActivityService;
 import com.musicode.service.ScrobbleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +28,7 @@ public class PlayController {
     private final TrackRepository trackRepository;
     private final UserRepository userRepository;
     private final ScrobbleService scrobbleService;
+    private final ActivityService activityService;
 
     @PostMapping("/{trackId}")
     @ResponseStatus(HttpStatus.CREATED)
@@ -55,6 +57,9 @@ public class PlayController {
 
         // Fire-and-forget scrobble to configured services (async)
         scrobbleService.scrobble(event);
+
+        // Broadcast to activity feed (SSE)
+        activityService.broadcast(event);
 
         return Map.of(
                 "id", event.getId(),
