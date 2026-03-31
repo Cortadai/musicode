@@ -1,11 +1,6 @@
 package com.musicode.model.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@Getter
-@AllArgsConstructor
-public class TokenPair {
-    private final String accessToken;
-    private final String refreshToken;
-}
+public record TokenPair(
+        String accessToken,
+        String refreshToken
+) {}

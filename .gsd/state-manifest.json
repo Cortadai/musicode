@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T09:52:37.587Z",
+  "exported_at": "2026-03-31T10:06:51.754Z",
   "milestones": [
     {
       "id": "M001",
@@ -200,6 +200,62 @@
       ],
       "requirement_coverage": "New requirements needed: R017 (Authentication), R018 (Multi-user with roles), R019 (HTTPS/TLS). Existing validated requirements R001-R009 must continue to work behind auth — no regressions.",
       "boundary_map_markdown": "```\\nCaddy (TLS termination, port 443/80)\\n  → Spring Boot (port 8080, internal only)\\n    → SecurityFilterChain (JWT validation, role enforcement)\\n      → Existing controllers (unchanged)\\n    → AuthController (login, refresh, logout)\\n    → UserController (CRUD, ADMIN only)\\n    → H2 (User table, RefreshToken table)\\n  → React static build (served by Caddy)\\n    → AuthContext (token state, refresh logic)\\n    → ProtectedRoute (role-based guards)\\n    → Login page\\n```"
+    },
+    {
+      "id": "M004",
+      "title": "",
+      "status": "queued",
+      "depends_on": [],
+      "created_at": "2026-03-31T10:01:00.410Z",
+      "completed_at": null,
+      "vision": "Elevate Musicode's code quality with Java modern idioms, centralized error handling, structured logging, and didactic comments — without changing any behavior.",
+      "success_criteria": [
+        "All DTOs are Java Records — no Lombok on data carriers",
+        "Error handling centralized in @ControllerAdvice with consistent JSON format",
+        "logback-spring.xml with dev/docker profiles and MDC request ID",
+        "Frontend ErrorBoundary prevents white-screen crashes",
+        "Frontend ErrorMessage component replaces inline error strings",
+        "console.debug in auth and player flows for troubleshooting",
+        "Didactic comments in security, player, and interceptor code",
+        "All tests pass, all coverage gates maintained",
+        "No behavioral changes — pure quality improvement"
+      ],
+      "key_risks": [
+        {
+          "risk": "DTOs to Records breaks serialization or validation",
+          "whyItMatters": "Jackson and Bean Validation on Records have different annotation placement (constructor params). Must test all endpoints."
+        },
+        {
+          "risk": "@ControllerAdvice changes existing error response format",
+          "whyItMatters": "Frontend parses error responses. Changing format silently breaks error display."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "Records break serialization",
+          "retireIn": "S01",
+          "whatWillBeProven": "All 97 backend tests pass after DTO migration — same API behavior"
+        },
+        {
+          "riskOrUnknown": "ControllerAdvice changes error format",
+          "retireIn": "S02",
+          "whatWillBeProven": "Error response tests verify consistent {error, status, timestamp, path} format"
+        }
+      ],
+      "verification_contract": "Backend: mvn clean verify — 97 tests, JaCoCo ≥80%. Frontend: npm run build + npm run test:coverage — 35+ tests, thresholds met.",
+      "verification_integration": "No integration changes — this is a refactor milestone. All existing behavior preserved.",
+      "verification_operational": "docker-compose build succeeds with refactored code.",
+      "verification_uat": "Manual spot-check: login, browse albums, play track, error pages — all work as before but with better error messages and logging.",
+      "definition_of_done": [
+        "All 3 slices complete with summaries",
+        "mvn clean verify BUILD SUCCESS — 97 tests, JaCoCo ≥80%",
+        "npm run test:coverage — 35+ tests, coverage thresholds met",
+        "npm run build compiles cleanly",
+        "No behavioral changes — all existing features work identically",
+        "Comments add understanding without noise"
+      ],
+      "requirement_coverage": "No new requirements. This milestone improves code quality on validated R001-R009, R017-R019.",
+      "boundary_map_markdown": "```\\nS01 — Java modernization (entities, DTOs, services)\\n  No new behavior, no API changes, all tests must pass\\n\\nS02 — Backend quality (controllers, config, services)\\n  @ControllerAdvice replaces inline error handling\\n  logback-spring.xml for structured logging\\n  MDC filter for request tracing\\n  Didactic comments in security layer\\n\\nS03 — Frontend quality (components, context, api)\\n  ErrorBoundary wraps app\\n  ErrorMessage replaces inline error strings\\n  API error extraction utility\\n  console.debug in auth/player\\n  Didactic comments in player/interceptor\\n```"
     }
   ],
   "slices": [
@@ -504,6 +560,68 @@
       "proof_level": "manual-verification",
       "integration_closure": "Deployment architecture complete. docker-compose up serves app via HTTPS through Caddy. Ready for NAS migration by changing localhost to IP/domain in Caddyfile.",
       "observability_impact": "Caddy access logs via docker-compose logs caddy.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M004",
+      "id": "S01",
+      "title": "Java Modern Idioms",
+      "status": "complete",
+      "risk": "low",
+      "depends": [],
+      "demo": "After this: all DTOs are Java Records, code uses var and Optional fluent where appropriate, all tests pass identically.",
+      "created_at": "2026-03-31T10:01:41.830Z",
+      "completed_at": "2026-03-31T10:06:51.711Z",
+      "full_summary_md": "---\nid: S01\nparent: M004\nmilestone: M004\nprovides:\n  - Modernized DTO layer for S02 to build on\nrequires:\n  []\naffects:\n  - S02 — builds on modernized DTOs, controllers will change further with @ControllerAdvice\nkey_files:\n  - musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java\n  - musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java\n  - musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java\n  - musicode-server/src/main/java/com/musicode/util/TokenHashUtil.java\nkey_decisions:\n  - ScanStatus and TrackMetadata kept as Lombok — mutable/builder patterns\n  - TokenHashUtil extracted as static utility\npatterns_established:\n  - Java Records for immutable DTOs, Lombok for mutable entities\n  - TokenHashUtil static utility for SHA-256 hashing\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  - .gsd/milestones/M004/slices/S01/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M004/slices/S01/tasks/T02-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T10:06:51.712Z\nblocker_discovered: false\n---\n\n# S01: Java Modern Idioms\n\n**6 DTOs to Records, TokenHashUtil extracted, var applied \\u2014 97 tests green, coverage met.**\n\n## What Happened\n\nModernized Java code across the backend. Converted 6 DTOs from Lombok classes to Java Records (LoginRequest, CreateUserRequest, UpdateUserRequest, TokenPair, UserResponse, SearchResults). ScanStatus and TrackMetadata kept as Lombok (mutable state, builder). Updated all call sites to Record accessor style. Extracted TokenHashUtil to eliminate SHA-256 hashing duplication between AuthService and RefreshTokenService. Applied var consistently. 97 tests pass, coverage maintained.\n\n## Verification\n\nmvn clean verify \\u2014 97 tests, 0 failures, JaCoCo \\u226580% coverage met, BUILD SUCCESS.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nExtracted TokenHashUtil utility (unplanned but eliminated clear duplication).\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java` — Record: username, password with @NotBlank\n- `musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java` — Record: username, password, role with validation\n- `musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java` — Record: nullable fields for partial updates\n- `musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java` — Record: accessToken, refreshToken\n- `musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java` — Record: id, username, role, enabled with from() factory\n- `musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java` — Record: tracks, albums, artists lists\n- `musicode-server/src/main/java/com/musicode/util/TokenHashUtil.java` — SHA-256 hashing static utility extracted from duplication\n- `musicode-server/src/main/java/com/musicode/controller/AuthController.java` — Updated Record accessors, uses TokenHashUtil\n- `musicode-server/src/main/java/com/musicode/controller/UserController.java` — Updated Record accessors\n- `musicode-server/src/main/java/com/musicode/controller/SearchController.java` — List.of() instead of Collections.emptyList()\n- `musicode-server/src/main/java/com/musicode/service/AuthService.java` — Uses TokenHashUtil, removed duplicate hashToken\n- `musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java` — Uses TokenHashUtil, var, removed duplicate hashToken\n",
+      "full_uat_md": "# S01: Java Modern Idioms — UAT\n\n**Milestone:** M004\n**Written:** 2026-03-31T10:06:51.712Z\n\n## UAT: S01 \\u2014 Java Modern Idioms\\n\\n### Test 1: Records serialize correctly\\n1. POST /api/auth/login with JSON body\\n2. **Expected:** Response has correct field names (id, username, role, enabled)\\n\\n### Test 2: Validation works on Records\\n1. POST /api/auth/login with empty username\\n2. **Expected:** 400 with validation error\\n\\n### Test 3: Full test suite\\n1. Run `mvn clean verify`\\n2. **Expected:** 97 tests pass, JaCoCo \\u226580% met\n",
+      "goal": "Modernize Java code — DTOs to Records where appropriate, var, Optional fluent patterns",
+      "success_criteria": "Immutable DTOs converted to Records (LoginRequest, CreateUserRequest, UpdateUserRequest, TokenPair, UserResponse, SearchResults). ScanStatus and TrackMetadata remain classes (mutable state / builder pattern). var used where RHS makes type obvious. Optional fluent where applicable. 97 tests pass. Coverage maintained.",
+      "proof_level": "integration-test",
+      "integration_closure": "No API changes. Same serialization, same validation. Tests prove it.",
+      "observability_impact": "None — structural refactor only.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M004",
+      "id": "S02",
+      "title": "Backend Error Handling, Logging & Comments",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S01"
+      ],
+      "demo": "After this: all controller error handling centralized in @ControllerAdvice. Custom exceptions replace inline ResponseEntity.badRequest(). Structured logging with MDC request IDs. Didactic comments in security layer.",
+      "created_at": "2026-03-31T10:01:41.830Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Centralize backend error handling, add structured logging with MDC, add didactic comments to security code",
+      "success_criteria": "@ControllerAdvice handles ResourceNotFoundException (404), ConflictException (409), validation errors (400), auth errors (401), access denied (403), generic (500). Custom exceptions in controllers. logback-spring.xml with dev (console readable) and docker (JSON) formats. MDC filter adds requestId. Didactic comments in SecurityConfig, JwtAuthFilter, RefreshTokenService, CookieUtil. All tests pass. Coverage maintained.",
+      "proof_level": "integration-test",
+      "integration_closure": "Error responses consistent format. Logging queryable by request ID. Security code self-documenting.",
+      "observability_impact": "MDC request ID in every log line. Structured error responses with timestamp/path. Auth events with userId.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M004",
+      "id": "S03",
+      "title": "Frontend Error Handling, Logging & Comments",
+      "status": "pending",
+      "risk": "low",
+      "depends": [],
+      "demo": "After this: React app has ErrorBoundary catching runtime crashes. ErrorMessage component with retry. API errors extracted consistently. console.debug in auth and player flows. Didactic comments in key files.",
+      "created_at": "2026-03-31T10:01:41.830Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Add error resilience, diagnostic logging, and didactic comments to frontend",
+      "success_criteria": "ErrorBoundary wraps app in App.tsx. ErrorMessage component with message, detail, optional retry. getErrorMessage utility extracts backend error or gives fallback. Pages use ErrorMessage instead of inline strings. console.debug in AuthContext (login/logout/refresh/restore), usePlayer (track changes, errors), axios interceptor (refresh attempts). Didactic comments in PlayerContext, usePlayer, axios interceptor, AuthContext. Build compiles. Existing tests pass.",
+      "proof_level": "build-passes",
+      "integration_closure": "Frontend handles errors gracefully. Debug logging aids troubleshooting. Code self-documenting.",
+      "observability_impact": "console.debug for auth events, API failures, playback events. ErrorBoundary prevents white screen.",
       "sequence": 0,
       "replan_triggered_at": null
     }
@@ -2414,6 +2532,101 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M004",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "6 DTOs converted to Java Records — all 97 tests pass with Record accessors.",
+      "status": "complete",
+      "one_liner": "6 DTOs converted to Java Records — all 97 tests pass with Record accessors.",
+      "narrative": "Converted 6 DTOs from Lombok classes to Java Records: LoginRequest, CreateUserRequest, UpdateUserRequest, TokenPair, UserResponse, SearchResults. Updated all call sites from getXxx() to xxx() accessor style. ScanStatus (mutable) and TrackMetadata (builder) kept as Lombok classes. Jackson and Bean Validation work correctly on Records in Spring Boot 3.",
+      "verification_result": "mvn clean verify — 97 tests pass, coverage ≥80%.",
+      "duration": "",
+      "completed_at": "2026-03-31T10:06:09.390Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java"
+      ],
+      "key_decisions": [
+        "ScanStatus and TrackMetadata remain Lombok classes — mutable state and builder pattern",
+        "Bean Validation annotations work on Record components in Spring Boot 3"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S01\nmilestone: M004\nkey_files:\n  - musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java\n  - musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java\n  - musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java\n  - musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java\n  - musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java\n  - musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java\nkey_decisions:\n  - ScanStatus and TrackMetadata remain Lombok classes — mutable state and builder pattern\n  - Bean Validation annotations work on Record components in Spring Boot 3\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T10:06:09.391Z\nblocker_discovered: false\n---\n\n# T01: 6 DTOs converted to Java Records — all 97 tests pass with Record accessors.\n\n**6 DTOs converted to Java Records — all 97 tests pass with Record accessors.**\n\n## What Happened\n\nConverted 6 DTOs from Lombok classes to Java Records: LoginRequest, CreateUserRequest, UpdateUserRequest, TokenPair, UserResponse, SearchResults. Updated all call sites from getXxx() to xxx() accessor style. ScanStatus (mutable) and TrackMetadata (builder) kept as Lombok classes. Jackson and Bean Validation work correctly on Records in Spring Boot 3.\n\n## Verification\n\nmvn clean verify — 97 tests pass, coverage ≥80%.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn clean verify` | 0 | ✅ pass | 21100ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java`\n",
+      "description": "Convert to Records: LoginRequest (with @NotBlank on components), CreateUserRequest (with @NotBlank/@NotNull), UpdateUserRequest (all nullable fields), TokenPair, UserResponse (with static factory from(User)), SearchResults. Keep as Lombok classes: ScanStatus (mutable, updated during scan), TrackMetadata (builder pattern, mutable). Verify Jackson serialization/deserialization works with Records. Update any code that calls setters on converted DTOs. Run tests after each conversion.",
+      "estimate": "20min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java"
+      ],
+      "verify": "mvn clean verify — 97 tests pass, coverage ≥80%",
+      "inputs": [
+        "Current DTO files",
+        "Controller and service code that uses them"
+      ],
+      "expected_output": [
+        "6 DTOs converted to Records",
+        "ScanStatus and TrackMetadata unchanged"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M004",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "TokenHashUtil extracted from duplicated code, var applied consistently — 97 tests pass.",
+      "status": "complete",
+      "one_liner": "TokenHashUtil extracted from duplicated code, var applied consistently — 97 tests pass.",
+      "narrative": "Extracted duplicate hashToken methods from AuthService and RefreshTokenService into TokenHashUtil static utility. Applied var consistently in RefreshTokenService. Codebase was already using var and Optional fluent patterns from M003 — minimal additional changes needed.",
+      "verification_result": "mvn clean verify — 97 tests pass, coverage ≥80%.",
+      "duration": "",
+      "completed_at": "2026-03-31T10:06:25.971Z",
+      "blocker_discovered": false,
+      "deviations": "Extracted TokenHashUtil to eliminate code duplication between AuthService and RefreshTokenService — not originally planned but a clear improvement found during the pass.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/util/TokenHashUtil.java",
+        "musicode-server/src/main/java/com/musicode/service/AuthService.java",
+        "musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java"
+      ],
+      "key_decisions": [
+        "Extracted TokenHashUtil as static utility — eliminates SHA-256 hashing duplication",
+        "var used throughout RefreshTokenService for local variables",
+        "Codebase was already using var and Optional fluent — minimal changes needed"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S01\nmilestone: M004\nkey_files:\n  - musicode-server/src/main/java/com/musicode/util/TokenHashUtil.java\n  - musicode-server/src/main/java/com/musicode/service/AuthService.java\n  - musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java\nkey_decisions:\n  - Extracted TokenHashUtil as static utility — eliminates SHA-256 hashing duplication\n  - var used throughout RefreshTokenService for local variables\n  - Codebase was already using var and Optional fluent — minimal changes needed\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T10:06:25.971Z\nblocker_discovered: false\n---\n\n# T02: TokenHashUtil extracted from duplicated code, var applied consistently — 97 tests pass.\n\n**TokenHashUtil extracted from duplicated code, var applied consistently — 97 tests pass.**\n\n## What Happened\n\nExtracted duplicate hashToken methods from AuthService and RefreshTokenService into TokenHashUtil static utility. Applied var consistently in RefreshTokenService. Codebase was already using var and Optional fluent patterns from M003 — minimal additional changes needed.\n\n## Verification\n\nmvn clean verify — 97 tests pass, coverage ≥80%.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn clean verify` | 0 | ✅ pass | 21300ms |\n\n\n## Deviations\n\nExtracted TokenHashUtil to eliminate code duplication between AuthService and RefreshTokenService — not originally planned but a clear improvement found during the pass.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/util/TokenHashUtil.java`\n- `musicode-server/src/main/java/com/musicode/service/AuthService.java`\n- `musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java`\n",
+      "description": "Scan codebase for: explicit types where var improves readability (e.g. var user = userRepository.findByUsername(...)), if(optional.isPresent()) patterns replaceable with map/orElse/ifPresent, any other Java 21 opportunities. Apply conservatively — only where it genuinely improves readability.",
+      "estimate": "15min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/service/AuthService.java",
+        "musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java",
+        "musicode-server/src/main/java/com/musicode/controller/UserController.java",
+        "musicode-server/src/main/java/com/musicode/controller/AuthController.java",
+        "musicode-server/src/main/java/com/musicode/controller/LibraryController.java"
+      ],
+      "verify": "mvn clean verify — 97 tests pass, coverage ≥80%",
+      "inputs": [
+        "All service and controller files"
+      ],
+      "expected_output": [
+        "Updated service and controller files with modern idioms"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -3457,6 +3670,28 @@
       "verdict": "✅ pass — connection refused",
       "duration_ms": 2000,
       "created_at": "2026-03-31T09:50:11.468Z"
+    },
+    {
+      "id": 78,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M004",
+      "command": "mvn clean verify",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 21100,
+      "created_at": "2026-03-31T10:06:09.390Z"
+    },
+    {
+      "id": 79,
+      "task_id": "T02",
+      "slice_id": "S01",
+      "milestone_id": "M004",
+      "command": "mvn clean verify",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 21300,
+      "created_at": "2026-03-31T10:06:25.971Z"
     }
   ]
 }

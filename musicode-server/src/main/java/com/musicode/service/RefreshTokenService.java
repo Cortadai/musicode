@@ -3,17 +3,14 @@ package com.musicode.service;
 import com.musicode.model.entity.RefreshToken;
 import com.musicode.model.entity.User;
 import com.musicode.repository.RefreshTokenRepository;
+import com.musicode.util.TokenHashUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.UUID;
 
 @Service
@@ -24,14 +21,10 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
 
-    /**
-     * Creates a new refresh token for the user.
-     * Returns the raw token (to set in cookie). Only the hash is persisted.
-     */
     @Transactional
     public String createToken(User user) {
-        String rawToken = UUID.randomUUID().toString();
-        String hash = hashToken(rawToken);
+        var rawToken = UUID.randomUUID().toString();
+        var hash = TokenHashUtil.hash(rawToken);
 
         var token = RefreshToken.builder()
                 .user(user)
@@ -43,14 +36,9 @@ public class RefreshTokenService {
         return rawToken;
     }
 
-    /**
-     * Validates a raw refresh token: finds by hash, checks expiry/revoked.
-     * If valid, revokes the old token and creates a new one (rotation).
-     * Returns the new raw token, or null if invalid.
-     */
     @Transactional
     public String validateAndRotate(String rawToken, User user) {
-        String hash = hashToken(rawToken);
+        var hash = TokenHashUtil.hash(rawToken);
         var tokenOpt = refreshTokenRepository.findByTokenHash(hash);
 
         if (tokenOpt.isEmpty()) {
@@ -62,7 +50,6 @@ public class RefreshTokenService {
 
         if (token.isRevoked()) {
             log.warn("Attempted use of revoked refresh token for user: {}", token.getUser().getUsername());
-            // Potential token theft — revoke all tokens for this user
             revokeAllForUser(token.getUser());
             return null;
         }
@@ -74,17 +61,15 @@ public class RefreshTokenService {
             return null;
         }
 
-        // Revoke old token
         token.setRevoked(true);
         refreshTokenRepository.save(token);
 
-        // Issue new token
         return createToken(user);
     }
 
     @Transactional
     public void revokeByRawToken(String rawToken) {
-        String hash = hashToken(rawToken);
+        var hash = TokenHashUtil.hash(rawToken);
         refreshTokenRepository.findByTokenHash(hash).ifPresent(token -> {
             token.setRevoked(true);
             refreshTokenRepository.save(token);
@@ -93,26 +78,16 @@ public class RefreshTokenService {
 
     @Transactional
     public void revokeAllForUser(User user) {
-        int count = refreshTokenRepository.revokeAllByUser(user);
+        var count = refreshTokenRepository.revokeAllByUser(user);
         log.info("Revoked {} refresh tokens for user: {}", count, user.getUsername());
     }
 
-    @Scheduled(fixedRate = 3600000) // every hour
+    @Scheduled(fixedRate = 3600000)
     @Transactional
     public void cleanupExpired() {
-        int deleted = refreshTokenRepository.deleteAllExpiredBefore(Instant.now());
+        var deleted = refreshTokenRepository.deleteAllExpiredBefore(Instant.now());
         if (deleted > 0) {
             log.info("Cleaned up {} expired refresh tokens", deleted);
-        }
-    }
-
-    private String hashToken(String rawToken) {
-        try {
-            var digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
         }
     }
 }

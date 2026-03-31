@@ -9,8 +9,6 @@ import com.musicode.repository.ArtistRepository;
 import com.musicode.repository.TrackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -25,21 +23,13 @@ public class SearchController {
     @GetMapping
     public SearchResults search(@RequestParam(name = "q", defaultValue = "") String query) {
         if (query.isBlank()) {
-            return SearchResults.builder()
-                    .tracks(Collections.emptyList())
-                    .albums(Collections.emptyList())
-                    .artists(Collections.emptyList())
-                    .build();
+            return new SearchResults(List.of(), List.of(), List.of());
         }
 
         List<Track> tracks = trackRepository.findByTitleContainingIgnoreCase(query);
         List<Album> albums = albumRepository.findByTitleContainingIgnoreCase(query);
         List<Artist> artists = artistRepository.findByNameContainingIgnoreCase(query);
 
-        return SearchResults.builder()
-                .tracks(tracks)
-                .albums(albums)
-                .artists(artists)
-                .build();
+        return new SearchResults(tracks, albums, artists);
     }
 }

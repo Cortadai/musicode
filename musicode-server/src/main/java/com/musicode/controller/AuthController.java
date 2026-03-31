@@ -32,15 +32,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
-            var tokenPair = authService.login(request.getUsername(), request.getPassword());
-            var user = userRepository.findByUsername(request.getUsername()).orElseThrow();
+            var tokenPair = authService.login(request.username(), request.password());
+            var user = userRepository.findByUsername(request.username()).orElseThrow();
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(tokenPair.getAccessToken()).toString())
-                    .header(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(tokenPair.getRefreshToken()).toString())
+                    .header(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(tokenPair.accessToken()).toString())
+                    .header(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(tokenPair.refreshToken()).toString())
                     .body(UserResponse.from(user));
         } catch (AuthenticationException e) {
-            log.warn("Login failed for user '{}': {}", request.getUsername(), e.getMessage());
+            log.warn("Login failed for user '{}': {}", request.username(), e.getMessage());
             return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
         }
     }
@@ -62,12 +62,12 @@ public class AuthController {
         }
 
         // Extract username from new access token to return user info
-        String username = jwtService.extractUsername(tokenPair.getAccessToken());
+        String username = jwtService.extractUsername(tokenPair.accessToken());
         var user = userRepository.findByUsername(username);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(tokenPair.getAccessToken()).toString())
-                .header(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(tokenPair.getRefreshToken()).toString())
+                .header(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(tokenPair.accessToken()).toString())
+                .header(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(tokenPair.refreshToken()).toString())
                 .body(user.map(UserResponse::from).orElse(null));
     }
 

@@ -40,15 +40,15 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
+        if (userRepository.existsByUsername(request.username())) {
             return ResponseEntity.status(409)
-                    .body(Map.of("error", "Username already exists: " + request.getUsername()));
+                    .body(Map.of("error", "Username already exists: " + request.username()));
         }
 
         var user = User.builder()
-                .username(request.getUsername())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .username(request.username())
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .role(request.role())
                 .build();
 
         user = userRepository.save(user);
@@ -65,25 +65,24 @@ public class UserController {
 
         var user = userOpt.get();
 
-        if (request.getUsername() != null && !request.getUsername().isBlank()) {
-            // Check uniqueness if username is changing
-            if (!user.getUsername().equals(request.getUsername()) && userRepository.existsByUsername(request.getUsername())) {
+        if (request.username() != null && !request.username().isBlank()) {
+            if (!user.getUsername().equals(request.username()) && userRepository.existsByUsername(request.username())) {
                 return ResponseEntity.status(409)
-                        .body(Map.of("error", "Username already exists: " + request.getUsername()));
+                        .body(Map.of("error", "Username already exists: " + request.username()));
             }
-            user.setUsername(request.getUsername());
+            user.setUsername(request.username());
         }
 
-        if (request.getRole() != null) {
-            user.setRole(request.getRole());
+        if (request.role() != null) {
+            user.setRole(request.role());
         }
 
-        if (request.getEnabled() != null) {
-            user.setEnabled(request.getEnabled());
+        if (request.enabled() != null) {
+            user.setEnabled(request.enabled());
         }
 
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        if (request.password() != null && !request.password().isBlank()) {
+            user.setPasswordHash(passwordEncoder.encode(request.password()));
         }
 
         user = userRepository.save(user);

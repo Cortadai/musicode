@@ -4,6 +4,7 @@ import com.musicode.model.dto.TokenPair;
 import com.musicode.model.entity.User;
 import com.musicode.repository.RefreshTokenRepository;
 import com.musicode.repository.UserRepository;
+import com.musicode.util.TokenHashUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,11 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -75,19 +71,9 @@ public class AuthService {
     }
 
     private User findUserByRefreshToken(String rawRefreshToken) {
-        String hash = hashToken(rawRefreshToken);
+        var hash = TokenHashUtil.hash(rawRefreshToken);
         return refreshTokenRepository.findByTokenHash(hash)
                 .map(rt -> rt.getUser())
                 .orElse(null);
-    }
-
-    private String hashToken(String rawToken) {
-        try {
-            var digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
-        }
     }
 }
