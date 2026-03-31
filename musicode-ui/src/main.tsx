@@ -9,8 +9,10 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// --- Service Worker registration ---
-if ('serviceWorker' in navigator) {
+// --- Service Worker registration (production only) ---
+// In dev mode, Vite's HMR uses its own request handling — a SW would intercept
+// those requests and cause refresh loops or stale module serving.
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then((reg) => {
