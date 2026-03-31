@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus } from '../api/library';
 import { getErrorMessage } from '../utils/errors';
@@ -18,6 +18,19 @@ export default function SettingsPage() {
     queryFn: getScanStatus,
     refetchInterval: (query) => query.state.data?.scanning ? 1000 : false,
   });
+
+  // When scan finishes, invalidate library data so albums/tracks/artists refresh
+  const prevScanning = useRef(false);
+  useEffect(() => {
+    if (prevScanning.current && scanStatus && !scanStatus.scanning) {
+      console.debug('[settings] Scan finished — invalidating library queries');
+      queryClient.invalidateQueries({ queryKey: ['albums'] });
+      queryClient.invalidateQueries({ queryKey: ['artists'] });
+      queryClient.invalidateQueries({ queryKey: ['tracks-infinite'] });
+      queryClient.invalidateQueries({ queryKey: ['search'] });
+    }
+    prevScanning.current = scanStatus?.scanning ?? false;
+  }, [scanStatus?.scanning, queryClient]);
 
   const addMutation = useMutation({
     mutationFn: addFolder,
