@@ -6,6 +6,8 @@ import com.musicode.repository.UserRepository;
 import com.musicode.service.AuthService;
 import com.musicode.service.JwtService;
 import com.musicode.util.CookieUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Authentication", description = "Login, logout, token refresh, and session info")
 public class AuthController {
 
     private final AuthService authService;
@@ -36,6 +39,7 @@ public class AuthController {
      * The trade-off: one try-catch in login vs forcing cookie logic into the advice.
      */
     @PostMapping("/login")
+    @Operation(summary = "Login", description = "Authenticate with username and password. Sets HttpOnly access_token and refresh_token cookies on success.")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             var tokenPair = authService.login(request.username(), request.password());
@@ -52,6 +56,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Refresh tokens", description = "Rotate access and refresh tokens using the refresh_token cookie. Old refresh token is revoked.")
     public ResponseEntity<?> refresh(HttpServletRequest request) {
         var refreshToken = CookieUtil.extractCookie(request.getCookies(), CookieUtil.REFRESH_TOKEN_COOKIE);
 
@@ -77,6 +82,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "Logout", description = "Revoke refresh token and clear auth cookies.")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         var refreshToken = CookieUtil.extractCookie(request.getCookies(), CookieUtil.REFRESH_TOKEN_COOKIE);
 
@@ -91,6 +97,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
+    @Operation(summary = "Current user", description = "Returns the currently authenticated user's info.")
     public ResponseEntity<?> me(@AuthenticationPrincipal String username) {
         if (username == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));

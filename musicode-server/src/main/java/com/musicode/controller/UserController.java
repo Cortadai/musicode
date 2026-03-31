@@ -9,6 +9,8 @@ import com.musicode.model.dto.UserResponse;
 import com.musicode.model.entity.User;
 import com.musicode.repository.RefreshTokenRepository;
 import com.musicode.repository.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import java.util.Map;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Users", description = "User management (ADMIN only)")
 public class UserController {
 
     private final UserRepository userRepository;
@@ -31,6 +34,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping
+    @Operation(summary = "List users", description = "Returns all user accounts.")
     public List<UserResponse> listUsers() {
         return userRepository.findAll().stream()
                 .map(UserResponse::from)
@@ -38,12 +42,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get user", description = "Returns a single user by ID.")
     public UserResponse getUser(@PathVariable Long id) {
         return UserResponse.from(findUserOrThrow(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Create user", description = "Create a new user account with a username, password, and role (ADMIN or LISTENER).")
     public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
         if (userRepository.existsByUsername(request.username())) {
             throw new ConflictException("Username already exists: " + request.username());
@@ -61,6 +67,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update user", description = "Update username, role, enabled status, or password. Only provided fields are changed.")
     public UserResponse updateUser(@PathVariable Long id, @RequestBody UpdateUserRequest request) {
         var user = findUserOrThrow(id);
 
@@ -90,6 +97,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @Transactional
+    @Operation(summary = "Delete user", description = "Delete a user account and all associated refresh tokens. Cannot delete your own account.")
     public Map<String, Long> deleteUser(@PathVariable Long id, java.security.Principal principal) {
         var user = findUserOrThrow(id);
 

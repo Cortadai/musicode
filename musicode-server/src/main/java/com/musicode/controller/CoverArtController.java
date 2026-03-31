@@ -1,6 +1,8 @@
 package com.musicode.controller;
 
 import com.musicode.service.CoverArtService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -15,11 +17,13 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/api/covers")
 @RequiredArgsConstructor
+@Tag(name = "Cover Art", description = "Album cover art images")
 public class CoverArtController {
 
     private final CoverArtService coverArtService;
 
     @GetMapping("/{albumId}")
+    @Operation(summary = "Get album cover art", description = "Returns the cover art JPEG for an album. Cached for 7 days. Returns 404 if no cover art exists.")
     public ResponseEntity<Resource> getCoverArt(@PathVariable Long albumId) {
         Path coverPath = coverArtService.getCoverArtPath(albumId);
         if (coverPath == null) {
