@@ -173,7 +173,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R017 — Authentication with JWT in Secure Cookies
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Spring Security with stateless JWT authentication. Access token (15 min) and refresh token (7 days) stored in HttpOnly/Secure/SameSite=Strict cookies. Login, refresh, and logout endpoints. Refresh tokens persisted server-side in H2 for revocation. Logout invalidates refresh token in DB.
 - Why it matters: Required before exposing the app outside localhost. Secure cookies prevent XSS token theft. Server-side refresh token storage enables real logout.
 - Source: user
@@ -184,7 +184,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R018 — Multi-User with Admin-Managed Roles
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: User entity with ADMIN and LISTENER roles. Admin creates/manages user accounts — no public registration. ADMIN can CRUD users and manage library. LISTENER can browse and play only. Folder management and scan restricted to ADMIN.
 - Why it matters: 5 users max, all controlled. No registration form = no attack surface. Role separation prevents listeners from modifying the library.
 - Source: user
@@ -195,7 +195,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R019 — HTTPS via Caddy Reverse Proxy
 - Class: operability
-- Status: active
+- Status: validated
 - Description: Caddy as TLS-terminating reverse proxy in Docker Compose. Only Caddy exposes ports (80/443) externally. Spring Boot internal only. Automatic certificate management — Caddy internal CA for localhost/LAN, Let's Encrypt when domain is available. HTTP redirects to HTTPS.
 - Why it matters: Secure cookies require HTTPS. Auth without TLS is security theater. Caddy makes TLS zero-config.
 - Source: user
@@ -237,13 +237,13 @@ This file is the explicit capability and coverage contract for the project.
 | R014 | integration | deferred | none | none | unmapped |
 | R015 | differentiator | deferred | none | none | unmapped |
 | R016 | anti-feature | out-of-scope | none | none | n/a |
-| R017 | core-capability | active | M003/S02 | M003/S01, M003/S04 | unmapped |
-| R018 | core-capability | active | M003/S03 | M003/S01 | unmapped |
-| R019 | operability | active | M003/S05 | none | unmapped |
+| R017 | core-capability | validated | M003/S02 | M003/S01, M003/S04 | M003 S02+S04 — JWT in HttpOnly/Secure/SameSite=Strict cookies. Access 15min, refresh 7 days with rotation and theft detection. Login/refresh/logout. Axios interceptor with refresh queue. 97 backend + 35 frontend tests. |
+| R018 | core-capability | validated | M003/S03 | M003/S01 | M003 S01+S03+S04 — User with ADMIN/LISTENER roles. Admin CRUD, no public registration. Role enforcement on all endpoints. Admin Settings/Users, listener browse/play only. 16 role tests. |
+| R019 | operability | validated | M003/S05 | none | M003 S05 — Caddy TLS in Docker Compose. HTTPS localhost with internal CA. HTTP 308 redirect. Port 8080 isolated. NAS-ready. |
 
 ## Coverage Summary
 
-- Active requirements: 3 (R017, R018, R019)
-- Mapped to slices: 3
-- Validated: 9 (R001, R002, R003, R004, R005, R006, R007, R008, R009)
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 12 (R001-R009, R017, R018, R019)
 - Unmapped active requirements: 0
