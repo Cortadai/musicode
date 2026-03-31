@@ -2,11 +2,29 @@ import { useEffect, useCallback, useRef } from 'react';
 import { usePlayerState, usePlayerDispatch } from '../context/PlayerContext';
 import type { Track } from '../types';
 
-// Single global Audio element — shared across all usePlayer() calls
+/**
+ * Singleton global Audio element — shared across all usePlayer() hook instances.
+ *
+ * WHY SINGLETON: If each component that calls usePlayer() created its own Audio
+ * element, you'd get overlapping playback — two tracks playing simultaneously
+ * when navigating between pages. A module-level singleton ensures one audio
+ * output regardless of how many components use the hook.
+ *
+ * WHY MODULE-LEVEL (not ref/state): The Audio element must survive component
+ * unmounts. If it lived in a ref, navigating away from a page would destroy
+ * the ref and stop playback. Module-level variables persist for the app lifetime.
+ */
 const globalAudio = new Audio();
 globalAudio.preload = 'metadata';
 
-// Track which component instance owns the audio event wiring
+/**
+ * Owner tracking — prevents duplicate event wiring.
+ *
+ * WHY: Multiple components may call usePlayer() simultaneously (PlayerBar + TrackList).
+ * Without owner tracking, each would wire timeupdate/ended handlers, causing duplicate
+ * dispatches (SET_TIME fired N times per tick). The Symbol ensures exactly one instance
+ * owns the event wiring at any time.
+ */
 let audioOwnerRef: symbol | null = null;
 
 export function usePlayer() {
@@ -14,7 +32,7 @@ export function usePlayer() {
   const dispatch = usePlayerDispatch();
   const ownerSymbol = useRef(Symbol('player-owner'));
 
-  // Only one usePlayer instance wires audio events
+  // Wire audio events — only one usePlayer instance does this
   useEffect(() => {
     if (audioOwnerRef !== null) return;
     audioOwnerRef = ownerSymbol.current;
@@ -43,7 +61,7 @@ export function usePlayer() {
     };
   }, [dispatch]);
 
-  // Sync volume
+  // Sync volume changes to the Audio element
   useEffect(() => {
     globalAudio.volume = state.volume;
   }, [state.volume]);
@@ -57,18 +75,19 @@ export function usePlayer() {
     const fullSrc = window.location.origin + src;
 
     if (globalAudio.src !== fullSrc) {
+      console.debug('[player] Loading track:', state.currentTrack.title, '→', src);
       globalAudio.src = src;
       globalAudio.load();
     }
 
     if (state.isPlaying) {
       globalAudio.play().catch((err) => {
-        console.error('Playback error:', err);
+        console.error('[player] Playback error:', err.message);
       });
     }
   }, [state.currentTrack?.id]);
 
-  // Sync play/pause
+  // Sync play/pause state to the Audio element
   useEffect(() => {
     if (audioOwnerRef !== ownerSymbol.current) return;
     if (!state.currentTrack) return;
@@ -80,7 +99,7 @@ export function usePlayer() {
     }
   }, [state.isPlaying]);
 
-  // Handle PREV/repeat-one restarting current track
+  // Handle PREV/repeat-one: when reducer resets currentTime to 0, sync to Audio
   useEffect(() => {
     if (audioOwnerRef !== ownerSymbol.current) return;
     if (state.currentTime === 0 && globalAudio.currentTime > 0 && state.currentTrack) {

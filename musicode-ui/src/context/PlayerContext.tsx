@@ -1,6 +1,29 @@
 import { createContext, useContext, useReducer, type ReactNode, type Dispatch } from 'react';
 import type { Track } from '../types';
 
+/**
+ * Player state management using useReducer.
+ *
+ * WHY useReducer OVER useState:
+ * Player state has many interdependent fields (currentTrack, queue, queueIndex,
+ * isPlaying, shuffle, repeat). A single state update often needs to change multiple
+ * fields atomically (e.g. NEXT changes currentTrack + queueIndex + currentTime + duration).
+ * useReducer guarantees atomic state transitions — no intermediate states where
+ * currentTrack and queueIndex are out of sync.
+ *
+ * WHY TWO CONTEXTS (state + dispatch):
+ * Components that only read state (TrackList highlighting current track) don't need
+ * the dispatch function. Components that only dispatch (play buttons) don't need the
+ * full state. Separate contexts prevent unnecessary re-renders — a component consuming
+ * only dispatch won't re-render when state changes.
+ *
+ * WHY originalQueue:
+ * When shuffle is toggled on, we randomize the queue but keep a copy of the original
+ * order. When shuffle is toggled off, we restore the original order and find the
+ * current track's position in it. Without this, disabling shuffle would lose the
+ * original album/artist track order.
+ */
+
 // --- State ---
 
 export type RepeatMode = 'off' | 'all' | 'one';

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus } from '../api/library';
+import { getErrorMessage } from '../utils/errors';
 import { FolderOpen, Trash2, RefreshCw, Plus } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -91,7 +92,7 @@ export default function SettingsPage() {
         </form>
         {addMutation.isError && (
           <p className="text-red-400 text-sm mt-2">
-            {(addMutation.error as Error).message || 'Failed to add folder'}
+            {getErrorMessage(addMutation.error, 'Failed to add folder')}
           </p>
         )}
       </section>

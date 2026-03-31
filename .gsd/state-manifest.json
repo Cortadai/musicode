@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T10:16:49.274Z",
+  "exported_at": "2026-03-31T10:25:15.149Z",
   "milestones": [
     {
       "id": "M001",
@@ -204,10 +204,10 @@
     {
       "id": "M004",
       "title": "",
-      "status": "queued",
+      "status": "complete",
       "depends_on": [],
       "created_at": "2026-03-31T10:01:00.410Z",
-      "completed_at": null,
+      "completed_at": "2026-03-31T10:25:15.109Z",
       "vision": "Elevate Musicode's code quality with Java modern idioms, centralized error handling, structured logging, and didactic comments — without changing any behavior.",
       "success_criteria": [
         "All DTOs are Java Records — no Lombok on data carriers",
@@ -609,19 +609,19 @@
       "milestone_id": "M004",
       "id": "S03",
       "title": "Frontend Error Handling, Logging & Comments",
-      "status": "pending",
+      "status": "complete",
       "risk": "low",
       "depends": [],
       "demo": "After this: React app has ErrorBoundary catching runtime crashes. ErrorMessage component with retry. API errors extracted consistently. console.debug in auth and player flows. Didactic comments in key files.",
       "created_at": "2026-03-31T10:01:41.830Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
+      "completed_at": "2026-03-31T10:24:36.692Z",
+      "full_summary_md": "---\nid: S03\nparent: M004\nmilestone: M004\nprovides:\n  - (none)\nrequires:\n  - slice: S02\n    provides: Consistent ErrorResponse JSON format from @ControllerAdvice\naffects:\n  []\nkey_files:\n  - musicode-ui/src/components/common/ErrorBoundary.tsx\n  - musicode-ui/src/components/common/ErrorMessage.tsx\n  - musicode-ui/src/utils/errors.ts\n  - musicode-ui/src/context/PlayerContext.tsx\n  - musicode-ui/src/hooks/usePlayer.ts\nkey_decisions:\n  - ErrorBoundary as class component (React 19 requirement)\n  - console.debug with [auth]/[axios]/[player] prefixes\n  - getErrorMessage extracts backend ErrorResponse format\npatterns_established:\n  - ErrorBoundary wrapping entire app for crash recovery\n  - ErrorMessage component with optional retry for query pages\n  - getErrorMessage for consistent backend error extraction\n  - console.debug with prefixed tags for searchable diagnostic logging\n  - Didactic comments explaining WHY, not WHAT\nobservability_surfaces:\n  - console.debug [auth] for login/logout/session restore\n  - console.debug [axios] for refresh attempts and queue size\n  - console.debug [player] for track loading\n  - ErrorBoundary logs caught errors with componentStack\ndrill_down_paths:\n  - .gsd/milestones/M004/slices/S03/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M004/slices/S03/tasks/T02-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T10:24:36.693Z\nblocker_discovered: false\n---\n\n# S03: Frontend Error Handling, Logging & Comments\n\n**ErrorBoundary + ErrorMessage + console.debug + didactic comments — 40 frontend tests green, coverage met.**\n\n## What Happened\n\nAdded error resilience, diagnostic logging, and didactic comments across the frontend. ErrorBoundary catches runtime crashes and shows a reload button instead of a white screen. ErrorMessage component replaces all inline error strings with a consistent, reusable display including optional retry. getErrorMessage utility extracts backend ErrorResponse.error or provides a fallback — eliminates all `(error as any)?.response?.data?.error` patterns. console.debug with prefixed tags ([auth], [axios], [player]) added to auth flow, interceptor, and player for troubleshooting. Comprehensive didactic comments explain WHY decisions: PlayerContext (useReducer, two contexts, originalQueue), usePlayer (singleton Audio, Symbol owner, module-level), AuthContext (getMe on mount, ignore logout errors), axios interceptor (queue design, race conditions). 5 new tests for getErrorMessage. 40 total frontend tests, all green, all coverage thresholds met.\n\n## Verification\n\nnpm run build (clean) + npm run test:coverage (40 tests, all thresholds met).\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nAdded errors.test.ts (5 tests) for coverage health.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/utils/errors.ts` — Backend error extraction utility\n- `musicode-ui/src/utils/errors.test.ts` — 5 tests for getErrorMessage\n- `musicode-ui/src/components/common/ErrorMessage.tsx` — Reusable error display with retry\n- `musicode-ui/src/components/common/ErrorBoundary.tsx` — React error boundary with reload\n- `musicode-ui/src/App.tsx` — Wrapped with ErrorBoundary\n- `musicode-ui/src/pages/AlbumsPage.tsx` — Uses ErrorMessage + getErrorMessage\n- `musicode-ui/src/pages/ArtistsPage.tsx` — Uses ErrorMessage + getErrorMessage\n- `musicode-ui/src/pages/TracksPage.tsx` — Uses ErrorMessage\n- `musicode-ui/src/pages/AlbumDetailPage.tsx` — Uses ErrorMessage + getErrorMessage\n- `musicode-ui/src/pages/ArtistDetailPage.tsx` — Uses ErrorMessage + getErrorMessage\n- `musicode-ui/src/pages/SettingsPage.tsx` — Uses getErrorMessage\n- `musicode-ui/src/pages/UsersPage.tsx` — Uses getErrorMessage\n- `musicode-ui/src/context/AuthContext.tsx` — console.debug + didactic comments on session restore\n- `musicode-ui/src/api/client.ts` — console.debug + didactic comments on refresh queue\n- `musicode-ui/src/hooks/usePlayer.ts` — console.debug + didactic comments on singleton/owner pattern\n- `musicode-ui/src/context/PlayerContext.tsx` — Didactic comments on useReducer/contexts/originalQueue\n",
+      "full_uat_md": "# S03: Frontend Error Handling, Logging & Comments — UAT\n\n**Milestone:** M004\n**Written:** 2026-03-31T10:24:36.693Z\n\n## UAT: S03 \\u2014 Frontend Error Handling, Logging & Comments\\n\\n### Test 1: ErrorBoundary catches crashes\\n1. (Dev only) Introduce a throw in a component render\\n2. **Expected:** ErrorBoundary shows \\\"Something went wrong\\\" with Reload button\\n\\n### Test 2: ErrorMessage with retry\\n1. Stop the backend, navigate to Albums\\n2. **Expected:** ErrorMessage with \\\"Failed to load albums\\\", network error detail, \\\"Try again\\\" button\\n3. Start backend, click \\\"Try again\\\"\\n4. **Expected:** Albums load normally\\n\\n### Test 3: console.debug visible\\n1. Open browser DevTools console (verbose/debug level)\\n2. Login\\n3. **Expected:** [auth] messages for session check and login success\\n\\n### Test 4: Test suite\\n1. Run `npm run test:coverage`\\n2. **Expected:** 40 tests pass, coverage thresholds met\n",
       "goal": "Add error resilience, diagnostic logging, and didactic comments to frontend",
-      "success_criteria": "ErrorBoundary wraps app in App.tsx. ErrorMessage component with message, detail, optional retry. getErrorMessage utility extracts backend error or gives fallback. Pages use ErrorMessage instead of inline strings. console.debug in AuthContext (login/logout/refresh/restore), usePlayer (track changes, errors), axios interceptor (refresh attempts). Didactic comments in PlayerContext, usePlayer, axios interceptor, AuthContext. Build compiles. Existing tests pass.",
+      "success_criteria": "ErrorBoundary wraps app. ErrorMessage component with message, detail, optional retry. getErrorMessage utility extracts backend error or gives fallback. Pages use ErrorMessage. console.debug in AuthContext, usePlayer, axios interceptor. Didactic comments in PlayerContext, usePlayer, AuthContext, axios interceptor. Build compiles. Existing tests pass.",
       "proof_level": "build-passes",
-      "integration_closure": "Frontend handles errors gracefully. Debug logging aids troubleshooting. Code self-documenting.",
-      "observability_impact": "console.debug for auth events, API failures, playback events. ErrorBoundary prevents white screen.",
+      "integration_closure": "Frontend handles errors gracefully. Debug logging aids troubleshooting. Code self-documenting for future developers.",
+      "observability_impact": "console.debug for auth events, API failures, playback events. ErrorBoundary prevents white-screen crashes.",
       "sequence": 0,
       "replan_triggered_at": null
     }
@@ -2743,6 +2743,105 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M004",
+      "slice_id": "S03",
+      "id": "T01",
+      "title": "ErrorBoundary + ErrorMessage + getErrorMessage utility — all 7 pages updated, build clean.",
+      "status": "complete",
+      "one_liner": "ErrorBoundary + ErrorMessage + getErrorMessage utility — all 7 pages updated, build clean.",
+      "narrative": "Created ErrorBoundary (class component with componentDidCatch, reload button), ErrorMessage (reusable error display with icon, detail, retry), and getErrorMessage utility (extracts backend ErrorResponse.error or falls back). Wrapped App in ErrorBoundary. Updated 7 pages to use ErrorMessage with retry where applicable. Eliminated all `(error as any)?.response?.data?.error` patterns and inline error strings.",
+      "verification_result": "npm run build — compiles cleanly.",
+      "duration": "",
+      "completed_at": "2026-03-31T10:23:51.248Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/utils/errors.ts",
+        "musicode-ui/src/components/common/ErrorMessage.tsx",
+        "musicode-ui/src/components/common/ErrorBoundary.tsx"
+      ],
+      "key_decisions": [
+        "ErrorBoundary as class component (React 19 still requires it for error boundaries)",
+        "getErrorMessage extracts backend ErrorResponse.error field first, then Error.message, then fallback",
+        "ErrorMessage component with optional retry button for query refetch"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S03\nmilestone: M004\nkey_files:\n  - musicode-ui/src/utils/errors.ts\n  - musicode-ui/src/components/common/ErrorMessage.tsx\n  - musicode-ui/src/components/common/ErrorBoundary.tsx\nkey_decisions:\n  - ErrorBoundary as class component (React 19 still requires it for error boundaries)\n  - getErrorMessage extracts backend ErrorResponse.error field first, then Error.message, then fallback\n  - ErrorMessage component with optional retry button for query refetch\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T10:23:51.248Z\nblocker_discovered: false\n---\n\n# T01: ErrorBoundary + ErrorMessage + getErrorMessage utility — all 7 pages updated, build clean.\n\n**ErrorBoundary + ErrorMessage + getErrorMessage utility — all 7 pages updated, build clean.**\n\n## What Happened\n\nCreated ErrorBoundary (class component with componentDidCatch, reload button), ErrorMessage (reusable error display with icon, detail, retry), and getErrorMessage utility (extracts backend ErrorResponse.error or falls back). Wrapped App in ErrorBoundary. Updated 7 pages to use ErrorMessage with retry where applicable. Eliminated all `(error as any)?.response?.data?.error` patterns and inline error strings.\n\n## Verification\n\nnpm run build — compiles cleanly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | ✅ pass | 4800ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/utils/errors.ts`\n- `musicode-ui/src/components/common/ErrorMessage.tsx`\n- `musicode-ui/src/components/common/ErrorBoundary.tsx`\n",
+      "description": "Create utils/errors.ts with getErrorMessage(error): extracts error.response.data.error (backend ErrorResponse format), falls back to error.message, then generic string. Create components/common/ErrorMessage.tsx: displays error icon, message text, optional detail, optional retry button. Accepts message (string), detail (string optional), onRetry (function optional). Create components/common/ErrorBoundary.tsx: React class component with componentDidCatch, renders fallback UI with reload button when a child component crashes. Update App.tsx to wrap with ErrorBoundary. Update all pages (AlbumsPage, ArtistsPage, TracksPage, SearchPage, SettingsPage, UsersPage) to use ErrorMessage instead of inline error strings.",
+      "estimate": "20min",
+      "files": [
+        "musicode-ui/src/utils/errors.ts",
+        "musicode-ui/src/components/common/ErrorMessage.tsx",
+        "musicode-ui/src/components/common/ErrorBoundary.tsx",
+        "musicode-ui/src/App.tsx",
+        "musicode-ui/src/pages/AlbumsPage.tsx",
+        "musicode-ui/src/pages/ArtistsPage.tsx",
+        "musicode-ui/src/pages/TracksPage.tsx",
+        "musicode-ui/src/pages/SearchPage.tsx",
+        "musicode-ui/src/pages/SettingsPage.tsx",
+        "musicode-ui/src/pages/UsersPage.tsx"
+      ],
+      "verify": "npm run build compiles cleanly",
+      "inputs": [
+        "Current page components",
+        "Backend ErrorResponse format"
+      ],
+      "expected_output": [
+        "utils/errors.ts",
+        "components/common/ErrorMessage.tsx",
+        "components/common/ErrorBoundary.tsx",
+        "Updated App.tsx and pages"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M004",
+      "slice_id": "S03",
+      "id": "T02",
+      "title": "console.debug in auth/player/axios + didactic comments + errors.test.ts — 40 tests green, coverage met.",
+      "status": "complete",
+      "one_liner": "console.debug in auth/player/axios + didactic comments + errors.test.ts — 40 tests green, coverage met.",
+      "narrative": "Added console.debug with prefixed tags: [auth] for session restore/login/logout, [axios] for refresh attempts and queue state, [player] for track loading and playback errors. Added comprehensive didactic comments: PlayerContext (why useReducer, why two contexts, why originalQueue), usePlayer (why singleton Audio, why Symbol owner pattern, why module-level), AuthContext (why getMe on mount, why ignore logout errors, why Context not Redux), axios interceptor (why queue, what happens without it). Added errors.test.ts with 5 tests for getErrorMessage. Total: 40 frontend tests, all green, coverage well above thresholds.",
+      "verification_result": "npm run build + npm run test:coverage — 40 tests pass, all thresholds met.",
+      "duration": "",
+      "completed_at": "2026-03-31T10:24:05.678Z",
+      "blocker_discovered": false,
+      "deviations": "Added errors.test.ts (5 tests) to cover getErrorMessage utility — not originally planned but ensures coverage thresholds stay healthy.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/context/AuthContext.tsx",
+        "musicode-ui/src/api/client.ts",
+        "musicode-ui/src/hooks/usePlayer.ts",
+        "musicode-ui/src/context/PlayerContext.tsx",
+        "musicode-ui/src/utils/errors.test.ts"
+      ],
+      "key_decisions": [
+        "console.debug with [auth], [axios], [player] prefixes for grep-ability",
+        "Didactic comments explain WHY, not WHAT — architecture decisions, trade-offs, and non-obvious patterns"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S03\nmilestone: M004\nkey_files:\n  - musicode-ui/src/context/AuthContext.tsx\n  - musicode-ui/src/api/client.ts\n  - musicode-ui/src/hooks/usePlayer.ts\n  - musicode-ui/src/context/PlayerContext.tsx\n  - musicode-ui/src/utils/errors.test.ts\nkey_decisions:\n  - console.debug with [auth], [axios], [player] prefixes for grep-ability\n  - Didactic comments explain WHY, not WHAT — architecture decisions, trade-offs, and non-obvious patterns\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T10:24:05.678Z\nblocker_discovered: false\n---\n\n# T02: console.debug in auth/player/axios + didactic comments + errors.test.ts — 40 tests green, coverage met.\n\n**console.debug in auth/player/axios + didactic comments + errors.test.ts — 40 tests green, coverage met.**\n\n## What Happened\n\nAdded console.debug with prefixed tags: [auth] for session restore/login/logout, [axios] for refresh attempts and queue state, [player] for track loading and playback errors. Added comprehensive didactic comments: PlayerContext (why useReducer, why two contexts, why originalQueue), usePlayer (why singleton Audio, why Symbol owner pattern, why module-level), AuthContext (why getMe on mount, why ignore logout errors, why Context not Redux), axios interceptor (why queue, what happens without it). Added errors.test.ts with 5 tests for getErrorMessage. Total: 40 frontend tests, all green, coverage well above thresholds.\n\n## Verification\n\nnpm run build + npm run test:coverage — 40 tests pass, all thresholds met.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | ✅ pass | 4800ms |\n| 2 | `npm run test:coverage` | 0 | ✅ pass — 40 tests, 91.54% lines | 4600ms |\n\n\n## Deviations\n\nAdded errors.test.ts (5 tests) to cover getErrorMessage utility — not originally planned but ensures coverage thresholds stay healthy.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/context/AuthContext.tsx`\n- `musicode-ui/src/api/client.ts`\n- `musicode-ui/src/hooks/usePlayer.ts`\n- `musicode-ui/src/context/PlayerContext.tsx`\n- `musicode-ui/src/utils/errors.test.ts`\n",
+      "description": "Add console.debug calls to: AuthContext (login success/fail, logout, session restore result), axios interceptor (refresh attempt, refresh success/fail, queue size), usePlayer (track change, playback error, audio source). Add didactic comments to: PlayerContext (why useReducer, why separate state/dispatch contexts, why shuffle preserves current track), usePlayer (why singleton Audio, why Symbol owner pattern, why sync effects), AuthContext (why getMe on mount, why catch-ignore on logout), axios interceptor (why queue, what happens without it, why skip login/refresh). Verify build compiles and tests pass.",
+      "estimate": "20min",
+      "files": [
+        "musicode-ui/src/context/AuthContext.tsx",
+        "musicode-ui/src/api/client.ts",
+        "musicode-ui/src/hooks/usePlayer.ts",
+        "musicode-ui/src/context/PlayerContext.tsx"
+      ],
+      "verify": "npm run build + npm run test:coverage — all pass",
+      "inputs": [
+        "Current context, hook, and api files"
+      ],
+      "expected_output": [
+        "Updated files with logging and comments"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -3830,6 +3929,39 @@
       "verdict": "✅ pass",
       "duration_ms": 21700,
       "created_at": "2026-03-31T10:16:19.753Z"
+    },
+    {
+      "id": 82,
+      "task_id": "T01",
+      "slice_id": "S03",
+      "milestone_id": "M004",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4800,
+      "created_at": "2026-03-31T10:23:51.248Z"
+    },
+    {
+      "id": 83,
+      "task_id": "T02",
+      "slice_id": "S03",
+      "milestone_id": "M004",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4800,
+      "created_at": "2026-03-31T10:24:05.678Z"
+    },
+    {
+      "id": 84,
+      "task_id": "T02",
+      "slice_id": "S03",
+      "milestone_id": "M004",
+      "command": "npm run test:coverage",
+      "exit_code": 0,
+      "verdict": "✅ pass — 40 tests, 91.54% lines",
+      "duration_ms": 4600,
+      "created_at": "2026-03-31T10:24:05.678Z"
     }
   ]
 }

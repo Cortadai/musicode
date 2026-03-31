@@ -3,15 +3,17 @@ import { getArtists } from '../api/artists';
 import { Link } from 'react-router';
 import { User } from 'lucide-react';
 import Spinner from '../components/common/Spinner';
+import ErrorMessage from '../components/common/ErrorMessage';
+import { getErrorMessage } from '../utils/errors';
 
 export default function ArtistsPage() {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['artists'],
     queryFn: () => getArtists(0, 100),
   });
 
   if (isLoading) return <Spinner text="Loading artists…" />;
-  if (error) return <p className="text-red-400">Failed to load artists</p>;
+  if (error) return <ErrorMessage message="Failed to load artists" detail={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   if (!data?.content.length) {
     return (

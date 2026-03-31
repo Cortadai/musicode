@@ -5,6 +5,8 @@ import AlbumCard from '../components/library/AlbumCard';
 import { ArrowLeft, User } from 'lucide-react';
 import type { Album } from '../types';
 import Spinner from '../components/common/Spinner';
+import ErrorMessage from '../components/common/ErrorMessage';
+import { getErrorMessage } from '../utils/errors';
 
 export default function ArtistDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +19,7 @@ export default function ArtistDetailPage() {
   });
 
   if (isLoading) return <Spinner text="Loading artist…" />;
-  if (error || !artist) return <p className="text-red-400">Artist not found</p>;
+  if (error || !artist) return <ErrorMessage message="Artist not found" detail={getErrorMessage(error)} />;
 
   const albums: Album[] = artist.albums ? [...artist.albums] : [];
 

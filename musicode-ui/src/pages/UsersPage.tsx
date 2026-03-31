@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/client';
 import type { UserInfo } from '../types';
+import { getErrorMessage } from '../utils/errors';
 import { UserPlus, Trash2, Shield, Headphones } from 'lucide-react';
 
 export default function UsersPage() {
@@ -95,7 +96,7 @@ export default function UsersPage() {
         )}
         {deleteMutation.isError && (
           <p className="text-red-400 text-sm mt-2">
-            {(deleteMutation.error as any)?.response?.data?.error || 'Failed to delete user'}
+            {getErrorMessage(deleteMutation.error, 'Failed to delete user')}
           </p>
         )}
       </section>
@@ -138,7 +139,7 @@ export default function UsersPage() {
           </button>
           {createMutation.isError && (
             <p className="text-red-400 text-sm">
-              {(createMutation.error as any)?.response?.data?.error || 'Failed to create user'}
+              {getErrorMessage(createMutation.error, 'Failed to create user')}
             </p>
           )}
         </form>

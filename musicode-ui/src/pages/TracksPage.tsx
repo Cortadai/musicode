@@ -3,6 +3,8 @@ import { getTracks } from '../api/tracks';
 import TrackList from '../components/library/TrackList';
 import { usePlayer } from '../hooks/usePlayer';
 import Spinner from '../components/common/Spinner';
+import ErrorMessage from '../components/common/ErrorMessage';
+import { getErrorMessage } from '../utils/errors';
 import { useEffect, useRef, useCallback } from 'react';
 import type { Track } from '../types';
 
@@ -47,7 +49,7 @@ export default function TracksPage() {
   }, [handleObserver]);
 
   if (isLoading) return <Spinner text="Loading tracks…" />;
-  if (error) return <p className="text-red-400">Failed to load tracks</p>;
+  if (error) return <ErrorMessage message="Failed to load tracks" detail={getErrorMessage(error)} />;
 
   const allTracks: Track[] = data?.pages.flatMap((p) => p.content) ?? [];
   const totalElements = data?.pages[0]?.totalElements ?? 0;

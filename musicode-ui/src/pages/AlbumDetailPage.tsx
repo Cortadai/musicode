@@ -5,6 +5,8 @@ import TrackList from '../components/library/TrackList';
 import { usePlayer } from '../hooks/usePlayer';
 import { ArrowLeft, Disc3 } from 'lucide-react';
 import Spinner from '../components/common/Spinner';
+import ErrorMessage from '../components/common/ErrorMessage';
+import { getErrorMessage } from '../utils/errors';
 
 export default function AlbumDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,7 +20,7 @@ export default function AlbumDetailPage() {
   });
 
   if (isLoading) return <Spinner text="Loading album…" />;
-  if (error || !album) return <p className="text-red-400">Album not found</p>;
+  if (error || !album) return <ErrorMessage message="Album not found" detail={getErrorMessage(error)} />;
 
   const tracks = (album.tracks ?? []).map(t => ({
     ...t,
