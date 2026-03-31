@@ -28,6 +28,12 @@ server:
 musicode:
   admin:
     default-password: changeme
+  jwt:
+    secret: musicode-dev-secret-key-must-be-at-least-32-bytes-long
+    access-token-expiration-ms: 900000      # 15 minutes
+    refresh-token-expiration-ms: 604800000  # 7 days
+  cookies:
+    secure: false  # true in docker/prod profile
 
 logging:
   level:

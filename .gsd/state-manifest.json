@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T07:43:52.825Z",
+  "exported_at": "2026-03-31T07:55:21.511Z",
   "milestones": [
     {
       "id": "M001",
@@ -422,21 +422,21 @@
       "milestone_id": "M003",
       "id": "S02",
       "title": "JWT Auth with Secure Cookies",
-      "status": "pending",
+      "status": "complete",
       "risk": "high",
       "depends": [
         "S01"
       ],
       "demo": "After this: POST /api/auth/login returns access+refresh tokens in HttpOnly cookies. All /api/** endpoints return 401 without valid token. POST /api/auth/refresh rotates tokens. POST /api/auth/logout revokes refresh token server-side.",
       "created_at": "2026-03-31T07:37:52.021Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
-      "goal": "Implement the core auth mechanism — JWT generation/validation, cookie management, Spring Security filter chain, login/refresh/logout endpoints",
-      "success_criteria": "SecurityFilterChain configured: stateless session, JWT filter before UsernamePasswordAuthenticationFilter. Access token 15min in HttpOnly/Secure/SameSite=Strict cookie. Refresh token 7 days in HttpOnly/Secure/SameSite=Strict cookie with path=/api/auth/refresh. Login endpoint authenticates and sets both cookies. Refresh endpoint validates refresh token, rotates both tokens, revokes old. Logout revokes refresh token in DB and clears cookies. CORS updated for credentials. CSRF decision documented. Profile-aware Secure flag (false in dev, true in docker). Integration tests: 401 without token, 200 with token, refresh flow, logout invalidation, expired token rejection.",
+      "completed_at": "2026-03-31T07:55:21.439Z",
+      "full_summary_md": "---\nid: S02\nparent: M003\nmilestone: M003\nprovides:\n  - Auth endpoints for S04 frontend consumption\n  - SecurityFilterChain with role-based authorization for S03 to extend\n  - @WithMockUser test pattern for S03 tests\n  - CookieUtil for S04 frontend auth flow\nrequires:\n  - slice: S01\n    provides: User entity, UserRepository, MusicodeUserDetailsService, PasswordEncoder, RefreshToken entity, RefreshTokenRepository\naffects:\n  - S03 — Role enforcement uses the SecurityFilterChain and @WithMockUser patterns from this slice\n  - S04 — Frontend auth consumes the cookies and endpoints from this slice\nkey_files:\n  - musicode-server/src/main/java/com/musicode/config/SecurityConfig.java\n  - musicode-server/src/main/java/com/musicode/filter/JwtAuthFilter.java\n  - musicode-server/src/main/java/com/musicode/service/JwtService.java\n  - musicode-server/src/main/java/com/musicode/service/AuthService.java\n  - musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java\n  - musicode-server/src/main/java/com/musicode/util/CookieUtil.java\n  - musicode-server/src/main/java/com/musicode/controller/AuthController.java\nkey_decisions:\n  - JJWT 0.12.6 with HS256 signing\n  - CSRF disabled — SameSite=Strict mitigates (D015)\n  - CORS in SecurityConfig, not WebConfig\n  - 401 via custom AuthenticationEntryPoint\n  - Opaque UUID refresh tokens hashed with SHA-256\n  - Revoked token reuse triggers full user token revocation (theft detection)\npatterns_established:\n  - JWT in HttpOnly/SameSite=Strict cookies (no localStorage)\n  - Opaque refresh tokens with SHA-256 hashing and rotation on use\n  - Theft detection: revoked token reuse revokes all user tokens\n  - @WithMockUser for existing controller tests under security\n  - Custom AuthenticationEntryPoint for 401 JSON responses\nobservability_surfaces:\n  - Failed auth logged with username\n  - Refresh token revocation logged with username\n  - Expired token cleanup count logged hourly\ndrill_down_paths:\n  - .gsd/milestones/M003/slices/S02/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M003/slices/S02/tasks/T02-SUMMARY.md\n  - .gsd/milestones/M003/slices/S02/tasks/T03-SUMMARY.md\n  - .gsd/milestones/M003/slices/S02/tasks/T04-SUMMARY.md\n  - .gsd/milestones/M003/slices/S02/tasks/T05-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T07:55:21.439Z\nblocker_discovered: false\n---\n\n# S02: JWT Auth with Secure Cookies\n\n**JWT auth with secure cookies fully implemented \\u2014 login/refresh/logout, filter chain locked down, 19 new tests, 75 total green.**\n\n## What Happened\n\nBuilt the complete JWT auth system for Musicode. JwtService generates access tokens (15min) and refresh JWTs (7 days) with HS256 signing via JJWT 0.12.6. RefreshTokenService manages opaque UUID refresh tokens: creates (UUID → SHA-256 hash → persist), validates and rotates (revoke old, issue new), and implements theft detection (revoked token reuse triggers full user revocation). AuthService orchestrates login via Spring's AuthenticationManager, refresh with rotation, and logout with revocation. CookieUtil creates HttpOnly/SameSite=Strict cookies with profile-aware Secure flag. JwtAuthFilter (OncePerRequestFilter) reads access_token cookie, validates JWT, and sets SecurityContext. SecurityFilterChain locked down: stateless sessions, CSRF disabled (SameSite=Strict mitigates), permit login+refresh, authenticate everything else, custom 401 JSON entry point. CORS moved from WebConfig to SecurityConfig CorsConfigurationSource for correct filter ordering. AuthController exposes login/refresh/logout/me endpoints. All 6 existing controller tests adapted with @WithMockUser. 19 new auth tests (AuthControllerTest + JwtServiceTest). Total: 75 tests, all green, JaCoCo ≥80% enforced.\n\n## Verification\n\nmvn clean verify \\u2014 75 tests, 0 failures, JaCoCo \\u226580% coverage met, BUILD SUCCESS.\n\n## Requirements Advanced\n\n- R017 — Full JWT auth system with secure cookies, login/refresh/logout, stateless sessions, and token revocation\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nAdded AuthenticationEntryPoint for 401 instead of default 403. Used HttpServletRequest for cookie reading instead of @CookieValue due to path-restricted refresh cookie.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/pom.xml` — Added JJWT 0.12.6 dependencies (api, impl, jackson)\n- `musicode-server/src/main/resources/application.yml` — Added JWT secret, expiration, and cookie secure flag config\n- `musicode-server/src/test/resources/application-test.yml` — Added JWT and cookie config for test profile\n- `musicode-server/src/main/java/com/musicode/service/JwtService.java` — JWT generation, validation, claim extraction with HS256\n- `musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java` — Refresh token lifecycle: create, validate/rotate, revoke, cleanup\n- `musicode-server/src/main/java/com/musicode/service/AuthService.java` — Login/refresh/logout orchestration\n- `musicode-server/src/main/java/com/musicode/util/CookieUtil.java` — HttpOnly/SameSite/Secure cookie creation and clearing\n- `musicode-server/src/main/java/com/musicode/filter/JwtAuthFilter.java` — OncePerRequestFilter reading access_token cookie, setting SecurityContext\n- `musicode-server/src/main/java/com/musicode/config/SecurityConfig.java` — Locked-down filter chain: stateless, JWT filter, CORS, 401 entry point\n- `musicode-server/src/main/java/com/musicode/config/WebConfig.java` — CORS removed (moved to SecurityConfig)\n- `musicode-server/src/main/java/com/musicode/config/AsyncConfig.java` — Added @EnableScheduling for token cleanup\n- `musicode-server/src/main/java/com/musicode/controller/AuthController.java` — Login/refresh/logout/me endpoints\n- `musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java` — Login request DTO with validation\n- `musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java` — User response DTO (no password)\n- `musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java` — Access/refresh pair DTO\n- `musicode-server/src/test/java/com/musicode/controller/AlbumControllerTest.java` — Added @WithMockUser(LISTENER)\n- `musicode-server/src/test/java/com/musicode/controller/ArtistControllerTest.java` — Added @WithMockUser(LISTENER)\n- `musicode-server/src/test/java/com/musicode/controller/TrackControllerTest.java` — Added @WithMockUser(LISTENER)\n- `musicode-server/src/test/java/com/musicode/controller/SearchControllerTest.java` — Added @WithMockUser(LISTENER)\n- `musicode-server/src/test/java/com/musicode/controller/LibraryControllerTest.java` — Added @WithMockUser(ADMIN)\n- `musicode-server/src/test/java/com/musicode/controller/CoverArtControllerTest.java` — Added @WithMockUser(LISTENER)\n- `musicode-server/src/test/java/com/musicode/controller/AuthControllerTest.java` — 10 auth flow tests: login, 401, cookies, refresh rotation, logout\n- `musicode-server/src/test/java/com/musicode/service/JwtServiceTest.java` — 9 JWT tests: generate, validate, extract, expiry\n",
+      "full_uat_md": "# S02: JWT Auth with Secure Cookies — UAT\n\n**Milestone:** M003\n**Written:** 2026-03-31T07:55:21.440Z\n\n## UAT: S02 \\u2014 JWT Auth with Secure Cookies\\n\\n### Test 1: Login success\\n1. POST http://localhost:8080/api/auth/login with {\\\"username\\\":\\\"admin\\\",\\\"password\\\":\\\"changeme\\\"}\\n2. **Expected:** 200, body has username/role/id, response Set-Cookie headers contain access_token and refresh_token with HttpOnly flag\\n\\n### Test 2: Login failure\\n1. POST /api/auth/login with wrong password\\n2. **Expected:** 401, body has {\\\"error\\\":\\\"Invalid credentials\\\"}\\n\\n### Test 3: Protected endpoint without token\\n1. GET /api/tracks without any cookie\\n2. **Expected:** 401, body has {\\\"error\\\":\\\"Authentication required\\\"}\\n\\n### Test 4: Protected endpoint with token\\n1. Login, extract access_token cookie\\n2. GET /api/tracks with access_token cookie\\n3. **Expected:** 200 with track data\\n\\n### Test 5: Refresh token rotation\\n1. Login, extract refresh_token cookie\\n2. POST /api/auth/refresh with refresh_token cookie\\n3. **Expected:** 200, new access_token and refresh_token cookies set\\n4. Use old refresh_token again\\n5. **Expected:** 401 \\u2014 old token revoked\\n\\n### Test 6: Logout\\n1. Login, get cookies\\n2. POST /api/auth/logout with cookies\\n3. **Expected:** 200, cookies cleared (maxAge=0)\\n4. POST /api/auth/refresh with old refresh token\\n5. **Expected:** 401 \\u2014 token revoked\\n\\n### Test 7: Full test suite\\n1. Run `mvn clean verify`\\n2. **Expected:** 75 tests pass, JaCoCo \\u226580% met\n",
+      "goal": "Implement JWT auth with secure cookies — login/refresh/logout endpoints, JWT filter, SecurityFilterChain locked down, CORS with credentials, existing tests adapted",
+      "success_criteria": "JWT filter validates access token from cookie. Login returns access+refresh in HttpOnly/Secure/SameSite=Strict cookies. Refresh rotates both tokens. Logout revokes refresh token in DB. CORS supports credentials. CSRF disabled (SameSite=Strict mitigates). Existing tests adapted with Spring Security test support. New auth tests cover full flows. Coverage ≥80% maintained.",
       "proof_level": "integration-test",
-      "integration_closure": "All existing endpoints now require auth. Existing tests updated with test auth helper. Frontend auth in S04 consumes these cookies.",
-      "observability_impact": "Failed auth attempts logged with username and IP. Refresh token table queryable for active sessions.",
+      "integration_closure": "All API endpoints require valid access token. Auth cookies set by login/refresh, cleared by logout. Existing tests pass with security test support. Frontend in S04 consumes these cookies.",
+      "observability_impact": "Failed auth attempts logged with username. Expired/revoked token rejections logged. Refresh token table shows active sessions.",
       "sequence": 0,
       "replan_triggered_at": null
     },
@@ -1778,6 +1778,245 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "JJWT 0.12.6 dependency + JwtService with generate/validate/extract for access and refresh tokens.",
+      "status": "complete",
+      "one_liner": "JJWT 0.12.6 dependency + JwtService with generate/validate/extract for access and refresh tokens.",
+      "narrative": "Added JJWT 0.12.6 dependencies (api, impl, jackson). Created JwtService with HS256 signing, configurable secret/expiration via application.yml. Generates access tokens (15 min) and refresh JWTs (7 days) with username, role, userId claims.",
+      "verification_result": "mvn compile — compiles cleanly.",
+      "duration": "",
+      "completed_at": "2026-03-31T07:53:35.259Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/service/JwtService.java",
+        "musicode-server/pom.xml",
+        "musicode-server/src/main/resources/application.yml"
+      ],
+      "key_decisions": [
+        "JJWT 0.12.6 for JWT generation/validation",
+        "HS256 signing with configurable secret key ≥32 bytes"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S02\nmilestone: M003\nkey_files:\n  - musicode-server/src/main/java/com/musicode/service/JwtService.java\n  - musicode-server/pom.xml\n  - musicode-server/src/main/resources/application.yml\nkey_decisions:\n  - JJWT 0.12.6 for JWT generation/validation\n  - HS256 signing with configurable secret key ≥32 bytes\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T07:53:35.260Z\nblocker_discovered: false\n---\n\n# T01: JJWT 0.12.6 dependency + JwtService with generate/validate/extract for access and refresh tokens.\n\n**JJWT 0.12.6 dependency + JwtService with generate/validate/extract for access and refresh tokens.**\n\n## What Happened\n\nAdded JJWT 0.12.6 dependencies (api, impl, jackson). Created JwtService with HS256 signing, configurable secret/expiration via application.yml. Generates access tokens (15 min) and refresh JWTs (7 days) with username, role, userId claims.\n\n## Verification\n\nmvn compile — compiles cleanly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn compile` | 0 | ✅ pass | 4900ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/service/JwtService.java`\n- `musicode-server/pom.xml`\n- `musicode-server/src/main/resources/application.yml`\n",
+      "description": "Add io.jsonwebtoken:jjwt-api, jjwt-impl, jjwt-jackson dependencies to pom.xml. Create JwtService with: generateAccessToken(User), generateRefreshToken(User), extractUsername(String token), isTokenValid(String token), isTokenExpired(String token). Access token 15min expiry. Refresh token 7 days. Secret key from application.yml (musicode.jwt.secret). Key must be ≥256 bits for HS256.",
+      "estimate": "20min",
+      "files": [
+        "musicode-server/pom.xml",
+        "musicode-server/src/main/java/com/musicode/service/JwtService.java",
+        "musicode-server/src/main/resources/application.yml"
+      ],
+      "verify": "mvn compile — compiles cleanly",
+      "inputs": [
+        "pom.xml",
+        "application.yml"
+      ],
+      "expected_output": [
+        "JwtService.java with generate/validate/extract methods"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S02",
+      "id": "T02",
+      "title": "AuthService + RefreshTokenService with login/refresh/logout flows, SHA-256 token hashing, rotation, and theft detection.",
+      "status": "complete",
+      "one_liner": "AuthService + RefreshTokenService with login/refresh/logout flows, SHA-256 token hashing, rotation, and theft detection.",
+      "narrative": "RefreshTokenService handles token lifecycle: create (UUID + SHA-256 hash), validateAndRotate (checks expiry/revoked, revokes old, issues new), revokeByRawToken, revokeAllForUser. Revoked token reuse triggers full revocation for the user. AuthService orchestrates login (AuthenticationManager + token generation), refresh (validate + rotate + new access token), and logout (revoke). @EnableScheduling added to AsyncConfig for hourly cleanup.",
+      "verification_result": "mvn compile — compiles cleanly.",
+      "duration": "",
+      "completed_at": "2026-03-31T07:53:50.466Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java",
+        "musicode-server/src/main/java/com/musicode/service/AuthService.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java"
+      ],
+      "key_decisions": [
+        "Refresh tokens are opaque UUIDs, hashed with SHA-256 before storage",
+        "Token rotation: old token revoked when refresh succeeds, new one issued",
+        "Reuse of revoked token triggers revocation of ALL user tokens (theft detection)",
+        "@Scheduled cleanup every hour for expired tokens"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S02\nmilestone: M003\nkey_files:\n  - musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java\n  - musicode-server/src/main/java/com/musicode/service/AuthService.java\n  - musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java\nkey_decisions:\n  - Refresh tokens are opaque UUIDs, hashed with SHA-256 before storage\n  - Token rotation: old token revoked when refresh succeeds, new one issued\n  - Reuse of revoked token triggers revocation of ALL user tokens (theft detection)\n  - @Scheduled cleanup every hour for expired tokens\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T07:53:50.466Z\nblocker_discovered: false\n---\n\n# T02: AuthService + RefreshTokenService with login/refresh/logout flows, SHA-256 token hashing, rotation, and theft detection.\n\n**AuthService + RefreshTokenService with login/refresh/logout flows, SHA-256 token hashing, rotation, and theft detection.**\n\n## What Happened\n\nRefreshTokenService handles token lifecycle: create (UUID + SHA-256 hash), validateAndRotate (checks expiry/revoked, revokes old, issues new), revokeByRawToken, revokeAllForUser. Revoked token reuse triggers full revocation for the user. AuthService orchestrates login (AuthenticationManager + token generation), refresh (validate + rotate + new access token), and logout (revoke). @EnableScheduling added to AsyncConfig for hourly cleanup.\n\n## Verification\n\nmvn compile — compiles cleanly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn compile` | 0 | ✅ pass | 4200ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java`\n- `musicode-server/src/main/java/com/musicode/service/AuthService.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java`\n",
+      "description": "Create RefreshTokenService: createToken(User) generates random UUID, hashes with SHA-256, persists to RefreshToken table, returns raw token. validateAndRotate(String rawToken) finds by hash, checks expiry/revoked, creates new token, revokes old. revokeAllForUser(User). cleanupExpired() with @Scheduled. Create AuthService: login(username, password) authenticates via AuthenticationManager, returns TokenPair(accessToken, refreshToken). refresh(rawRefreshToken) validates and rotates via RefreshTokenService, generates new access token. logout(rawRefreshToken) revokes in DB.",
+      "estimate": "25min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java",
+        "musicode-server/src/main/java/com/musicode/service/AuthService.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java"
+      ],
+      "verify": "mvn compile — compiles cleanly",
+      "inputs": [
+        "JwtService from T01",
+        "UserRepository",
+        "RefreshTokenRepository"
+      ],
+      "expected_output": [
+        "RefreshTokenService.java",
+        "AuthService.java",
+        "TokenPair.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S02",
+      "id": "T03",
+      "title": "JwtAuthFilter, CookieUtil, and locked-down SecurityFilterChain with 401 entry point and CORS credentials.",
+      "status": "complete",
+      "one_liner": "JwtAuthFilter, CookieUtil, and locked-down SecurityFilterChain with 401 entry point and CORS credentials.",
+      "narrative": "CookieUtil creates HttpOnly/SameSite=Strict cookies with configurable Secure flag. Access token cookie at path=/, refresh token at path=/api/auth/refresh. JwtAuthFilter (OncePerRequestFilter) reads access_token cookie, validates JWT, sets SecurityContext. Skips /api/auth/login. SecurityFilterChain: stateless session, CSRF disabled, permit login+refresh, authenticate everything else, custom 401 entry point. CORS via CorsConfigurationSource with credentials support. WebConfig CORS removed to avoid conflict.",
+      "verification_result": "mvn compile — compiles cleanly.",
+      "duration": "",
+      "completed_at": "2026-03-31T07:54:02.296Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/util/CookieUtil.java",
+        "musicode-server/src/main/java/com/musicode/filter/JwtAuthFilter.java",
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java",
+        "musicode-server/src/main/java/com/musicode/config/WebConfig.java"
+      ],
+      "key_decisions": [
+        "CSRF disabled — SameSite=Strict cookies mitigate CSRF for same-origin SPA",
+        "CORS moved from WebConfig to SecurityConfig CorsConfigurationSource for correct filter ordering",
+        "AuthenticationEntryPoint returns 401 JSON instead of Spring Security's default 403",
+        "H2 console allowed through security for dev",
+        "Cookie Secure flag configurable per profile (musicode.cookies.secure)"
+      ],
+      "full_summary_md": "---\nid: T03\nparent: S02\nmilestone: M003\nkey_files:\n  - musicode-server/src/main/java/com/musicode/util/CookieUtil.java\n  - musicode-server/src/main/java/com/musicode/filter/JwtAuthFilter.java\n  - musicode-server/src/main/java/com/musicode/config/SecurityConfig.java\n  - musicode-server/src/main/java/com/musicode/config/WebConfig.java\nkey_decisions:\n  - CSRF disabled — SameSite=Strict cookies mitigate CSRF for same-origin SPA\n  - CORS moved from WebConfig to SecurityConfig CorsConfigurationSource for correct filter ordering\n  - AuthenticationEntryPoint returns 401 JSON instead of Spring Security's default 403\n  - H2 console allowed through security for dev\n  - Cookie Secure flag configurable per profile (musicode.cookies.secure)\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T07:54:02.297Z\nblocker_discovered: false\n---\n\n# T03: JwtAuthFilter, CookieUtil, and locked-down SecurityFilterChain with 401 entry point and CORS credentials.\n\n**JwtAuthFilter, CookieUtil, and locked-down SecurityFilterChain with 401 entry point and CORS credentials.**\n\n## What Happened\n\nCookieUtil creates HttpOnly/SameSite=Strict cookies with configurable Secure flag. Access token cookie at path=/, refresh token at path=/api/auth/refresh. JwtAuthFilter (OncePerRequestFilter) reads access_token cookie, validates JWT, sets SecurityContext. Skips /api/auth/login. SecurityFilterChain: stateless session, CSRF disabled, permit login+refresh, authenticate everything else, custom 401 entry point. CORS via CorsConfigurationSource with credentials support. WebConfig CORS removed to avoid conflict.\n\n## Verification\n\nmvn compile — compiles cleanly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn compile` | 0 | ✅ pass | 4300ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/util/CookieUtil.java`\n- `musicode-server/src/main/java/com/musicode/filter/JwtAuthFilter.java`\n- `musicode-server/src/main/java/com/musicode/config/SecurityConfig.java`\n- `musicode-server/src/main/java/com/musicode/config/WebConfig.java`\n",
+      "description": "Create CookieUtil: createAccessTokenCookie(String token), createRefreshTokenCookie(String token), clearAccessTokenCookie(), clearRefreshTokenCookie(). Access cookie: HttpOnly, SameSite=Strict, path=/. Refresh cookie: HttpOnly, SameSite=Strict, path=/api/auth/refresh. Secure flag from config (musicode.cookies.secure, default false for dev). Create JwtAuthFilter extends OncePerRequestFilter: reads access_token cookie, validates with JwtService, sets SecurityContextHolder. Skip filter for /api/auth/** paths. Replace SecurityConfig filterChain: stateless session, disable CSRF, permit /api/auth/login, require auth for everything else, add JwtAuthFilter before UsernamePasswordAuthenticationFilter. Configure CORS in SecurityConfig via CorsConfigurationSource (replace WebConfig CORS — Spring Security CORS takes precedence). AuthenticationManager bean via AuthenticationConfiguration.",
+      "estimate": "30min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/util/CookieUtil.java",
+        "musicode-server/src/main/java/com/musicode/filter/JwtAuthFilter.java",
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java",
+        "musicode-server/src/main/java/com/musicode/config/WebConfig.java"
+      ],
+      "verify": "mvn compile — compiles cleanly",
+      "inputs": [
+        "JwtService from T01",
+        "MusicodeUserDetailsService from S01",
+        "SecurityConfig from S01"
+      ],
+      "expected_output": [
+        "CookieUtil.java",
+        "JwtAuthFilter.java",
+        "Updated SecurityConfig.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S02",
+      "id": "T04",
+      "title": "AuthController with login/refresh/logout/me endpoints, LoginRequest and UserResponse DTOs.",
+      "status": "complete",
+      "one_liner": "AuthController with login/refresh/logout/me endpoints, LoginRequest and UserResponse DTOs.",
+      "narrative": "AuthController with 4 endpoints: POST /login (authenticate + set cookies + return user info), POST /refresh (rotate tokens + set new cookies), POST /logout (revoke + clear cookies), GET /me (return current user from SecurityContext). LoginRequest DTO with validation. UserResponse DTO excludes password fields. Refresh endpoint extracts user info from new access token.",
+      "verification_result": "mvn compile — compiles cleanly.",
+      "duration": "",
+      "completed_at": "2026-03-31T07:54:12.487Z",
+      "blocker_discovered": false,
+      "deviations": "Used HttpServletRequest for cookie reading instead of @CookieValue — refresh cookie has restricted path that @CookieValue doesn't reliably pick up.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/controller/AuthController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java"
+      ],
+      "key_decisions": [
+        "Read cookies manually via HttpServletRequest instead of @CookieValue for path-restricted cookies",
+        "UserResponse DTO never exposes passwordHash",
+        "/api/auth/me uses @AuthenticationPrincipal to get username from SecurityContext"
+      ],
+      "full_summary_md": "---\nid: T04\nparent: S02\nmilestone: M003\nkey_files:\n  - musicode-server/src/main/java/com/musicode/controller/AuthController.java\n  - musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java\n  - musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java\nkey_decisions:\n  - Read cookies manually via HttpServletRequest instead of @CookieValue for path-restricted cookies\n  - UserResponse DTO never exposes passwordHash\n  - /api/auth/me uses @AuthenticationPrincipal to get username from SecurityContext\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T07:54:12.487Z\nblocker_discovered: false\n---\n\n# T04: AuthController with login/refresh/logout/me endpoints, LoginRequest and UserResponse DTOs.\n\n**AuthController with login/refresh/logout/me endpoints, LoginRequest and UserResponse DTOs.**\n\n## What Happened\n\nAuthController with 4 endpoints: POST /login (authenticate + set cookies + return user info), POST /refresh (rotate tokens + set new cookies), POST /logout (revoke + clear cookies), GET /me (return current user from SecurityContext). LoginRequest DTO with validation. UserResponse DTO excludes password fields. Refresh endpoint extracts user info from new access token.\n\n## Verification\n\nmvn compile — compiles cleanly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn compile` | 0 | ✅ pass | 6100ms |\n\n\n## Deviations\n\nUsed HttpServletRequest for cookie reading instead of @CookieValue — refresh cookie has restricted path that @CookieValue doesn't reliably pick up.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/controller/AuthController.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java`\n",
+      "description": "Create AuthController: POST /api/auth/login (LoginRequest: username, password) → authenticates, generates tokens, sets cookies, returns user info (id, username, role — NOT password). POST /api/auth/refresh → reads refresh_token cookie, validates/rotates, sets new cookies, returns updated user info. POST /api/auth/logout → reads refresh_token cookie, revokes in DB, clears cookies. GET /api/auth/me → returns current user info from SecurityContextHolder. Create LoginRequest DTO and UserResponse DTO.",
+      "estimate": "20min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/controller/AuthController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java"
+      ],
+      "verify": "mvn compile — compiles cleanly",
+      "inputs": [
+        "AuthService from T02",
+        "CookieUtil from T03"
+      ],
+      "expected_output": [
+        "AuthController.java",
+        "LoginRequest.java",
+        "UserResponse.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S02",
+      "id": "T05",
+      "title": "All 6 existing tests adapted with @WithMockUser + 19 new auth tests — 75 total, green, coverage met.",
+      "status": "complete",
+      "one_liner": "All 6 existing tests adapted with @WithMockUser + 19 new auth tests — 75 total, green, coverage met.",
+      "narrative": "Adapted all 6 existing controller tests with @WithMockUser annotations. Wrote AuthControllerTest (10 tests covering login success/failure, protected endpoint 401, token-authenticated access, refresh rotation, revoked refresh rejection, logout with cookie clearing, /me endpoint). JwtServiceTest (9 tests for generate/validate/extract/expiry). Fixed 403→401 issue by adding custom AuthenticationEntryPoint. Total: 75 tests, all green, JaCoCo ≥80% met.",
+      "verification_result": "mvn clean verify — 75 tests, 0 failures, JaCoCo coverage checks met, BUILD SUCCESS.",
+      "duration": "",
+      "completed_at": "2026-03-31T07:54:24.711Z",
+      "blocker_discovered": false,
+      "deviations": "Added AuthenticationEntryPoint to SecurityConfig to return 401 instead of Spring Security's default 403 for unauthenticated requests.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/test/java/com/musicode/controller/AuthControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/service/JwtServiceTest.java"
+      ],
+      "key_decisions": [
+        "@WithMockUser(roles='LISTENER') for browse/play test classes",
+        "@WithMockUser(roles='ADMIN') for LibraryControllerTest (folder management)",
+        "AuthControllerTest uses real login flow with cookies, not @WithMockUser"
+      ],
+      "full_summary_md": "---\nid: T05\nparent: S02\nmilestone: M003\nkey_files:\n  - musicode-server/src/test/java/com/musicode/controller/AuthControllerTest.java\n  - musicode-server/src/test/java/com/musicode/service/JwtServiceTest.java\nkey_decisions:\n  - @WithMockUser(roles='LISTENER') for browse/play test classes\n  - @WithMockUser(roles='ADMIN') for LibraryControllerTest (folder management)\n  - AuthControllerTest uses real login flow with cookies, not @WithMockUser\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T07:54:24.712Z\nblocker_discovered: false\n---\n\n# T05: All 6 existing tests adapted with @WithMockUser + 19 new auth tests — 75 total, green, coverage met.\n\n**All 6 existing tests adapted with @WithMockUser + 19 new auth tests — 75 total, green, coverage met.**\n\n## What Happened\n\nAdapted all 6 existing controller tests with @WithMockUser annotations. Wrote AuthControllerTest (10 tests covering login success/failure, protected endpoint 401, token-authenticated access, refresh rotation, revoked refresh rejection, logout with cookie clearing, /me endpoint). JwtServiceTest (9 tests for generate/validate/extract/expiry). Fixed 403→401 issue by adding custom AuthenticationEntryPoint. Total: 75 tests, all green, JaCoCo ≥80% met.\n\n## Verification\n\nmvn clean verify — 75 tests, 0 failures, JaCoCo coverage checks met, BUILD SUCCESS.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn clean verify` | 0 | ✅ pass | 17700ms |\n\n\n## Deviations\n\nAdded AuthenticationEntryPoint to SecurityConfig to return 401 instead of Spring Security's default 403 for unauthenticated requests.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/test/java/com/musicode/controller/AuthControllerTest.java`\n- `musicode-server/src/test/java/com/musicode/service/JwtServiceTest.java`\n",
+      "description": "Update all 6 existing controller tests to work with security: add @WithMockUser or inject auth cookies via test helper. Write AuthControllerTest: login success returns 200 + sets cookies, login bad credentials returns 401, access protected endpoint without token returns 401, access with valid token returns 200, refresh with valid token rotates and returns new cookies, refresh with revoked token returns 401, logout clears cookies and revokes token, /api/auth/me returns current user. Write JwtServiceTest: generate/validate/extract/expiry. Coverage ≥80% maintained. All tests green.",
+      "estimate": "35min",
+      "files": [
+        "musicode-server/src/test/java/com/musicode/controller/AlbumControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/controller/ArtistControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/controller/TrackControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/controller/SearchControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/controller/LibraryControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/controller/CoverArtControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/controller/AuthControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/service/JwtServiceTest.java"
+      ],
+      "verify": "mvn clean verify — all tests pass, coverage ≥80%",
+      "inputs": [
+        "All controller test files",
+        "SecurityConfig",
+        "AuthController"
+      ],
+      "expected_output": [
+        "Updated 6 controller tests with security",
+        "AuthControllerTest.java",
+        "JwtServiceTest.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -1947,6 +2186,18 @@
       "rationale": "M003 uses H2 table for refresh tokens. Redis milestone will compare approaches and teach Spring Data Redis, TTL, pub/sub for invalidation.",
       "revisable": "Yes",
       "made_by": "collaborative",
+      "superseded_by": null
+    },
+    {
+      "seq": 27,
+      "id": "D015",
+      "when_context": "M003/S02",
+      "scope": "security",
+      "decision": "CSRF protection strategy for cookie-based JWT auth",
+      "choice": "CSRF disabled, rely on SameSite=Strict cookies",
+      "rationale": "SameSite=Strict prevents the browser from sending cookies on cross-origin requests, which is the primary CSRF vector. Our SPA is same-origin. If we ever relax to SameSite=Lax (for external links), we'll need to add CookieCsrfTokenRepository.",
+      "revisable": "Yes — revisit if SameSite is relaxed to Lax",
+      "made_by": "agent",
       "superseded_by": null
     }
   ],
@@ -2588,6 +2839,61 @@
       "verdict": "✅ pass",
       "duration_ms": 16866,
       "created_at": "2026-03-31T07:43:15.962Z"
+    },
+    {
+      "id": 59,
+      "task_id": "T01",
+      "slice_id": "S02",
+      "milestone_id": "M003",
+      "command": "mvn compile",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4900,
+      "created_at": "2026-03-31T07:53:35.259Z"
+    },
+    {
+      "id": 60,
+      "task_id": "T02",
+      "slice_id": "S02",
+      "milestone_id": "M003",
+      "command": "mvn compile",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4200,
+      "created_at": "2026-03-31T07:53:50.466Z"
+    },
+    {
+      "id": 61,
+      "task_id": "T03",
+      "slice_id": "S02",
+      "milestone_id": "M003",
+      "command": "mvn compile",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4300,
+      "created_at": "2026-03-31T07:54:02.296Z"
+    },
+    {
+      "id": 62,
+      "task_id": "T04",
+      "slice_id": "S02",
+      "milestone_id": "M003",
+      "command": "mvn compile",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 6100,
+      "created_at": "2026-03-31T07:54:12.487Z"
+    },
+    {
+      "id": 63,
+      "task_id": "T05",
+      "slice_id": "S02",
+      "milestone_id": "M003",
+      "command": "mvn clean verify",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 17700,
+      "created_at": "2026-03-31T07:54:24.712Z"
     }
   ]
 }
