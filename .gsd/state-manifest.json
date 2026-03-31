@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-30T19:58:47.017Z",
+  "exported_at": "2026-03-31T07:43:52.825Z",
   "milestones": [
     {
       "id": "M001",
@@ -126,6 +126,80 @@
       ],
       "requirement_coverage": "Extends R001 (scan) to multi-format. Extends R004 (playback) with shuffle/repeat. New: keyboard shortcuts, player bar navigation.",
       "boundary_map_markdown": "```\\nM002 scope:\\n  IN:  fixes, shuffle/repeat, multi-format, keyboard, player nav, basic tests\\n  OUT: playlists, queue UI, visualizer, themes, scrobbling (→ M003/M004)\\n```"
+    },
+    {
+      "id": "M003",
+      "title": "",
+      "status": "queued",
+      "depends_on": [],
+      "created_at": "2026-03-31T07:36:32.413Z",
+      "completed_at": null,
+      "vision": "Transform Musicode from an open localhost app into a secure multi-user system ready for NAS deployment. Spring Security with JWT in HttpOnly secure cookies, admin-managed users with roles, protected API endpoints, React auth flow, and Caddy reverse proxy with automatic HTTPS.",
+      "success_criteria": [
+        "All API endpoints except POST /api/auth/login return 401 without valid access token",
+        "Access token (15 min) in HttpOnly/Secure/SameSite=Strict cookie, refresh token (7 days) in HttpOnly cookie with path /api/auth/refresh",
+        "Logout invalidates refresh token server-side (revoked in DB)",
+        "ADMIN role can CRUD users, LISTENER role can only browse/play",
+        "Library management endpoints (folders, scan) restricted to ADMIN",
+        "React login page, transparent token refresh, route guards for admin pages",
+        "Caddy terminates TLS, Spring Boot not exposed externally in Docker Compose",
+        "All existing tests pass, new security tests cover auth flows and role enforcement",
+        "Coverage gates (≥80%) maintained"
+      ],
+      "key_risks": [
+        {
+          "risk": "Spring Security filter chain complexity with stateless JWT + cookie-based auth",
+          "whyItMatters": "Misconfigured filter chain silently passes or blocks requests. CSRF, CORS, and cookie flags interact in non-obvious ways with SPA auth."
+        },
+        {
+          "risk": "Secure cookie flag incompatibility in dev vs prod",
+          "whyItMatters": "Secure=true cookies won't be sent over plain HTTP except localhost. Dev/prod profile mismatch causes auth to silently fail."
+        },
+        {
+          "risk": "Token refresh race conditions in frontend",
+          "whyItMatters": "Multiple concurrent requests hitting 401 can trigger multiple refresh calls simultaneously, causing token invalidation cascades."
+        },
+        {
+          "risk": "Caddy TLS with Docker networking on Windows",
+          "whyItMatters": "Caddy's internal CA and Docker network DNS resolution may behave differently on Windows Docker Desktop vs Linux."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "Filter chain misconfiguration",
+          "retireIn": "S02",
+          "whatWillBeProven": "Integration tests prove unauthenticated requests get 401, authenticated requests with correct role get 200, wrong role gets 403"
+        },
+        {
+          "riskOrUnknown": "Secure cookie dev/prod mismatch",
+          "retireIn": "S02",
+          "whatWillBeProven": "application-dev.yml uses Secure=false, application-docker.yml uses Secure=true. Both profiles tested."
+        },
+        {
+          "riskOrUnknown": "Frontend refresh race conditions",
+          "retireIn": "S04",
+          "whatWillBeProven": "Axios interceptor queues concurrent 401 responses and retries after single refresh call"
+        },
+        {
+          "riskOrUnknown": "Caddy on Windows Docker",
+          "retireIn": "S05",
+          "whatWillBeProven": "docker-compose up serves app via https://localhost with valid TLS handshake"
+        }
+      ],
+      "verification_contract": "Backend: `mvn clean verify` passes with ≥80% coverage including new security tests. Frontend: `npm run test:coverage` passes with ≥80% line/branch coverage. All existing M001/M002 tests remain green.",
+      "verification_integration": "End-to-end: Login via React UI → browse library → play track → all through Caddy HTTPS. Admin: create user → that user logs in → can browse but cannot manage folders.",
+      "verification_operational": "docker-compose up starts Caddy + Spring Boot. Only ports 80/443 exposed externally. Spring Boot 8080 not reachable from host. HTTPS works on localhost with Caddy's internal CA.",
+      "verification_uat": "1) Open https://localhost → redirected to login. 2) Login as admin → full access including settings. 3) Create listener user. 4) Login as listener → can browse and play, settings/folder management hidden. 5) Close browser, reopen → still logged in (refresh token). 6) Wait 15+ min or manually expire access token → transparent refresh, no interruption.",
+      "definition_of_done": [
+        "All 5 slices complete with summaries and UAT artifacts",
+        "mvn clean verify BUILD SUCCESS with security tests",
+        "npm run test:coverage passes with coverage gates",
+        "docker-compose up serves via HTTPS through Caddy",
+        "No existing functionality broken — browse, play, seek, scan all work behind auth",
+        "DECISIONS.md updated with security-specific decisions"
+      ],
+      "requirement_coverage": "New requirements needed: R017 (Authentication), R018 (Multi-user with roles), R019 (HTTPS/TLS). Existing validated requirements R001-R009 must continue to work behind auth — no regressions.",
+      "boundary_map_markdown": "```\\nCaddy (TLS termination, port 443/80)\\n  → Spring Boot (port 8080, internal only)\\n    → SecurityFilterChain (JWT validation, role enforcement)\\n      → Existing controllers (unchanged)\\n    → AuthController (login, refresh, logout)\\n    → UserController (CRUD, ADMIN only)\\n    → H2 (User table, RefreshToken table)\\n  → React static build (served by Caddy)\\n    → AuthContext (token state, refresh logic)\\n    → ProtectedRoute (role-based guards)\\n    → Login page\\n```"
     }
   ],
   "slices": [
@@ -321,6 +395,115 @@
       "proof_level": "contract — coverage thresholds verified by build tools",
       "integration_closure": "Builds on test infrastructure from S03. No new runtime code — purely build tooling config.",
       "observability_impact": "Coverage reports generated on every test run. HTML reports available for inspection.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M003",
+      "id": "S01",
+      "title": "User Model & Foundation",
+      "status": "complete",
+      "risk": "low",
+      "depends": [],
+      "demo": "After this: User and RefreshToken entities exist in H2, admin user seeded on startup, UserDetailsService loads users for Spring Security, PasswordEncoder configured.",
+      "created_at": "2026-03-31T07:37:52.021Z",
+      "completed_at": "2026-03-31T07:43:52.774Z",
+      "full_summary_md": "---\nid: S01\nparent: M003\nmilestone: M003\nprovides:\n  - User entity + UserRepository for S02 auth and S03 user CRUD\n  - RefreshToken entity + RefreshTokenRepository for S02 token management\n  - MusicodeUserDetailsService for S02 SecurityFilterChain\n  - BCrypt PasswordEncoder bean for S02 login flow\n  - Permit-all SecurityFilterChain as starting point for S02 to replace\nrequires:\n  []\naffects:\n  - S02 — SecurityFilterChain will use UserDetailsService and PasswordEncoder from this slice\n  - S03 — UserController will CRUD the User entity from this slice\nkey_files:\n  - musicode-server/src/main/java/com/musicode/model/entity/User.java\n  - musicode-server/src/main/java/com/musicode/model/entity/RefreshToken.java\n  - musicode-server/src/main/java/com/musicode/config/SecurityConfig.java\n  - musicode-server/src/main/java/com/musicode/config/AdminSeeder.java\n  - musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java\nkey_decisions:\n  - spring-boot-starter-security added with permit-all chain to avoid breaking existing tests\n  - @DataJpaTest for repository tests, @SpringBootTest for service/config tests\n  - Admin default password configurable via application.yml, logged warning if using default\npatterns_established:\n  - User entity with BCrypt-hashed password and Role enum\n  - AdminSeeder pattern: check-then-create with ApplicationRunner, configurable default password\n  - MusicodeUserDetailsService maps domain User to Spring Security UserDetails\nobservability_surfaces:\n  - Admin seed logged at startup with warning for default password\n  - User count queryable via H2 console in dev\ndrill_down_paths:\n  - .gsd/milestones/M003/slices/S01/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M003/slices/S01/tasks/T02-SUMMARY.md\n  - .gsd/milestones/M003/slices/S01/tasks/T03-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T07:43:52.775Z\nblocker_discovered: false\n---\n\n# S01: User Model & Foundation\n\n**User & RefreshToken entities, UserDetailsService, admin seed, 12 new tests — auth data layer ready for S02 JWT implementation.**\n\n## What Happened\n\nBuilt the user auth foundation for Musicode. Created User entity (username, passwordHash, role ADMIN/LISTENER, enabled, createdAt) and RefreshToken entity (user FK, tokenHash, expiresAt, revoked) with H2 persistence. UserRepository provides lookup by username and role existence checks. RefreshTokenRepository supports token lookup by hash, expiration cleanup, and bulk revocation per user. MusicodeUserDetailsService bridges User to Spring Security's UserDetails with ROLE_ADMIN/ROLE_LISTENER authorities. AdminSeeder auto-creates an admin user on first startup with configurable default password and warns if unchanged. SecurityConfig includes BCrypt encoder and a temporary permit-all filter chain so all existing tests and endpoints continue working. 12 new tests (UserRepositoryTest, MusicodeUserDetailsServiceTest, AdminSeederTest) bring the suite to 56 total, all green, JaCoCo ≥80% enforced.\n\n## Verification\n\nmvn clean verify — 56 tests, 0 failures, JaCoCo ≥80% coverage met, BUILD SUCCESS.\n\n## Requirements Advanced\n\n- R017 — User entity with roles, UserDetailsService, and PasswordEncoder provide auth foundation\n- R018 — User entity with ADMIN/LISTENER roles, admin seed, and existsByRole check\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nAll three tasks executed in a single efficient pass rather than sequentially — no functional deviation.\n\n## Known Limitations\n\nSecurityFilterChain is permit-all — intentionally temporary, S02 replaces with JWT auth.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/pom.xml` — Added spring-boot-starter-security and spring-security-test dependencies\n- `musicode-server/src/main/resources/application.yml` — Added musicode.admin.default-password property\n- `musicode-server/src/main/java/com/musicode/model/entity/User.java` — User entity with id/username/passwordHash/role/enabled/createdAt\n- `musicode-server/src/main/java/com/musicode/model/entity/RefreshToken.java` — RefreshToken entity with user FK, tokenHash, expiresAt, revoked\n- `musicode-server/src/main/java/com/musicode/model/entity/Role.java` — ADMIN/LISTENER enum\n- `musicode-server/src/main/java/com/musicode/repository/UserRepository.java` — findByUsername, existsByUsername, existsByRole\n- `musicode-server/src/main/java/com/musicode/repository/RefreshTokenRepository.java` — findByTokenHash, deleteAllExpiredBefore, revokeAllByUser\n- `musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java` — Loads User by username, maps to Spring Security UserDetails with ROLE_ authority\n- `musicode-server/src/main/java/com/musicode/config/SecurityConfig.java` — BCrypt PasswordEncoder bean + temporary permit-all SecurityFilterChain\n- `musicode-server/src/main/java/com/musicode/config/AdminSeeder.java` — Seeds admin user on first startup if no ADMIN exists\n- `musicode-server/src/test/java/com/musicode/repository/UserRepositoryTest.java` — 5 tests: save/find, unique constraint, existsByRole, existsByUsername\n- `musicode-server/src/test/java/com/musicode/service/MusicodeUserDetailsServiceTest.java` — 4 tests: admin/listener authorities, not found, disabled user\n- `musicode-server/src/test/java/com/musicode/config/AdminSeederTest.java` — 3 tests: seed, idempotency, bcrypt verification\n",
+      "full_uat_md": "# S01: User Model & Foundation — UAT\n\n**Milestone:** M003\n**Written:** 2026-03-31T07:43:52.775Z\n\n## UAT: S01 — User Model & Foundation\\n\\n### Test 1: Admin seed on fresh database\\n1. Delete H2 database file\\n2. Start Spring Boot\\n3. Check H2 console: `SELECT * FROM USERS`\\n4. **Expected:** One row — username='admin', role='ADMIN', enabled=true, passwordHash starts with '$2a$'\\n\\n### Test 2: Admin seed idempotency\\n1. Stop and restart Spring Boot\\n2. Check H2 console: `SELECT COUNT(*) FROM USERS WHERE role='ADMIN'`\\n3. **Expected:** Still 1 — no duplicate admin created\\n\\n### Test 3: Existing endpoints still work\\n1. GET http://localhost:8080/api/tracks\\n2. GET http://localhost:8080/api/albums\\n3. **Expected:** Both return 200 with data — no auth required (permit-all chain active)\\n\\n### Test 4: Test suite\\n1. Run `mvn clean verify`\\n2. **Expected:** 56 tests pass, 0 failures, JaCoCo coverage met\n",
+      "goal": "Establish the data model for multi-user auth — User and RefreshToken entities, repository, service, admin seed, UserDetailsService, PasswordEncoder",
+      "success_criteria": "User entity (id, username, passwordHash, role ADMIN/LISTENER, enabled, createdAt) persisted in H2. RefreshToken entity (id, userId, tokenHash, expiresAt, revoked, createdAt) persisted in H2. Admin user auto-seeded on first startup only. UserDetailsService resolves users by username. BCrypt password encoding. Integration tests verify model, seed, and UserDetailsService. Existing tests remain green. Coverage gate maintained.",
+      "proof_level": "integration-test",
+      "integration_closure": "User and RefreshToken entities available for SecurityFilterChain in S02. No auth endpoints yet — pure data layer.",
+      "observability_impact": "Admin seed logged at startup. User count queryable via H2 console in dev.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M003",
+      "id": "S02",
+      "title": "JWT Auth with Secure Cookies",
+      "status": "pending",
+      "risk": "high",
+      "depends": [
+        "S01"
+      ],
+      "demo": "After this: POST /api/auth/login returns access+refresh tokens in HttpOnly cookies. All /api/** endpoints return 401 without valid token. POST /api/auth/refresh rotates tokens. POST /api/auth/logout revokes refresh token server-side.",
+      "created_at": "2026-03-31T07:37:52.021Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Implement the core auth mechanism — JWT generation/validation, cookie management, Spring Security filter chain, login/refresh/logout endpoints",
+      "success_criteria": "SecurityFilterChain configured: stateless session, JWT filter before UsernamePasswordAuthenticationFilter. Access token 15min in HttpOnly/Secure/SameSite=Strict cookie. Refresh token 7 days in HttpOnly/Secure/SameSite=Strict cookie with path=/api/auth/refresh. Login endpoint authenticates and sets both cookies. Refresh endpoint validates refresh token, rotates both tokens, revokes old. Logout revokes refresh token in DB and clears cookies. CORS updated for credentials. CSRF decision documented. Profile-aware Secure flag (false in dev, true in docker). Integration tests: 401 without token, 200 with token, refresh flow, logout invalidation, expired token rejection.",
+      "proof_level": "integration-test",
+      "integration_closure": "All existing endpoints now require auth. Existing tests updated with test auth helper. Frontend auth in S04 consumes these cookies.",
+      "observability_impact": "Failed auth attempts logged with username and IP. Refresh token table queryable for active sessions.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M003",
+      "id": "S03",
+      "title": "User Management & Role Enforcement",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S02"
+      ],
+      "demo": "After this: ADMIN can create/list/update/delete users via API. LISTENER can browse and play but cannot manage library folders or users. Role enforcement tested.",
+      "created_at": "2026-03-31T07:37:52.021Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "CRUD endpoints for user management (ADMIN only) and role-based access control on existing endpoints",
+      "success_criteria": "UserController: POST/GET/PUT/DELETE /api/users (ADMIN only). Endpoint security: /api/library/folders and /api/library/scan restricted to ADMIN. /api/tracks, /api/albums, /api/artists, /api/stream, /api/covers, /api/search open to any authenticated user. Password never returned in API responses. Tests: ADMIN can CRUD users, LISTENER gets 403 on user management, LISTENER gets 403 on folder management, LISTENER can browse and stream.",
+      "proof_level": "integration-test",
+      "integration_closure": "Role enforcement complete. Frontend in S04 uses roles to show/hide admin UI.",
+      "observability_impact": "User CRUD operations logged with acting admin username.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M003",
+      "id": "S04",
+      "title": "Frontend Auth Flow",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S02",
+        "S03"
+      ],
+      "demo": "After this: React app shows login page when unauthenticated. Login sets cookies, app loads normally. Admin sees user management and settings. Listener sees browse/play only. Token refresh is transparent. Logout clears session.",
+      "created_at": "2026-03-31T07:37:52.021Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Complete frontend authentication — login page, auth context, route guards, transparent refresh, role-based UI",
+      "success_criteria": "AuthContext with login/logout/refresh/currentUser state. Axios interceptor: on 401 response, attempt refresh once, retry original request, redirect to login if refresh fails. Queue concurrent 401s to single refresh call. Login page with username/password form and error handling. ProtectedRoute component with optional role check. Sidebar hides Settings/Users for LISTENER role. User management page for ADMIN. Logout clears cookies and redirects to login. Tests: AuthContext state transitions, interceptor refresh logic.",
+      "proof_level": "integration-test",
+      "integration_closure": "Full auth flow complete end-to-end. All UI accessible only after login. Admin/listener distinction visible.",
+      "observability_impact": "Auth errors shown in UI with clear messages. Network errors distinguished from auth failures.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M003",
+      "id": "S05",
+      "title": "Caddy Reverse Proxy & HTTPS",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S04"
+      ],
+      "demo": "After this: docker-compose up starts Caddy + Spring Boot. Browser accesses https://localhost, gets valid TLS, login page loads, full app works through HTTPS. Spring Boot port 8080 not reachable from host.",
+      "created_at": "2026-03-31T07:37:52.021Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Add Caddy as TLS-terminating reverse proxy in Docker Compose — single external entry point",
+      "success_criteria": "Caddyfile: localhost reverse_proxy to spring-boot:8080, serve React static build. Docker Compose: Caddy service with ports 80/443, Spring Boot with expose only (no ports). Caddy data/config volumes persisted. HTTPS works on localhost with Caddy's internal CA. HTTP redirects to HTTPS. Cookie Secure flag works correctly through Caddy. Docker Compose starts cleanly with `docker-compose up`.",
+      "proof_level": "manual-verification",
+      "integration_closure": "Deployment architecture complete. Ready for NAS migration by changing localhost to IP/domain.",
+      "observability_impact": "Caddy access logs available via docker-compose logs caddy.",
       "sequence": 0,
       "replan_triggered_at": null
     }
@@ -1438,6 +1621,163 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "User/RefreshToken entities, repositories, UserDetailsService, admin seed, SecurityConfig permit-all, and 12 integration tests — all green, coverage met.",
+      "status": "complete",
+      "one_liner": "User/RefreshToken entities, repositories, UserDetailsService, admin seed, SecurityConfig permit-all, and 12 integration tests — all green, coverage met.",
+      "narrative": "Created all three entities (User, RefreshToken, Role enum) and both repositories. Added spring-boot-starter-security and spring-security-test dependencies. Built MusicodeUserDetailsService that maps User to Spring Security UserDetails with ROLE_ADMIN/ROLE_LISTENER authorities. Created SecurityConfig with permit-all filter chain (temporary — S02 locks it down) so existing endpoints and tests keep working. AdminSeeder creates default admin on first startup with configurable password, warns if using default. Wrote 12 new tests across 3 test classes: UserRepositoryTest (5 tests — save/find, uniqueness, role check), MusicodeUserDetailsServiceTest (4 tests — admin/listener authorities, not-found, disabled), AdminSeederTest (3 tests — seed, idempotency, bcrypt encoding). All 56 tests pass, JaCoCo coverage gate met.",
+      "verification_result": "mvn clean verify — 56 tests pass, 0 failures, JaCoCo coverage checks met, BUILD SUCCESS.",
+      "duration": "",
+      "completed_at": "2026-03-31T07:42:55.237Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/model/entity/User.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/RefreshToken.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/Role.java",
+        "musicode-server/src/main/java/com/musicode/repository/UserRepository.java",
+        "musicode-server/src/main/java/com/musicode/repository/RefreshTokenRepository.java",
+        "musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java",
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java",
+        "musicode-server/src/main/java/com/musicode/config/AdminSeeder.java",
+        "musicode-server/src/test/java/com/musicode/repository/UserRepositoryTest.java",
+        "musicode-server/src/test/java/com/musicode/service/MusicodeUserDetailsServiceTest.java",
+        "musicode-server/src/test/java/com/musicode/config/AdminSeederTest.java"
+      ],
+      "key_decisions": [
+        "Used @DataJpaTest for repository tests (lighter context than @SpringBootTest)",
+        "AdminSeeder test calls run(null) directly after clearing DB to test idempotency"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S01\nmilestone: M003\nkey_files:\n  - musicode-server/src/main/java/com/musicode/model/entity/User.java\n  - musicode-server/src/main/java/com/musicode/model/entity/RefreshToken.java\n  - musicode-server/src/main/java/com/musicode/model/entity/Role.java\n  - musicode-server/src/main/java/com/musicode/repository/UserRepository.java\n  - musicode-server/src/main/java/com/musicode/repository/RefreshTokenRepository.java\n  - musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java\n  - musicode-server/src/main/java/com/musicode/config/SecurityConfig.java\n  - musicode-server/src/main/java/com/musicode/config/AdminSeeder.java\n  - musicode-server/src/test/java/com/musicode/repository/UserRepositoryTest.java\n  - musicode-server/src/test/java/com/musicode/service/MusicodeUserDetailsServiceTest.java\n  - musicode-server/src/test/java/com/musicode/config/AdminSeederTest.java\nkey_decisions:\n  - Used @DataJpaTest for repository tests (lighter context than @SpringBootTest)\n  - AdminSeeder test calls run(null) directly after clearing DB to test idempotency\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T07:42:55.238Z\nblocker_discovered: false\n---\n\n# T01: User/RefreshToken entities, repositories, UserDetailsService, admin seed, SecurityConfig permit-all, and 12 integration tests — all green, coverage met.\n\n**User/RefreshToken entities, repositories, UserDetailsService, admin seed, SecurityConfig permit-all, and 12 integration tests — all green, coverage met.**\n\n## What Happened\n\nCreated all three entities (User, RefreshToken, Role enum) and both repositories. Added spring-boot-starter-security and spring-security-test dependencies. Built MusicodeUserDetailsService that maps User to Spring Security UserDetails with ROLE_ADMIN/ROLE_LISTENER authorities. Created SecurityConfig with permit-all filter chain (temporary — S02 locks it down) so existing endpoints and tests keep working. AdminSeeder creates default admin on first startup with configurable password, warns if using default. Wrote 12 new tests across 3 test classes: UserRepositoryTest (5 tests — save/find, uniqueness, role check), MusicodeUserDetailsServiceTest (4 tests — admin/listener authorities, not-found, disabled), AdminSeederTest (3 tests — seed, idempotency, bcrypt encoding). All 56 tests pass, JaCoCo coverage gate met.\n\n## Verification\n\nmvn clean verify — 56 tests pass, 0 failures, JaCoCo coverage checks met, BUILD SUCCESS.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn clean verify` | 0 | ✅ pass | 16866ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/model/entity/User.java`\n- `musicode-server/src/main/java/com/musicode/model/entity/RefreshToken.java`\n- `musicode-server/src/main/java/com/musicode/model/entity/Role.java`\n- `musicode-server/src/main/java/com/musicode/repository/UserRepository.java`\n- `musicode-server/src/main/java/com/musicode/repository/RefreshTokenRepository.java`\n- `musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java`\n- `musicode-server/src/main/java/com/musicode/config/SecurityConfig.java`\n- `musicode-server/src/main/java/com/musicode/config/AdminSeeder.java`\n- `musicode-server/src/test/java/com/musicode/repository/UserRepositoryTest.java`\n- `musicode-server/src/test/java/com/musicode/service/MusicodeUserDetailsServiceTest.java`\n- `musicode-server/src/test/java/com/musicode/config/AdminSeederTest.java`\n",
+      "description": "Create User entity with fields: id (Long, auto), username (String, unique, not null), passwordHash (String, not null), role (enum ADMIN/LISTENER, not null), enabled (boolean, default true), createdAt (LocalDateTime). Create Role enum. Create RefreshToken entity with fields: id (Long, auto), user (ManyToOne User), tokenHash (String, unique, not null), expiresAt (Instant, not null), revoked (boolean, default false), createdAt (Instant). Create UserRepository with findByUsername(String). Create RefreshTokenRepository with findByTokenHash(String), deleteByUser(User), findAllByUserAndRevokedFalse(User), deleteAllByExpiresAtBefore(Instant).",
+      "estimate": "20min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/model/entity/User.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/RefreshToken.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/Role.java",
+        "musicode-server/src/main/java/com/musicode/repository/UserRepository.java",
+        "musicode-server/src/main/java/com/musicode/repository/RefreshTokenRepository.java"
+      ],
+      "verify": "mvn compile -f musicode-server/pom.xml — compiles without error",
+      "inputs": [
+        "Track.java entity as pattern reference",
+        "application.yml for H2 config"
+      ],
+      "expected_output": [
+        "User.java",
+        "RefreshToken.java",
+        "Role.java",
+        "UserRepository.java",
+        "RefreshTokenRepository.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "UserDetailsService, BCrypt PasswordEncoder, AdminSeeder, and permit-all SecurityConfig delivered with T01.",
+      "status": "complete",
+      "one_liner": "UserDetailsService, BCrypt PasswordEncoder, AdminSeeder, and permit-all SecurityConfig delivered with T01.",
+      "narrative": "UserDetailsService, PasswordEncoder, AdminSeeder, and SecurityConfig implemented together with T01. spring-boot-starter-security added to pom.xml. SecurityFilterChain permits all requests temporarily. AdminSeeder uses ApplicationRunner to seed admin on empty DB. All existing 44 tests continue to pass.",
+      "verification_result": "Covered by T01 verification — mvn clean verify passes.",
+      "duration": "",
+      "completed_at": "2026-03-31T07:43:07.401Z",
+      "blocker_discovered": false,
+      "deviations": "Combined with T01 execution — SecurityConfig, AdminSeeder, UserDetailsService, and pom.xml changes all done in single pass.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java",
+        "musicode-server/src/main/java/com/musicode/config/AdminSeeder.java",
+        "musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java",
+        "musicode-server/pom.xml",
+        "musicode-server/src/main/resources/application.yml"
+      ],
+      "key_decisions": [
+        "Temporary permit-all SecurityFilterChain to avoid breaking existing tests — S02 will replace with JWT chain",
+        "Admin default password configurable via musicode.admin.default-password property",
+        "Log warning when using default password"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S01\nmilestone: M003\nkey_files:\n  - musicode-server/src/main/java/com/musicode/config/SecurityConfig.java\n  - musicode-server/src/main/java/com/musicode/config/AdminSeeder.java\n  - musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java\n  - musicode-server/pom.xml\n  - musicode-server/src/main/resources/application.yml\nkey_decisions:\n  - Temporary permit-all SecurityFilterChain to avoid breaking existing tests — S02 will replace with JWT chain\n  - Admin default password configurable via musicode.admin.default-password property\n  - Log warning when using default password\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T07:43:07.401Z\nblocker_discovered: false\n---\n\n# T02: UserDetailsService, BCrypt PasswordEncoder, AdminSeeder, and permit-all SecurityConfig delivered with T01.\n\n**UserDetailsService, BCrypt PasswordEncoder, AdminSeeder, and permit-all SecurityConfig delivered with T01.**\n\n## What Happened\n\nUserDetailsService, PasswordEncoder, AdminSeeder, and SecurityConfig implemented together with T01. spring-boot-starter-security added to pom.xml. SecurityFilterChain permits all requests temporarily. AdminSeeder uses ApplicationRunner to seed admin on empty DB. All existing 44 tests continue to pass.\n\n## Verification\n\nCovered by T01 verification — mvn clean verify passes.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn clean verify` | 0 | ✅ pass | 16866ms |\n\n\n## Deviations\n\nCombined with T01 execution — SecurityConfig, AdminSeeder, UserDetailsService, and pom.xml changes all done in single pass.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/config/SecurityConfig.java`\n- `musicode-server/src/main/java/com/musicode/config/AdminSeeder.java`\n- `musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java`\n- `musicode-server/pom.xml`\n- `musicode-server/src/main/resources/application.yml`\n",
+      "description": "Create MusicodeUserDetailsService implementing Spring Security UserDetailsService — loads User by username from UserRepository, maps to Spring Security UserDetails with role as GrantedAuthority (ROLE_ADMIN, ROLE_LISTENER). Create SecurityBeansConfig with BCryptPasswordEncoder bean. Create AdminSeeder (CommandLineRunner or ApplicationRunner) that checks if any ADMIN user exists — if not, creates one with username 'admin' and a configurable default password from application.yml (musicode.admin.default-password, default 'changeme'). Log a warning at startup if using default password. Add spring-boot-starter-security dependency to pom.xml. Add a minimal SecurityFilterChain that permits all requests (temporary — S02 will lock it down) so existing functionality is not broken.",
+      "estimate": "25min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java",
+        "musicode-server/src/main/java/com/musicode/config/SecurityBeansConfig.java",
+        "musicode-server/src/main/java/com/musicode/config/AdminSeeder.java",
+        "musicode-server/pom.xml",
+        "musicode-server/src/main/resources/application.yml"
+      ],
+      "verify": "Start Spring Boot, verify admin user seeded in H2 console, verify existing endpoints still work without auth",
+      "inputs": [
+        "UserRepository.java from T01",
+        "application.yml"
+      ],
+      "expected_output": [
+        "MusicodeUserDetailsService.java",
+        "SecurityBeansConfig.java",
+        "AdminSeeder.java",
+        "Updated pom.xml",
+        "Updated application.yml"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "12 integration tests for user model, UserDetailsService, and admin seed — 56 total, all green, coverage gate met.",
+      "status": "complete",
+      "one_liner": "12 integration tests for user model, UserDetailsService, and admin seed — 56 total, all green, coverage gate met.",
+      "narrative": "12 new tests: UserRepositoryTest (5 — CRUD, unique constraint, existsByRole, existsByUsername), MusicodeUserDetailsServiceTest (4 — admin authorities, listener authorities, not found, disabled user), AdminSeederTest (3 — seed creation, idempotency, bcrypt verification). Total suite: 56 tests, all green, JaCoCo ≥80% met.",
+      "verification_result": "mvn clean verify — 56 tests, 0 failures, JaCoCo coverage checks met.",
+      "duration": "",
+      "completed_at": "2026-03-31T07:43:15.962Z",
+      "blocker_discovered": false,
+      "deviations": "Combined with T01 execution — all tests written in same pass.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/test/java/com/musicode/repository/UserRepositoryTest.java",
+        "musicode-server/src/test/java/com/musicode/service/MusicodeUserDetailsServiceTest.java",
+        "musicode-server/src/test/java/com/musicode/config/AdminSeederTest.java"
+      ],
+      "key_decisions": [
+        "@DataJpaTest for UserRepositoryTest (lighter than full SpringBootTest)",
+        "@SpringBootTest for AdminSeederTest and UserDetailsServiceTest (need full context with security beans)"
+      ],
+      "full_summary_md": "---\nid: T03\nparent: S01\nmilestone: M003\nkey_files:\n  - musicode-server/src/test/java/com/musicode/repository/UserRepositoryTest.java\n  - musicode-server/src/test/java/com/musicode/service/MusicodeUserDetailsServiceTest.java\n  - musicode-server/src/test/java/com/musicode/config/AdminSeederTest.java\nkey_decisions:\n  - @DataJpaTest for UserRepositoryTest (lighter than full SpringBootTest)\n  - @SpringBootTest for AdminSeederTest and UserDetailsServiceTest (need full context with security beans)\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T07:43:15.962Z\nblocker_discovered: false\n---\n\n# T03: 12 integration tests for user model, UserDetailsService, and admin seed — 56 total, all green, coverage gate met.\n\n**12 integration tests for user model, UserDetailsService, and admin seed — 56 total, all green, coverage gate met.**\n\n## What Happened\n\n12 new tests: UserRepositoryTest (5 — CRUD, unique constraint, existsByRole, existsByUsername), MusicodeUserDetailsServiceTest (4 — admin authorities, listener authorities, not found, disabled user), AdminSeederTest (3 — seed creation, idempotency, bcrypt verification). Total suite: 56 tests, all green, JaCoCo ≥80% met.\n\n## Verification\n\nmvn clean verify — 56 tests, 0 failures, JaCoCo coverage checks met.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn clean verify` | 0 | ✅ pass | 16866ms |\n\n\n## Deviations\n\nCombined with T01 execution — all tests written in same pass.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/test/java/com/musicode/repository/UserRepositoryTest.java`\n- `musicode-server/src/test/java/com/musicode/service/MusicodeUserDetailsServiceTest.java`\n- `musicode-server/src/test/java/com/musicode/config/AdminSeederTest.java`\n",
+      "description": "Create UserRepositoryTest: verify save/find by username, unique constraint on username, role persistence. Create AdminSeederTest: verify admin user created on empty DB, verify admin NOT re-created if one already exists, verify password is BCrypt-encoded. Create MusicodeUserDetailsServiceTest: verify loadUserByUsername returns correct authorities, verify UsernameNotFoundException for unknown user. Verify all existing tests still pass. Verify coverage gate maintained.",
+      "estimate": "25min",
+      "files": [
+        "musicode-server/src/test/java/com/musicode/repository/UserRepositoryTest.java",
+        "musicode-server/src/test/java/com/musicode/service/MusicodeUserDetailsServiceTest.java",
+        "musicode-server/src/test/java/com/musicode/config/AdminSeederTest.java"
+      ],
+      "verify": "mvn clean verify -f musicode-server/pom.xml — all tests pass, coverage ≥80%",
+      "inputs": [
+        "User.java",
+        "UserRepository.java",
+        "AdminSeeder.java",
+        "MusicodeUserDetailsService.java",
+        "application-test.yml"
+      ],
+      "expected_output": [
+        "UserRepositoryTest.java",
+        "MusicodeUserDetailsServiceTest.java",
+        "AdminSeederTest.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -1583,6 +1923,30 @@
       "rationale": "Ensures all new code ships with meaningful test coverage. 80% is pragmatic — catches gaps without forcing pointless tests on trivial code.",
       "revisable": "Yes",
       "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 23,
+      "id": "D013",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Database engine for project",
+      "choice": "Stay with H2 — no migration needed currently",
+      "rationale": "H2 is giving zero problems. SQLite is natural next step if needed. PostgreSQL only if full-text search or complex analytics (listening stats) are required in the future.",
+      "revisable": "Yes — revisit if H2 hits limitations or advanced features are needed",
+      "made_by": "collaborative",
+      "superseded_by": null
+    },
+    {
+      "seq": 26,
+      "id": "D014",
+      "when_context": "",
+      "scope": "roadmap",
+      "decision": "Redis integration",
+      "choice": "Deferred — token blacklist + rate limiting + session cache in future milestone",
+      "rationale": "M003 uses H2 table for refresh tokens. Redis milestone will compare approaches and teach Spring Data Redis, TTL, pub/sub for invalidation.",
+      "revisable": "Yes",
+      "made_by": "collaborative",
       "superseded_by": null
     }
   ],
@@ -2191,6 +2555,39 @@
       "verdict": "✅ pass",
       "duration_ms": 3800,
       "created_at": "2026-03-30T19:55:23.691Z"
+    },
+    {
+      "id": 56,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M003",
+      "command": "mvn clean verify",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 16866,
+      "created_at": "2026-03-31T07:42:55.237Z"
+    },
+    {
+      "id": 57,
+      "task_id": "T02",
+      "slice_id": "S01",
+      "milestone_id": "M003",
+      "command": "mvn clean verify",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 16866,
+      "created_at": "2026-03-31T07:43:07.401Z"
+    },
+    {
+      "id": 58,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M003",
+      "command": "mvn clean verify",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 16866,
+      "created_at": "2026-03-31T07:43:15.962Z"
     }
   ]
 }
