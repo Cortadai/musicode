@@ -62,6 +62,9 @@ npm run dev
 - **Search** — Combined search across tracks, albums, and artists
 - **Authentication** — JWT in secure HttpOnly cookies, access token (15min) + refresh token (7 days) with rotation
 - **Multi-user** — Admin-managed users with ADMIN/LISTENER roles, no public registration
+- **Media Session** — OS media keys (play/pause/next/prev), now-playing notification with cover art, OS seek bar
+- **PWA** — Installable as a standalone app, service worker caches app shell and cover art for offline-ready loading
+- **Spectrum Visualizer** — Real-time frequency bars via Web Audio API, toggleable from the player bar
 - **HTTPS** — Caddy reverse proxy with automatic TLS, HTTP→HTTPS redirect
 
 ## Project Structure

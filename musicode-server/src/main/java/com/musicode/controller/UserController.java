@@ -7,12 +7,14 @@ import com.musicode.model.dto.CreateUserRequest;
 import com.musicode.model.dto.UpdateUserRequest;
 import com.musicode.model.dto.UserResponse;
 import com.musicode.model.entity.User;
+import com.musicode.repository.RefreshTokenRepository;
 import com.musicode.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping
@@ -86,6 +89,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public Map<String, Long> deleteUser(@PathVariable Long id, java.security.Principal principal) {
         var user = findUserOrThrow(id);
 
@@ -93,6 +97,7 @@ public class UserController {
             throw new BadRequestException("Cannot delete your own account");
         }
 
+        refreshTokenRepository.deleteAllByUser(user);
         userRepository.delete(user);
         log.info("Deleted user '{}' (id={})", user.getUsername(), user.getId());
         return Map.of("deleted", id);

@@ -64,7 +64,8 @@ src/
 │   ├── AuthContext    User session state (login/logout/restore)
 │   └── PlayerContext  Player state (useReducer + dual contexts)
 ├── hooks/
-│   └── usePlayer     Singleton Audio element + dispatch bridge
+│   ├── usePlayer        Singleton Audio element + dispatch bridge + Media Session
+│   └── useAudioAnalyser Web Audio API analyser for spectrum visualizer
 ├── pages/            Route components
 ├── types/            TypeScript interfaces
 └── utils/
@@ -84,6 +85,22 @@ src/
 - **ErrorBoundary** wraps entire app — catches runtime crashes, shows reload UI
 - **ErrorMessage** component with optional retry button — replaces inline error strings
 - **getErrorMessage()** extracts backend `ErrorResponse.error` field or provides fallback
+
+### Auth
+- Cookies managed by browser — frontend never sees tokens directly
+- Axios interceptor handles transparent refresh with request queuing
+- `useAuth()` provides `isAdmin` for conditional UI rendering
+
+## Tests
+
+```bash
+npm run test:coverage
+```
+
+Coverage thresholds enforced on `context/` and `utils/` (lines ≥80%, branches ≥80%, functions ≥50%).
+
+Components, pages, hooks, and API layer excluded from thresholds — tested via integration.
+auses rendering when tab is hidden
 
 ### Auth
 - Cookies managed by browser — frontend never sees tokens directly
