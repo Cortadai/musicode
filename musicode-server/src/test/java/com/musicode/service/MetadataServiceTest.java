@@ -12,54 +12,54 @@ class MetadataServiceTest {
 
     private final MetadataService metadataService = new MetadataService();
 
-    // Path to a real FLAC file for testing
-    private static final Path TEST_FLAC = Paths.get(
-            "C:/Users/david/Music/After The Neon Fades - Echo Synth",
-            "01 - Echo Synth - Rolling Through the Dark (Night Drive Synthwave).flac"
-    );
+    // Test fixtures in src/test/resources/testdata/ — synthetic audio generated with ffmpeg
+    private static final Path TEST_FLAC = Paths.get("src/test/resources/testdata/test-track.flac");
+    private static final Path TEST_MP3 = Paths.get("src/test/resources/testdata/test-track.mp3");
 
     @Test
-    void shouldReadMetadataFromRealFlac() {
-        assertTrue(TEST_FLAC.toFile().exists(), "Test FLAC file must exist: " + TEST_FLAC);
+    void shouldReadMetadataFromFlac() {
+        assertTrue(TEST_FLAC.toFile().exists(), "Test FLAC must exist: " + TEST_FLAC);
 
         TrackMetadata metadata = metadataService.readMetadata(TEST_FLAC);
 
-        assertNotNull(metadata, "Metadata should not be null");
-        assertNotNull(metadata.getTitle(), "Title should be present");
-        assertNotNull(metadata.getArtist(), "Artist should be present");
-        assertNotNull(metadata.getFilePath(), "File path should be present");
-        assertTrue(metadata.getDurationSeconds() > 0, "Duration should be positive");
-        assertTrue(metadata.getFileSize() > 0, "File size should be positive");
+        assertNotNull(metadata);
+        assertEquals("Test Track One", metadata.getTitle());
+        assertEquals("Test Artist", metadata.getArtist());
+        assertEquals("Test Album", metadata.getAlbum());
+        assertEquals(2025, metadata.getYear());
+        assertEquals(1, metadata.getTrackNumber());
+        assertEquals("Electronic", metadata.getGenre());
+        assertTrue(metadata.getDurationSeconds() > 0);
+        assertTrue(metadata.getFileSize() > 0);
+        assertEquals(44100, metadata.getSampleRate());
+        assertNotNull(metadata.getFilePath());
+    }
 
-        System.out.println("=== Metadata ===");
-        System.out.println("Title:      " + metadata.getTitle());
-        System.out.println("Artist:     " + metadata.getArtist());
-        System.out.println("Album:      " + metadata.getAlbum());
-        System.out.println("Year:       " + metadata.getYear());
-        System.out.println("Track #:    " + metadata.getTrackNumber());
-        System.out.println("Disc #:     " + metadata.getDiscNumber());
-        System.out.println("Duration:   " + metadata.getDurationSeconds() + "s");
-        System.out.println("Genre:      " + metadata.getGenre());
-        System.out.println("Bitrate:    " + metadata.getBitRate() + " kbps");
-        System.out.println("Sample:     " + metadata.getSampleRate() + " Hz");
-        System.out.println("Bits/samp:  " + metadata.getBitsPerSample());
-        System.out.println("File size:  " + metadata.getFileSize() + " bytes");
-        System.out.println("Cover art:  " + (metadata.getCoverArt() != null ? metadata.getCoverArt().length + " bytes" : "none"));
-        System.out.println("Cover MIME: " + metadata.getCoverArtMimeType());
+    @Test
+    void shouldReadMetadataFromMp3() {
+        assertTrue(TEST_MP3.toFile().exists(), "Test MP3 must exist: " + TEST_MP3);
+
+        TrackMetadata metadata = metadataService.readMetadata(TEST_MP3);
+
+        assertNotNull(metadata);
+        assertEquals("Test MP3 Track", metadata.getTitle());
+        assertEquals("Test MP3 Artist", metadata.getArtist());
+        assertEquals("Test MP3 Album", metadata.getAlbum());
+        assertTrue(metadata.getDurationSeconds() > 0);
+        assertTrue(metadata.getFileSize() > 0);
     }
 
     @Test
     void shouldReturnNullForNonexistentFile() {
         TrackMetadata metadata = metadataService.readMetadata(Paths.get("nonexistent.flac"));
-        assertNull(metadata, "Should return null for nonexistent file");
+        assertNull(metadata);
     }
 
     @Test
-    void shouldHandleMissingTitleGracefully() {
-        // Even if tags are missing, the filename should be used as fallback
+    void shouldNeverReturnNullTitle() {
         TrackMetadata metadata = metadataService.readMetadata(TEST_FLAC);
         assertNotNull(metadata);
-        assertNotNull(metadata.getTitle(), "Title should never be null (filename fallback)");
-        assertFalse(metadata.getTitle().isBlank(), "Title should not be blank");
+        assertNotNull(metadata.getTitle());
+        assertFalse(metadata.getTitle().isBlank());
     }
 }

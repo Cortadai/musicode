@@ -1,73 +1,101 @@
-# React + TypeScript + Vite
+# Musicode UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React frontend for Musicode. Browse your music library, play tracks with full player controls, manage users (admin), and authenticate — all in a dark-themed SPA.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript
+- Vite 8 (dev server + build)
+- Tailwind CSS v4
+- TanStack Query (server state)
+- Axios (API client with auth interceptor)
+- Lucide React (icons)
+- Vitest + v8 coverage
 
-## React Compiler
+## Running
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev        # Dev server on http://localhost:5173
+npm run build      # Production build to dist/
+npm run preview    # Preview production build
+npm test           # Run tests
+npm run test:coverage  # Tests with coverage thresholds
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The dev server proxies `/api` requests to `http://localhost:8080` (Spring Boot).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Pages
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Route | Component | Auth |
+|---|---|---|
+| `/login` | LoginPage | public |
+| `/` | AlbumsPage | any |
+| `/albums/:id` | AlbumDetailPage | any |
+| `/artists` | ArtistsPage | any |
+| `/artists/:id` | ArtistDetailPage | any |
+| `/tracks` | TracksPage | any |
+| `/search` | SearchPage | any |
+| `/settings` | SettingsPage | ADMIN |
+| `/users` | UsersPage | ADMIN |
+
+## Auth Flow
+
+1. Browser opens app → `AuthContext` calls `GET /api/auth/me` to check existing session
+2. No session → redirect to `/login`
+3. Login form → `POST /api/auth/login` → server sets HttpOnly cookies → redirect to `/`
+4. Subsequent API calls include cookies automatically (axios `withCredentials: true`)
+5. On 401 → axios interceptor attempts `POST /api/auth/refresh` → retries original request
+6. Concurrent 401s queue behind a single refresh call to prevent race conditions
+7. Refresh fails → redirect to `/login`
+
+## Project Structure
+
 ```
+src/
+├── api/              API functions + axios client with auth interceptor
+├── components/
+│   ├── auth/         ProtectedRoute
+│   ├── common/       Spinner, ErrorMessage, ErrorBoundary
+│   ├── layout/       AppShell, Sidebar, TopBar
+│   ├── library/      AlbumCard, TrackList
+│   └── player/       PlayerBar
+├── context/
+│   ├── AuthContext    User session state (login/logout/restore)
+│   └── PlayerContext  Player state (useReducer + dual contexts)
+├── hooks/
+│   └── usePlayer     Singleton Audio element + dispatch bridge
+├── pages/            Route components
+├── types/            TypeScript interfaces
+└── utils/
+    ├── errors.ts     Error extraction utility
+    └── format.ts     Duration formatting
+```
+
+## Key Patterns
+
+### Player Architecture
+- **Singleton Audio element** at module level — survives component unmounts
+- **useReducer** for atomic state transitions (track + queue + index change together)
+- **Dual contexts** (state + dispatch) — prevents unnecessary re-renders
+- **Symbol owner pattern** — ensures only one `usePlayer` instance wires audio events
+
+### Error Handling
+- **ErrorBoundary** wraps entire app — catches runtime crashes, shows reload UI
+- **ErrorMessage** component with optional retry button — replaces inline error strings
+- **getErrorMessage()** extracts backend `ErrorResponse.error` field or provides fallback
+
+### Auth
+- Cookies managed by browser — frontend never sees tokens directly
+- Axios interceptor handles transparent refresh with request queuing
+- `useAuth()` provides `isAdmin` for conditional UI rendering
+
+## Tests
+
+```bash
+npm run test:coverage
+```
+
+Coverage thresholds enforced on `context/` and `utils/` (lines ≥80%, branches ≥80%, functions ≥50%).
+
+Components, pages, hooks, and API layer excluded from thresholds — tested via integration.
