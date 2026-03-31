@@ -127,4 +127,50 @@ class LibraryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.removed", is(0)));
     }
+
+    // --- Role enforcement: LISTENER denied on mutating endpoints ---
+
+    @Test
+    @WithMockUser(roles = "LISTENER")
+    void listener_canGetFolders() throws Exception {
+        mockMvc.perform(get("/api/library/folders"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "LISTENER")
+    void listener_canGetScanStatus() throws Exception {
+        mockMvc.perform(get("/api/library/scan/status"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "LISTENER")
+    void listener_cannotAddFolder() throws Exception {
+        mockMvc.perform(post("/api/library/folders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"path\":\"C:/music\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "LISTENER")
+    void listener_cannotDeleteFolder() throws Exception {
+        mockMvc.perform(delete("/api/library/folders/{id}", 1))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "LISTENER")
+    void listener_cannotStartScan() throws Exception {
+        mockMvc.perform(post("/api/library/scan"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "LISTENER")
+    void listener_cannotCleanup() throws Exception {
+        mockMvc.perform(post("/api/library/cleanup"))
+                .andExpect(status().isForbidden());
+    }
 }

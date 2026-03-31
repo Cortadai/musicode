@@ -48,14 +48,26 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/refresh").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
+                // Admin-only endpoints
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/library/folders").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/library/folders/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/library/scan").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/library/cleanup").hasRole("ADMIN")
+                // Everything else requires authentication (any role)
                 .anyRequest().authenticated()
             )
-            // Return 401 instead of 403 for unauthenticated requests
+            // Return 401 for unauthenticated, 403 for unauthorized role
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(401);
                     response.setContentType("application/json");
                     response.getWriter().write("{\"error\":\"Authentication required\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(403);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Access denied\"}");
                 })
             )
             // H2 console uses frames

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T07:55:21.511Z",
+  "exported_at": "2026-03-31T09:22:47.202Z",
   "milestones": [
     {
       "id": "M001",
@@ -444,21 +444,21 @@
       "milestone_id": "M003",
       "id": "S03",
       "title": "User Management & Role Enforcement",
-      "status": "pending",
+      "status": "complete",
       "risk": "medium",
       "depends": [
         "S02"
       ],
       "demo": "After this: ADMIN can create/list/update/delete users via API. LISTENER can browse and play but cannot manage library folders or users. Role enforcement tested.",
       "created_at": "2026-03-31T07:37:52.021Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
+      "completed_at": "2026-03-31T09:22:47.118Z",
+      "full_summary_md": "---\nid: S03\nparent: M003\nmilestone: M003\nprovides:\n  - UserController endpoints for S04 admin user management page\n  - Role-based security rules for S04 route guards\nrequires:\n  - slice: S01\n    provides: User entity, UserRepository, PasswordEncoder\n  - slice: S02\n    provides: SecurityFilterChain, UserResponse DTO, @WithMockUser test patterns\naffects:\n  - S04 — Frontend uses roles from /api/auth/me to show/hide admin UI and user management page\nkey_files:\n  - musicode-server/src/main/java/com/musicode/controller/UserController.java\n  - musicode-server/src/main/java/com/musicode/config/SecurityConfig.java\nkey_decisions:\n  - java.security.Principal for username extraction in controllers\n  - Library GET endpoints open to any authenticated, mutations ADMIN only\n  - Custom 403 JSON AccessDeniedHandler\n  - Admin self-deletion prevented\npatterns_established:\n  - java.security.Principal for current user in controllers (works with @WithMockUser and JWT)\n  - Method-level @WithMockUser override for role enforcement tests\nobservability_surfaces:\n  - User CRUD operations logged with username\n  - 403 responses via AccessDeniedHandler\ndrill_down_paths:\n  - .gsd/milestones/M003/slices/S03/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M003/slices/S03/tasks/T02-SUMMARY.md\n  - .gsd/milestones/M003/slices/S03/tasks/T03-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T09:22:47.118Z\nblocker_discovered: false\n---\n\n# S03: User Management & Role Enforcement\n\n**UserController CRUD for ADMIN, role-based endpoint security, 22 new tests \\u2014 97 total green, coverage met.**\n\n## What Happened\n\nBuilt user management CRUD and role enforcement. UserController provides full CRUD for admin-managed users: list, get, create (with validation + uniqueness check), update (partial — username/role/enabled/password), and delete (with self-deletion prevention). SecurityFilterChain updated with granular role rules: /api/users/** ADMIN only, library mutations ADMIN only, library reads and browse/stream/search open to any authenticated user. Custom AccessDeniedHandler returns 403 JSON. 22 new tests (16 UserControllerTest, 6 LibraryControllerTest role enforcement). Total: 97 tests, all green, JaCoCo ≥80%.\n\n## Verification\n\nmvn clean verify \\u2014 97 tests, 0 failures, JaCoCo \\u226580% coverage met, BUILD SUCCESS.\n\n## Requirements Advanced\n\n- R018 — ADMIN CRUD for users, no public registration, roles ADMIN/LISTENER enforced on all endpoints\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nUsed java.security.Principal instead of @AuthenticationPrincipal for username extraction \\u2014 more robust with both @WithMockUser and JWT filter.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/controller/UserController.java` — CRUD endpoints for user management with validation and self-deletion prevention\n- `musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java` — Create user request DTO with validation\n- `musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java` — Update user request DTO (partial updates)\n- `musicode-server/src/main/java/com/musicode/config/SecurityConfig.java` — Role-based endpoint security rules + AccessDeniedHandler\n- `musicode-server/src/test/java/com/musicode/controller/UserControllerTest.java` — 16 CRUD + role enforcement tests\n- `musicode-server/src/test/java/com/musicode/controller/LibraryControllerTest.java` — 6 listener role enforcement tests added\n",
+      "full_uat_md": "# S03: User Management & Role Enforcement — UAT\n\n**Milestone:** M003\n**Written:** 2026-03-31T09:22:47.118Z\n\n## UAT: S03 \\u2014 User Management & Role Enforcement\\n\\n### Test 1: Admin can CRUD users\\n1. Login as admin\\n2. POST /api/users with {\\\"username\\\":\\\"bob\\\",\\\"password\\\":\\\"pass\\\",\\\"role\\\":\\\"LISTENER\\\"}\\n3. **Expected:** 201, user created, no password in response\\n4. GET /api/users\\n5. **Expected:** List includes admin and bob\\n6. PUT /api/users/{bob_id} with {\\\"enabled\\\":false}\\n7. **Expected:** 200, bob disabled\\n8. DELETE /api/users/{bob_id}\\n9. **Expected:** 200, bob deleted\\n\\n### Test 2: Admin cannot delete self\\n1. Login as admin, DELETE /api/users/{admin_id}\\n2. **Expected:** 400, \\\"Cannot delete your own account\\\"\\n\\n### Test 3: Listener denied on user management\\n1. Login as listener\\n2. GET /api/users\\n3. **Expected:** 403\\n4. POST /api/users\\n5. **Expected:** 403\\n\\n### Test 4: Listener denied on library management\\n1. Login as listener\\n2. POST /api/library/folders\\n3. **Expected:** 403\\n4. POST /api/library/scan\\n5. **Expected:** 403\\n\\n### Test 5: Listener can browse and play\\n1. Login as listener\\n2. GET /api/tracks, /api/albums, /api/artists, /api/search\\n3. **Expected:** All return 200\\n\\n### Test 6: Full test suite\\n1. Run `mvn clean verify`\\n2. **Expected:** 97 tests pass, JaCoCo \\u226580% met\n",
       "goal": "CRUD endpoints for user management (ADMIN only) and role-based access control on existing endpoints",
-      "success_criteria": "UserController: POST/GET/PUT/DELETE /api/users (ADMIN only). Endpoint security: /api/library/folders and /api/library/scan restricted to ADMIN. /api/tracks, /api/albums, /api/artists, /api/stream, /api/covers, /api/search open to any authenticated user. Password never returned in API responses. Tests: ADMIN can CRUD users, LISTENER gets 403 on user management, LISTENER gets 403 on folder management, LISTENER can browse and stream.",
+      "success_criteria": "UserController with POST/GET/PUT/DELETE for ADMIN only. SecurityFilterChain updated: /api/library/** and /api/users/** require ADMIN, browse/stream/search/covers open to any authenticated user. Password never in API responses. Tests: ADMIN CRUD works, LISTENER gets 403 on user management and library management, LISTENER can browse and stream. All tests green, coverage ≥80%.",
       "proof_level": "integration-test",
-      "integration_closure": "Role enforcement complete. Frontend in S04 uses roles to show/hide admin UI.",
-      "observability_impact": "User CRUD operations logged with acting admin username.",
+      "integration_closure": "Role enforcement complete. All API endpoints have correct role requirements. Frontend in S04 uses roles to show/hide admin UI.",
+      "observability_impact": "User CRUD operations logged with acting admin username. 403 responses logged for unauthorized role access.",
       "sequence": 0,
       "replan_triggered_at": null
     },
@@ -2017,6 +2017,135 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S03",
+      "id": "T01",
+      "title": "UserController with CRUD endpoints, DTOs with validation, self-deletion prevention.",
+      "status": "complete",
+      "one_liner": "UserController with CRUD endpoints, DTOs with validation, self-deletion prevention.",
+      "narrative": "UserController with full CRUD: list, get by id, create (with validation), update (partial — username/role/enabled/password), delete (with self-deletion prevention). CreateUserRequest and UpdateUserRequest DTOs with validation annotations. All responses use UserResponse (no password).",
+      "verification_result": "mvn compile — compiles cleanly.",
+      "duration": "",
+      "completed_at": "2026-03-31T09:21:56.232Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/controller/UserController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java"
+      ],
+      "key_decisions": [
+        "UserResponse.from() used consistently — password never exposed",
+        "Admin cannot delete self — prevents accidental lockout",
+        "409 Conflict for duplicate username on create and update"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S03\nmilestone: M003\nkey_files:\n  - musicode-server/src/main/java/com/musicode/controller/UserController.java\n  - musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java\n  - musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java\nkey_decisions:\n  - UserResponse.from() used consistently — password never exposed\n  - Admin cannot delete self — prevents accidental lockout\n  - 409 Conflict for duplicate username on create and update\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T09:21:56.232Z\nblocker_discovered: false\n---\n\n# T01: UserController with CRUD endpoints, DTOs with validation, self-deletion prevention.\n\n**UserController with CRUD endpoints, DTOs with validation, self-deletion prevention.**\n\n## What Happened\n\nUserController with full CRUD: list, get by id, create (with validation), update (partial — username/role/enabled/password), delete (with self-deletion prevention). CreateUserRequest and UpdateUserRequest DTOs with validation annotations. All responses use UserResponse (no password).\n\n## Verification\n\nmvn compile — compiles cleanly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn compile` | 0 | ✅ pass | 4600ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/controller/UserController.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java`\n",
+      "description": "Create UserController with endpoints: GET /api/users (list all), GET /api/users/{id} (detail), POST /api/users (create with username/password/role), PUT /api/users/{id} (update username/role/enabled, optional password change), DELETE /api/users/{id} (delete). Create CreateUserRequest DTO (username, password, role) and UpdateUserRequest DTO (username, role, enabled, password optional). Validation: username required, unique check, password required on create, role must be valid. Never return passwordHash in responses — use UserResponse from S02. Admin cannot delete themselves.",
+      "estimate": "20min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/controller/UserController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java"
+      ],
+      "verify": "mvn compile — compiles cleanly",
+      "inputs": [
+        "UserRepository from S01",
+        "UserResponse from S02",
+        "PasswordEncoder from S01"
+      ],
+      "expected_output": [
+        "UserController.java",
+        "CreateUserRequest.java",
+        "UpdateUserRequest.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S03",
+      "id": "T02",
+      "title": "SecurityFilterChain updated with ADMIN-only rules for user management and library mutations, 403 JSON handler.",
+      "status": "complete",
+      "one_liner": "SecurityFilterChain updated with ADMIN-only rules for user management and library mutations, 403 JSON handler.",
+      "narrative": "Updated SecurityFilterChain with granular role-based rules: /api/users/** ADMIN only, library mutation endpoints ADMIN only, library read endpoints any authenticated, browse/stream/search/covers any authenticated. Added custom AccessDeniedHandler returning 403 JSON.",
+      "verification_result": "mvn compile — compiles cleanly.",
+      "duration": "",
+      "completed_at": "2026-03-31T09:22:05.109Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java"
+      ],
+      "key_decisions": [
+        "Library GET endpoints (folders, scan status) open to any authenticated user",
+        "Library mutating endpoints (POST/DELETE folders, scan, cleanup) restricted to ADMIN",
+        "Custom AccessDeniedHandler returns 403 JSON instead of Spring's default HTML"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S03\nmilestone: M003\nkey_files:\n  - musicode-server/src/main/java/com/musicode/config/SecurityConfig.java\nkey_decisions:\n  - Library GET endpoints (folders, scan status) open to any authenticated user\n  - Library mutating endpoints (POST/DELETE folders, scan, cleanup) restricted to ADMIN\n  - Custom AccessDeniedHandler returns 403 JSON instead of Spring's default HTML\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T09:22:05.109Z\nblocker_discovered: false\n---\n\n# T02: SecurityFilterChain updated with ADMIN-only rules for user management and library mutations, 403 JSON handler.\n\n**SecurityFilterChain updated with ADMIN-only rules for user management and library mutations, 403 JSON handler.**\n\n## What Happened\n\nUpdated SecurityFilterChain with granular role-based rules: /api/users/** ADMIN only, library mutation endpoints ADMIN only, library read endpoints any authenticated, browse/stream/search/covers any authenticated. Added custom AccessDeniedHandler returning 403 JSON.\n\n## Verification\n\nmvn compile — compiles cleanly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn compile` | 0 | ✅ pass | 4600ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/config/SecurityConfig.java`\n",
+      "description": "Update SecurityFilterChain in SecurityConfig with role-based rules: /api/users/** requires ROLE_ADMIN. /api/library/folders/** (POST, DELETE) requires ROLE_ADMIN. /api/library/scan requires ROLE_ADMIN. /api/library/cleanup requires ROLE_ADMIN. /api/library/folders GET and /api/library/scan/status GET open to any authenticated user (listeners need to see folder list and scan status). /api/tracks/**, /api/albums/**, /api/artists/**, /api/stream/**, /api/covers/**, /api/search/** open to any authenticated user. Add AccessDeniedHandler returning 403 JSON instead of Spring's default HTML.",
+      "estimate": "15min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java"
+      ],
+      "verify": "mvn compile — compiles cleanly",
+      "inputs": [
+        "Current SecurityConfig from S02"
+      ],
+      "expected_output": [
+        "Updated SecurityConfig.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S03",
+      "id": "T03",
+      "title": "16 UserController tests + 6 library role tests = 22 new tests, 97 total, green, coverage met.",
+      "status": "complete",
+      "one_liner": "16 UserController tests + 6 library role tests = 22 new tests, 97 total, green, coverage met.",
+      "narrative": "UserControllerTest: 16 tests covering CRUD success/failure, validation, duplicate handling, self-deletion prevention, and LISTENER 403 enforcement. LibraryControllerTest: 6 new role enforcement tests — listener can GET folders/scan status but gets 403 on POST/DELETE folders, scan, and cleanup. Fixed @AuthenticationPrincipal to java.security.Principal for compatibility with @WithMockUser. Total: 97 tests, all green, JaCoCo ≥80%.",
+      "verification_result": "mvn clean verify — 97 tests, 0 failures, JaCoCo ≥80% coverage met, BUILD SUCCESS.",
+      "duration": "",
+      "completed_at": "2026-03-31T09:22:16.841Z",
+      "blocker_discovered": false,
+      "deviations": "Used java.security.Principal instead of @AuthenticationPrincipal String \\u2014 @WithMockUser sets principal as UserDetails object, not plain String. Principal.getName() works with both @WithMockUser and real JWT auth.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/test/java/com/musicode/controller/UserControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/controller/LibraryControllerTest.java"
+      ],
+      "key_decisions": [
+        "Principal.getName() for username extraction in controllers — works with both @WithMockUser and JWT filter",
+        "Method-level @WithMockUser(roles='LISTENER') on specific tests to override class-level ADMIN"
+      ],
+      "full_summary_md": "---\nid: T03\nparent: S03\nmilestone: M003\nkey_files:\n  - musicode-server/src/test/java/com/musicode/controller/UserControllerTest.java\n  - musicode-server/src/test/java/com/musicode/controller/LibraryControllerTest.java\nkey_decisions:\n  - Principal.getName() for username extraction in controllers — works with both @WithMockUser and JWT filter\n  - Method-level @WithMockUser(roles='LISTENER') on specific tests to override class-level ADMIN\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T09:22:16.841Z\nblocker_discovered: false\n---\n\n# T03: 16 UserController tests + 6 library role tests = 22 new tests, 97 total, green, coverage met.\n\n**16 UserController tests + 6 library role tests = 22 new tests, 97 total, green, coverage met.**\n\n## What Happened\n\nUserControllerTest: 16 tests covering CRUD success/failure, validation, duplicate handling, self-deletion prevention, and LISTENER 403 enforcement. LibraryControllerTest: 6 new role enforcement tests — listener can GET folders/scan status but gets 403 on POST/DELETE folders, scan, and cleanup. Fixed @AuthenticationPrincipal to java.security.Principal for compatibility with @WithMockUser. Total: 97 tests, all green, JaCoCo ≥80%.\n\n## Verification\n\nmvn clean verify — 97 tests, 0 failures, JaCoCo ≥80% coverage met, BUILD SUCCESS.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn clean verify` | 0 | ✅ pass | 20600ms |\n\n\n## Deviations\n\nUsed java.security.Principal instead of @AuthenticationPrincipal String \\u2014 @WithMockUser sets principal as UserDetails object, not plain String. Principal.getName() works with both @WithMockUser and real JWT auth.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/test/java/com/musicode/controller/UserControllerTest.java`\n- `musicode-server/src/test/java/com/musicode/controller/LibraryControllerTest.java`\n",
+      "description": "Write UserControllerTest: ADMIN can list users, ADMIN can create user, ADMIN can update user, ADMIN can delete user, ADMIN cannot delete self, create with duplicate username returns 409, create with blank fields returns 400, password never in response. LISTENER gets 403 on all user CRUD. Write role enforcement tests: LISTENER gets 403 on POST/DELETE library folders, LISTENER gets 403 on POST scan, LISTENER can GET folders and scan status, LISTENER can browse tracks/albums/artists/search. Verify all existing tests still pass. Coverage ≥80%.",
+      "estimate": "25min",
+      "files": [
+        "musicode-server/src/test/java/com/musicode/controller/UserControllerTest.java",
+        "musicode-server/src/test/java/com/musicode/controller/LibraryControllerTest.java"
+      ],
+      "verify": "mvn clean verify — all tests pass, coverage ≥80%",
+      "inputs": [
+        "UserController from T01",
+        "SecurityConfig from T02",
+        "AuthControllerTest patterns from S02"
+      ],
+      "expected_output": [
+        "UserControllerTest.java",
+        "Updated tests green"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -2894,6 +3023,39 @@
       "verdict": "✅ pass",
       "duration_ms": 17700,
       "created_at": "2026-03-31T07:54:24.712Z"
+    },
+    {
+      "id": 64,
+      "task_id": "T01",
+      "slice_id": "S03",
+      "milestone_id": "M003",
+      "command": "mvn compile",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4600,
+      "created_at": "2026-03-31T09:21:56.232Z"
+    },
+    {
+      "id": 65,
+      "task_id": "T02",
+      "slice_id": "S03",
+      "milestone_id": "M003",
+      "command": "mvn compile",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4600,
+      "created_at": "2026-03-31T09:22:05.109Z"
+    },
+    {
+      "id": 66,
+      "task_id": "T03",
+      "slice_id": "S03",
+      "milestone_id": "M003",
+      "command": "mvn clean verify",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 20600,
+      "created_at": "2026-03-31T09:22:16.841Z"
     }
   ]
 }

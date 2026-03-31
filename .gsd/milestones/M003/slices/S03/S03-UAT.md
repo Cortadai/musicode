@@ -1,0 +1,6 @@
+# S03: User Management & Role Enforcement — UAT
+
+**Milestone:** M003
+**Written:** 2026-03-31T09:22:47.118Z
+
+## UAT: S03 \u2014 User Management & Role Enforcement\n\n### Test 1: Admin can CRUD users\n1. Login as admin\n2. POST /api/users with {\"username\":\"bob\",\"password\":\"pass\",\"role\":\"LISTENER\"}\n3. **Expected:** 201, user created, no password in response\n4. GET /api/users\n5. **Expected:** List includes admin and bob\n6. PUT /api/users/{bob_id} with {\"enabled\":false}\n7. **Expected:** 200, bob disabled\n8. DELETE /api/users/{bob_id}\n9. **Expected:** 200, bob deleted\n\n### Test 2: Admin cannot delete self\n1. Login as admin, DELETE /api/users/{admin_id}\n2. **Expected:** 400, \"Cannot delete your own account\"\n\n### Test 3: Listener denied on user management\n1. Login as listener\n2. GET /api/users\n3. **Expected:** 403\n4. POST /api/users\n5. **Expected:** 403\n\n### Test 4: Listener denied on library management\n1. Login as listener\n2. POST /api/library/folders\n3. **Expected:** 403\n4. POST /api/library/scan\n5. **Expected:** 403\n\n### Test 5: Listener can browse and play\n1. Login as listener\n2. GET /api/tracks, /api/albums, /api/artists, /api/search\n3. **Expected:** All return 200\n\n### Test 6: Full test suite\n1. Run `mvn clean verify`\n2. **Expected:** 97 tests pass, JaCoCo \u226580% met
