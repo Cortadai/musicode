@@ -1,5 +1,8 @@
 package com.musicode.controller;
 
+import com.musicode.exception.BadRequestException;
+import com.musicode.exception.ConflictException;
+import com.musicode.exception.ResourceNotFoundException;
 import com.musicode.model.dto.CreateUserRequest;
 import com.musicode.model.dto.UpdateUserRequest;
 import com.musicode.model.dto.UserResponse;
@@ -8,7 +11,7 @@ import com.musicode.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,17 +35,15 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUser(@PathVariable Long id) {
-        return userRepository.findById(id)
-                .map(u -> ResponseEntity.ok((Object) UserResponse.from(u)))
-                .orElse(ResponseEntity.notFound().build());
+    public UserResponse getUser(@PathVariable Long id) {
+        return UserResponse.from(findUserOrThrow(id));
     }
 
     @PostMapping
-    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
         if (userRepository.existsByUsername(request.username())) {
-            return ResponseEntity.status(409)
-                    .body(Map.of("error", "Username already exists: " + request.username()));
+            throw new ConflictException("Username already exists: " + request.username());
         }
 
         var user = User.builder()
@@ -53,22 +54,16 @@ public class UserController {
 
         user = userRepository.save(user);
         log.info("Created user '{}' with role {}", user.getUsername(), user.getRole());
-        return ResponseEntity.status(201).body(UserResponse.from(user));
+        return UserResponse.from(user);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UpdateUserRequest request) {
-        var userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        var user = userOpt.get();
+    public UserResponse updateUser(@PathVariable Long id, @RequestBody UpdateUserRequest request) {
+        var user = findUserOrThrow(id);
 
         if (request.username() != null && !request.username().isBlank()) {
             if (!user.getUsername().equals(request.username()) && userRepository.existsByUsername(request.username())) {
-                return ResponseEntity.status(409)
-                        .body(Map.of("error", "Username already exists: " + request.username()));
+                throw new ConflictException("Username already exists: " + request.username());
             }
             user.setUsername(request.username());
         }
@@ -87,26 +82,24 @@ public class UserController {
 
         user = userRepository.save(user);
         log.info("Updated user '{}' (id={})", user.getUsername(), user.getId());
-        return ResponseEntity.ok(UserResponse.from(user));
+        return UserResponse.from(user);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id, java.security.Principal principal) {
-        var userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+    public Map<String, Long> deleteUser(@PathVariable Long id, java.security.Principal principal) {
+        var user = findUserOrThrow(id);
 
-        var user = userOpt.get();
-
-        // Prevent admin from deleting themselves
         if (user.getUsername().equals(principal.getName())) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Cannot delete your own account"));
+            throw new BadRequestException("Cannot delete your own account");
         }
 
         userRepository.delete(user);
         log.info("Deleted user '{}' (id={})", user.getUsername(), user.getId());
-        return ResponseEntity.ok(Map.of("deleted", id));
+        return Map.of("deleted", id);
+    }
+
+    private User findUserOrThrow(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
     }
 }

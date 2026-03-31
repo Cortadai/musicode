@@ -1,5 +1,6 @@
 package com.musicode.controller;
 
+import com.musicode.exception.ResourceNotFoundException;
 import com.musicode.model.entity.Track;
 import com.musicode.repository.TrackRepository;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,9 +24,8 @@ public class TrackController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Track> getTrack(@PathVariable Long id) {
+    public Track getTrack(@PathVariable Long id) {
         return trackRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException("Track", id));
     }
 }

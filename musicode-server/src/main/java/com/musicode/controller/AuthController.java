@@ -29,6 +29,12 @@ public class AuthController {
     private final CookieUtil cookieUtil;
     private final UserRepository userRepository;
 
+    /**
+     * Login stays as try-catch because we need to set cookies on success.
+     * @ControllerAdvice would handle the AuthenticationException, but we lose the
+     * ability to set Set-Cookie headers on the success path in a clean way.
+     * The trade-off: one try-catch in login vs forcing cookie logic into the advice.
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
@@ -47,7 +53,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(HttpServletRequest request) {
-        String refreshToken = CookieUtil.extractCookie(request.getCookies(), CookieUtil.REFRESH_TOKEN_COOKIE);
+        var refreshToken = CookieUtil.extractCookie(request.getCookies(), CookieUtil.REFRESH_TOKEN_COOKIE);
 
         if (refreshToken == null || refreshToken.isBlank()) {
             return ResponseEntity.status(401).body(Map.of("error", "Refresh token missing"));
@@ -61,8 +67,7 @@ public class AuthController {
                     .body(Map.of("error", "Invalid or expired refresh token"));
         }
 
-        // Extract username from new access token to return user info
-        String username = jwtService.extractUsername(tokenPair.accessToken());
+        var username = jwtService.extractUsername(tokenPair.accessToken());
         var user = userRepository.findByUsername(username);
 
         return ResponseEntity.ok()
@@ -73,7 +78,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
-        String refreshToken = CookieUtil.extractCookie(request.getCookies(), CookieUtil.REFRESH_TOKEN_COOKIE);
+        var refreshToken = CookieUtil.extractCookie(request.getCookies(), CookieUtil.REFRESH_TOKEN_COOKIE);
 
         if (refreshToken != null && !refreshToken.isBlank()) {
             authService.logout(refreshToken);

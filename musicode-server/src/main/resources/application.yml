@@ -35,7 +35,4 @@ musicode:
   cookies:
     secure: false  # true in docker/prod profile
 
-logging:
-  level:
-    com.musicode: DEBUG
-    org.hibernate.SQL: WARN
+# Logging configured in logback-spring.xml (profile-aware)

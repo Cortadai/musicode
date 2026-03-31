@@ -1,5 +1,6 @@
 package com.musicode.controller;
 
+import com.musicode.exception.ResourceNotFoundException;
 import com.musicode.model.entity.Artist;
 import com.musicode.repository.ArtistRepository;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,9 +24,8 @@ public class ArtistController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Artist> getArtist(@PathVariable Long id) {
+    public Artist getArtist(@PathVariable Long id) {
         return artistRepository.findWithAlbumsById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException("Artist", id));
     }
 }

@@ -20,6 +20,35 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Central security configuration for Musicode.
+ *
+ * ARCHITECTURE DECISIONS:
+ *
+ * 1. STATELESS SESSIONS — No server-side session. Each request carries its own
+ *    auth via JWT in a cookie. This simplifies horizontal scaling (no session
+ *    replication) and aligns with REST principles.
+ *
+ * 2. CSRF DISABLED (D015) — We rely on SameSite=Strict cookies instead. The browser
+ *    won't send our auth cookies on cross-origin requests, which is the primary CSRF
+ *    vector. If we ever relax to SameSite=Lax (for direct-link support), we'd need
+ *    to enable CookieCsrfTokenRepository.
+ *
+ * 3. FILTER ORDER — JwtAuthFilter runs BEFORE UsernamePasswordAuthenticationFilter.
+ *    This means every request first checks for a JWT cookie. If valid, SecurityContext
+ *    is set and the request proceeds as authenticated. If absent/invalid, the request
+ *    continues unauthenticated — and the authorization rules below decide the response.
+ *
+ * 4. ENTRY POINT + ACCESS DENIED — These handlers catch rejections that happen BEFORE
+ *    reaching a controller (e.g. missing token → 401, wrong role → 403). They return
+ *    JSON instead of Spring's default HTML error pages. The @ControllerAdvice handles
+ *    exceptions thrown FROM controllers. Both are needed.
+ *
+ * 5. CORS WITH CREDENTIALS — Required because the frontend (localhost:5173 in dev)
+ *    is a different origin from the backend (localhost:8080). allowCredentials=true
+ *    tells the browser it's OK to send cookies cross-origin. In production behind
+ *    Caddy, everything is same-origin so CORS doesn't apply.
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -45,19 +74,19 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Public: login and refresh don't require an existing token
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/refresh").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
-                // Admin-only endpoints
+                // Admin-only: library mutations and user management
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/library/folders").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/library/folders/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/library/scan").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/library/cleanup").hasRole("ADMIN")
-                // Everything else requires authentication (any role)
+                // Everything else: any authenticated user (ADMIN or LISTENER)
                 .anyRequest().authenticated()
             )
-            // Return 401 for unauthenticated, 403 for unauthorized role
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(401);
@@ -70,7 +99,6 @@ public class SecurityConfig {
                     response.getWriter().write("{\"error\":\"Access denied\"}");
                 })
             )
-            // H2 console uses frames
             .headers(headers -> headers
                 .frameOptions(frame -> frame.sameOrigin()))
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -78,6 +106,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * CORS configuration for dev mode (frontend on :5173, backend on :8080).
+     * In production behind Caddy, all traffic is same-origin — CORS is a no-op.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var config = new CorsConfiguration();

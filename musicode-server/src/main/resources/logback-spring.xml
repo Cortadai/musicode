@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--
+      Logback configuration with profile-aware formatting.
+
+      DEV profile: human-readable colored output with request ID.
+      DOCKER profile: structured JSON for log aggregation (ELK, Loki, etc.).
+
+      The %X{requestId} token pulls from MDC — set by RequestIdFilter on every request.
+      If no request is active (e.g. startup, scheduled tasks), it shows as empty.
+    -->
+
+    <!-- Dev profile: readable console output -->
+    <springProfile name="!docker">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%X{requestId:---------}] %cyan(%-40.40logger{39}) : %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+        </root>
+
+        <logger name="com.musicode" level="DEBUG" />
+        <logger name="org.hibernate.SQL" level="WARN" />
+    </springProfile>
+
+    <!-- Docker profile: JSON structured logging -->
+    <springProfile name="docker">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>{"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}","level":"%level","logger":"%logger","requestId":"%X{requestId}","message":"%msg"}%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+        </root>
+
+        <logger name="com.musicode" level="INFO" />
+        <logger name="org.hibernate.SQL" level="WARN" />
+    </springProfile>
+</configuration>

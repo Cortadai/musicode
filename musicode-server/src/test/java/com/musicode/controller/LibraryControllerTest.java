@@ -79,7 +79,7 @@ class LibraryControllerTest {
     }
 
     @Test
-    void addFolder_duplicate_returns400() throws Exception {
+    void addFolder_duplicate_returns409() throws Exception {
         // Save one first
         libraryFolderRepository.save(LibraryFolder.builder().path(tempDir.toString()).build());
 
@@ -87,7 +87,7 @@ class LibraryControllerTest {
         mockMvc.perform(post("/api/library/folders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error", containsString("already")));
     }
 

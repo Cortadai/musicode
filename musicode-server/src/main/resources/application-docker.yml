@@ -28,7 +28,4 @@ musicode:
   cookies:
     secure: true
 
-logging:
-  level:
-    com.musicode: INFO
-    org.hibernate.SQL: WARN
+# Logging configured in logback-spring.xml (docker profile → JSON)

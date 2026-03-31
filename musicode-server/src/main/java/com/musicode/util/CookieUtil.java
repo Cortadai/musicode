@@ -5,6 +5,28 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
+/**
+ * Creates and clears authentication cookies with security flags.
+ *
+ * COOKIE SECURITY FLAGS:
+ *
+ * - HttpOnly: JavaScript cannot read these cookies (document.cookie won't see them).
+ *   This prevents XSS attacks from stealing auth tokens. The browser sends them
+ *   automatically — the frontend never touches tokens directly.
+ *
+ * - SameSite=Strict: The browser only sends these cookies on same-origin requests.
+ *   A malicious site can't trigger a POST to our API and have the browser include
+ *   our auth cookies. This is our primary CSRF protection (see D015).
+ *
+ * - Secure: Only sent over HTTPS. In dev (http://localhost), Chrome treats localhost
+ *   as a secure context so it works. The flag is profile-aware: false in dev, true
+ *   in Docker/production. Without this flag in prod, cookies would travel in plaintext.
+ *
+ * - Path restriction on refresh cookie: The refresh token cookie is scoped to
+ *   /api/auth/refresh — the browser only sends it to that one endpoint. This limits
+ *   exposure: even if another endpoint has a vulnerability, the refresh token isn't
+ *   sent there.
+ */
 @Component
 public class CookieUtil {
 
@@ -61,12 +83,9 @@ public class CookieUtil {
                 .build();
     }
 
-    /**
-     * Extract cookie value from request cookies array.
-     */
     public static String extractCookie(Cookie[] cookies, String name) {
         if (cookies == null) return null;
-        for (Cookie cookie : cookies) {
+        for (var cookie : cookies) {
             if (name.equals(cookie.getName())) {
                 return cookie.getValue();
             }

@@ -23,6 +23,7 @@ musicode:
   cookies:
     secure: false
 
+# Suppress logging noise in tests
 logging:
   level:
     com.musicode: WARN
