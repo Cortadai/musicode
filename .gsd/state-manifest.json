@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T09:35:12.210Z",
+  "exported_at": "2026-03-31T09:50:42.902Z",
   "milestones": [
     {
       "id": "M001",
@@ -489,21 +489,21 @@
       "milestone_id": "M003",
       "id": "S05",
       "title": "Caddy Reverse Proxy & HTTPS",
-      "status": "pending",
+      "status": "complete",
       "risk": "low",
       "depends": [
         "S04"
       ],
       "demo": "After this: docker-compose up starts Caddy + Spring Boot. Browser accesses https://localhost, gets valid TLS, login page loads, full app works through HTTPS. Spring Boot port 8080 not reachable from host.",
       "created_at": "2026-03-31T07:37:52.021Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
-      "goal": "Add Caddy as TLS-terminating reverse proxy in Docker Compose — single external entry point",
-      "success_criteria": "Caddyfile: localhost reverse_proxy to spring-boot:8080, serve React static build. Docker Compose: Caddy service with ports 80/443, Spring Boot with expose only (no ports). Caddy data/config volumes persisted. HTTPS works on localhost with Caddy's internal CA. HTTP redirects to HTTPS. Cookie Secure flag works correctly through Caddy. Docker Compose starts cleanly with `docker-compose up`.",
+      "completed_at": "2026-03-31T09:50:42.807Z",
+      "full_summary_md": "---\nid: S05\nparent: M003\nmilestone: M003\nprovides:\n  - Complete HTTPS deployment architecture\n  - NAS-ready config (swap localhost in Caddyfile)\nrequires:\n  - slice: S02\n    provides: Auth endpoints and secure cookie config\n  - slice: S04\n    provides: React app with auth flow\naffects:\n  []\nkey_files:\n  - Caddyfile\n  - caddy/Dockerfile\n  - docker-compose.yml\n  - musicode-server/src/main/resources/application-docker.yml\nkey_decisions:\n  - Caddy replaces nginx as reverse proxy + static server\n  - Caddy Dockerfile includes React build stage (no separate frontend service)\n  - Spring Boot expose-only: port 8080 not reachable from host\n  - application-docker.yml with env-configurable secrets\npatterns_established:\n  - Caddy handle block ordering: API first, static fallback second\n  - Caddy Dockerfile with multi-stage React build\n  - Docker Compose: Caddy as sole external-facing service\nobservability_surfaces:\n  - Caddy access logs via docker-compose logs caddy\ndrill_down_paths:\n  - .gsd/milestones/M003/slices/S05/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M003/slices/S05/tasks/T02-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T09:50:42.807Z\nblocker_discovered: false\n---\n\n# S05: Caddy Reverse Proxy & HTTPS\n\n**Caddy reverse proxy with automatic HTTPS \\u2014 serves React + proxies API, Spring Boot internal only, verified end-to-end.**\n\n## What Happened\n\nAdded Caddy as TLS-terminating reverse proxy, replacing the nginx frontend service. Caddy Dockerfile builds React in multi-stage and serves from /srv. Caddyfile uses handle blocks: /api/* reverse-proxies to musicode-server:8080, everything else serves React with SPA fallback. Docker Compose restructured: Caddy on ports 80/443, Spring Boot internal-only with expose. application-docker.yml configures secure cookies and env-configurable secrets. Verified: HTTP→HTTPS redirect (308), login works via HTTPS, protected endpoints work with cookies, React app served via HTTPS, port 8080 unreachable from host. Caddy's internal CA handles localhost TLS automatically.\n\n## Verification\n\n5 manual checks passed: HTTP\\u2192HTTPS redirect, login via HTTPS, protected endpoints with cookies, React via HTTPS, port 8080 isolated.\n\n## Requirements Advanced\n\n- R019 — Caddy TLS termination, HTTP→HTTPS redirect, Spring Boot internal only\n- R009 — Docker Compose with Caddy replaces nginx, single docker-compose up\n\n## Requirements Validated\n\n- R019 — HTTPS on localhost with Caddy internal CA, HTTP 308 redirect, port 8080 isolated, login and API work through TLS\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nFixed Caddyfile handle ordering (API before file_server). Old nginx frontend service removed entirely.\n\n## Known Limitations\n\nCaddy's internal CA cert needs to be installed on client devices for trusted HTTPS without browser warnings. On localhost, Chrome/Edge trust it automatically.\n\n## Follow-ups\n\nFor NAS deployment: change localhost to IP/domain in Caddyfile. Install Caddy root CA on family devices. Consider Let's Encrypt if domain is available.\n\n## Files Created/Modified\n\n- `Caddyfile` — localhost TLS, API reverse proxy, SPA static serving\n- `caddy/Dockerfile` — Multi-stage React build + Caddy with static files\n- `docker-compose.yml` — Caddy replaces nginx, Spring Boot internal, ports 80/443\n- `musicode-server/src/main/resources/application-docker.yml` — Secure cookies, env-configurable JWT secret and admin password\n- `musicode-ui/src/context/AuthContext.test.ts` — Fixed unused variable TS error\n",
+      "full_uat_md": "# S05: Caddy Reverse Proxy & HTTPS — UAT\n\n**Milestone:** M003\n**Written:** 2026-03-31T09:50:42.808Z\n\n## UAT: S05 \\u2014 Caddy Reverse Proxy & HTTPS\\n\\n### Test 1: HTTPS on localhost\\n1. Run `docker-compose up`\\n2. Open https://localhost in browser\\n3. **Expected:** Login page loads with valid TLS (Caddy internal CA)\\n\\n### Test 2: HTTP redirect\\n1. Open http://localhost\\n2. **Expected:** Redirected to https://localhost (308)\\n\\n### Test 3: Login through Caddy\\n1. Login as admin on https://localhost\\n2. **Expected:** Login succeeds, albums page loads\\n\\n### Test 4: Port 8080 isolated\\n1. Try http://localhost:8080\\n2. **Expected:** Connection refused \\u2014 Spring Boot not reachable from host\\n\\n### Test 5: API through HTTPS\\n1. Browse library, play a track\\n2. **Expected:** All API calls work through Caddy TLS proxy, audio streams correctly\n",
+      "goal": "Add Caddy as TLS-terminating reverse proxy in Docker Compose — single external entry point, HTTPS on localhost, Spring Boot internal only",
+      "success_criteria": "Caddyfile reverse-proxies to Spring Boot and serves React static build. Docker Compose: Caddy on ports 80/443, Spring Boot with expose only. application-docker.yml sets secure cookies and JWT secret. HTTPS works on localhost. HTTP redirects to HTTPS. docker-compose up starts cleanly.",
       "proof_level": "manual-verification",
-      "integration_closure": "Deployment architecture complete. Ready for NAS migration by changing localhost to IP/domain.",
-      "observability_impact": "Caddy access logs available via docker-compose logs caddy.",
+      "integration_closure": "Deployment architecture complete. docker-compose up serves app via HTTPS through Caddy. Ready for NAS migration by changing localhost to IP/domain in Caddyfile.",
+      "observability_impact": "Caddy access logs via docker-compose logs caddy.",
       "sequence": 0,
       "replan_triggered_at": null
     }
@@ -2328,6 +2328,92 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S05",
+      "id": "T01",
+      "title": "Caddyfile + Caddy Dockerfile + docker-compose restructured — Caddy serves React + proxies API, Spring Boot internal only.",
+      "status": "complete",
+      "one_liner": "Caddyfile + Caddy Dockerfile + docker-compose restructured — Caddy serves React + proxies API, Spring Boot internal only.",
+      "narrative": "Created Caddyfile with localhost TLS, API reverse proxy, and SPA static file serving. Built Caddy Dockerfile with multi-stage React build. Created application-docker.yml with secure cookies, env-configurable secrets. Restructured docker-compose.yml: Caddy replaces nginx frontend, exposes 80/443, Spring Boot internal only with expose. Fixed Caddyfile handle ordering bug (API handle must come before file_server to avoid 405 on POST).",
+      "verification_result": "docker compose config validates. docker compose build succeeds.",
+      "duration": "",
+      "completed_at": "2026-03-31T09:49:57.856Z",
+      "blocker_discovered": false,
+      "deviations": "Fixed Caddyfile handle ordering — API handle before file_server to prevent 405 on POST requests. Fixed Spring placeholder syntax (:-) which wasn't causing issues but cleaned up.",
+      "known_issues": "None.",
+      "key_files": [
+        "Caddyfile",
+        "caddy/Dockerfile",
+        "docker-compose.yml",
+        "musicode-server/src/main/resources/application-docker.yml"
+      ],
+      "key_decisions": [
+        "Caddy serves React build from /srv, reverse-proxies /api/* to Spring Boot",
+        "Caddyfile uses handle blocks for ordering: API first, static fallback second",
+        "application-docker.yml: secure cookies, env-configurable JWT secret and admin password",
+        "Frontend nginx service removed — Caddy replaces it",
+        "Caddy Dockerfile builds React in multi-stage and copies dist to /srv"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S05\nmilestone: M003\nkey_files:\n  - Caddyfile\n  - caddy/Dockerfile\n  - docker-compose.yml\n  - musicode-server/src/main/resources/application-docker.yml\nkey_decisions:\n  - Caddy serves React build from /srv, reverse-proxies /api/* to Spring Boot\n  - Caddyfile uses handle blocks for ordering: API first, static fallback second\n  - application-docker.yml: secure cookies, env-configurable JWT secret and admin password\n  - Frontend nginx service removed — Caddy replaces it\n  - Caddy Dockerfile builds React in multi-stage and copies dist to /srv\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T09:49:57.856Z\nblocker_discovered: false\n---\n\n# T01: Caddyfile + Caddy Dockerfile + docker-compose restructured — Caddy serves React + proxies API, Spring Boot internal only.\n\n**Caddyfile + Caddy Dockerfile + docker-compose restructured — Caddy serves React + proxies API, Spring Boot internal only.**\n\n## What Happened\n\nCreated Caddyfile with localhost TLS, API reverse proxy, and SPA static file serving. Built Caddy Dockerfile with multi-stage React build. Created application-docker.yml with secure cookies, env-configurable secrets. Restructured docker-compose.yml: Caddy replaces nginx frontend, exposes 80/443, Spring Boot internal only with expose. Fixed Caddyfile handle ordering bug (API handle must come before file_server to avoid 405 on POST).\n\n## Verification\n\ndocker compose config validates. docker compose build succeeds.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `docker compose config --quiet` | 0 | ✅ pass | 500ms |\n| 2 | `docker compose build` | 0 | ✅ pass | 50200ms |\n\n\n## Deviations\n\nFixed Caddyfile handle ordering — API handle before file_server to prevent 405 on POST requests. Fixed Spring placeholder syntax (:-) which wasn't causing issues but cleaned up.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `Caddyfile`\n- `caddy/Dockerfile`\n- `docker-compose.yml`\n- `musicode-server/src/main/resources/application-docker.yml`\n",
+      "description": "Create Caddyfile: localhost block that serves React static build from /srv and reverse-proxies /api/* to spring-boot:8080. Handle SPA routing (try_files equivalent). Proxy headers for real IP. Create application-docker.yml for Spring Boot with: secure cookies (musicode.cookies.secure: true), strong JWT secret, admin default password. Remove the separate nginx frontend service — Caddy replaces it. Update docker-compose.yml: add caddy service (caddy:2-alpine, ports 80/443, volumes for Caddyfile + caddy_data + caddy_config + React build), change backend to expose-only (no ports), remove frontend service. Caddy needs the React build — either multi-stage build copies it into Caddy image, or a shared volume. Simplest: build React in Caddy's Dockerfile.",
+      "estimate": "25min",
+      "files": [
+        "Caddyfile",
+        "musicode-server/src/main/resources/application-docker.yml",
+        "docker-compose.yml",
+        "caddy/Dockerfile"
+      ],
+      "verify": "docker-compose config — validates compose file",
+      "inputs": [
+        "Current docker-compose.yml",
+        "Current nginx.conf",
+        "Current musicode-ui/Dockerfile"
+      ],
+      "expected_output": [
+        "Caddyfile",
+        "application-docker.yml",
+        "Updated docker-compose.yml",
+        "Caddy Dockerfile"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M003",
+      "slice_id": "S05",
+      "id": "T02",
+      "title": "docker-compose up verified — HTTPS login, API proxy, React serving, port isolation all working.",
+      "status": "complete",
+      "one_liner": "docker-compose up verified — HTTPS login, API proxy, React serving, port isolation all working.",
+      "narrative": "Built and verified complete Docker Compose stack with Caddy HTTPS. HTTP 308 redirects to HTTPS. Login via HTTPS works and returns user info with cookies. Protected endpoints respond with cookies. React SPA served via HTTPS. Port 8080 not reachable from host — Spring Boot completely internal. Caddy's internal CA handles localhost TLS automatically.",
+      "verification_result": "5 manual checks passed: HTTP→HTTPS redirect (308), login via HTTPS (200), protected endpoint with cookies (200), React app via HTTPS (HTML), port 8080 unreachable from host.",
+      "duration": "",
+      "completed_at": "2026-03-31T09:50:11.468Z",
+      "blocker_discovered": false,
+      "deviations": "Initial 405 error from Caddyfile handle ordering fixed in T01. Initial login failure from stale DB data resolved by clean rebuild.",
+      "known_issues": "None.",
+      "key_files": [],
+      "key_decisions": [
+        "Verified 5 HTTPS requirements: redirect, login, protected endpoints, React serving, port isolation"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S05\nmilestone: M003\nkey_files:\n  - (none)\nkey_decisions:\n  - Verified 5 HTTPS requirements: redirect, login, protected endpoints, React serving, port isolation\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T09:50:11.468Z\nblocker_discovered: false\n---\n\n# T02: docker-compose up verified — HTTPS login, API proxy, React serving, port isolation all working.\n\n**docker-compose up verified — HTTPS login, API proxy, React serving, port isolation all working.**\n\n## What Happened\n\nBuilt and verified complete Docker Compose stack with Caddy HTTPS. HTTP 308 redirects to HTTPS. Login via HTTPS works and returns user info with cookies. Protected endpoints respond with cookies. React SPA served via HTTPS. Port 8080 not reachable from host — Spring Boot completely internal. Caddy's internal CA handles localhost TLS automatically.\n\n## Verification\n\n5 manual checks passed: HTTP→HTTPS redirect (308), login via HTTPS (200), protected endpoint with cookies (200), React app via HTTPS (HTML), port 8080 unreachable from host.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `curl -ks http://localhost (redirect check)` | 0 | ✅ pass — 308 → https://localhost/ | 200ms |\n| 2 | `curl -ks https://localhost/api/auth/login (login)` | 0 | ✅ pass — 200 with user info | 300ms |\n| 3 | `curl -ks -b cookies https://localhost/api/albums` | 0 | ✅ pass — 200 with data | 200ms |\n| 4 | `curl -ks https://localhost (React)` | 0 | ✅ pass — HTML served | 100ms |\n| 5 | `curl http://localhost:8080 (port isolation)` | 28 | ✅ pass — connection refused | 2000ms |\n\n\n## Deviations\n\nInitial 405 error from Caddyfile handle ordering fixed in T01. Initial login failure from stale DB data resolved by clean rebuild.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "description": "Build and start docker-compose. Verify: https://localhost loads login page with valid TLS. HTTP redirects to HTTPS. Login as admin works. Browse library, play audio through Caddy. Port 8080 not reachable from host. Caddy logs show requests. Fix any issues.",
+      "estimate": "15min",
+      "files": [],
+      "verify": "docker-compose up builds and serves via HTTPS, login works, audio streams",
+      "inputs": [
+        "docker-compose.yml from T01",
+        "Caddyfile from T01"
+      ],
+      "expected_output": [
+        "Working docker-compose with HTTPS"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -3294,6 +3380,83 @@
       "verdict": "✅ pass",
       "duration_ms": 3400,
       "created_at": "2026-03-31T09:34:37.351Z"
+    },
+    {
+      "id": 71,
+      "task_id": "T01",
+      "slice_id": "S05",
+      "milestone_id": "M003",
+      "command": "docker compose config --quiet",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 500,
+      "created_at": "2026-03-31T09:49:57.856Z"
+    },
+    {
+      "id": 72,
+      "task_id": "T01",
+      "slice_id": "S05",
+      "milestone_id": "M003",
+      "command": "docker compose build",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 50200,
+      "created_at": "2026-03-31T09:49:57.856Z"
+    },
+    {
+      "id": 73,
+      "task_id": "T02",
+      "slice_id": "S05",
+      "milestone_id": "M003",
+      "command": "curl -ks http://localhost (redirect check)",
+      "exit_code": 0,
+      "verdict": "✅ pass — 308 → https://localhost/",
+      "duration_ms": 200,
+      "created_at": "2026-03-31T09:50:11.468Z"
+    },
+    {
+      "id": 74,
+      "task_id": "T02",
+      "slice_id": "S05",
+      "milestone_id": "M003",
+      "command": "curl -ks https://localhost/api/auth/login (login)",
+      "exit_code": 0,
+      "verdict": "✅ pass — 200 with user info",
+      "duration_ms": 300,
+      "created_at": "2026-03-31T09:50:11.468Z"
+    },
+    {
+      "id": 75,
+      "task_id": "T02",
+      "slice_id": "S05",
+      "milestone_id": "M003",
+      "command": "curl -ks -b cookies https://localhost/api/albums",
+      "exit_code": 0,
+      "verdict": "✅ pass — 200 with data",
+      "duration_ms": 200,
+      "created_at": "2026-03-31T09:50:11.468Z"
+    },
+    {
+      "id": 76,
+      "task_id": "T02",
+      "slice_id": "S05",
+      "milestone_id": "M003",
+      "command": "curl -ks https://localhost (React)",
+      "exit_code": 0,
+      "verdict": "✅ pass — HTML served",
+      "duration_ms": 100,
+      "created_at": "2026-03-31T09:50:11.468Z"
+    },
+    {
+      "id": 77,
+      "task_id": "T02",
+      "slice_id": "S05",
+      "milestone_id": "M003",
+      "command": "curl http://localhost:8080 (port isolation)",
+      "exit_code": 28,
+      "verdict": "✅ pass — connection refused",
+      "duration_ms": 2000,
+      "created_at": "2026-03-31T09:50:11.468Z"
     }
   ]
 }

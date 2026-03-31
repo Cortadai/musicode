@@ -71,7 +71,7 @@ describe('Auth refresh queue logic', () => {
 
     isRefreshing = true;
     // When isRefreshing, new 401s queue instead of triggering refresh
-    const queued = new Promise((resolve, reject) => {
+    void new Promise((resolve, reject) => {
       failedQueue.push({ resolve, reject });
     });
 

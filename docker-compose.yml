@@ -1,8 +1,21 @@
 services:
-  backend:
-    build: ./musicode-server
+  caddy:
+    build:
+      context: .
+      dockerfile: caddy/Dockerfile
     ports:
-      - "8080:8080"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - musicode-server
+
+  musicode-server:
+    build: ./musicode-server
+    expose:
+      - "8080"
     volumes:
       - ./musicode-server/data:/app/data
       - ${MUSIC_DIR:-C:/Users/david/Music}:/music:ro
@@ -10,9 +23,6 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - MUSICODE_COVERS_DIR=/app/data/covers
 
-  frontend:
-    build: ./musicode-ui
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
+volumes:
+  caddy_data:
+  caddy_config:

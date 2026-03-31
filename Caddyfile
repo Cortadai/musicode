@@ -1,0 +1,13 @@
+localhost {
+    # Proxy API calls to Spring Boot (must be before file_server)
+    handle /api/* {
+        reverse_proxy musicode-server:8080
+    }
+
+    # Serve React static build for everything else
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}

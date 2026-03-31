@@ -1,0 +1,34 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:/app/data/musicode-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+
+  h2:
+    console:
+      enabled: false
+
+server:
+  port: 8080
+
+musicode:
+  admin:
+    default-password: ${MUSICODE_ADMIN_PASSWORD:changeme}
+  jwt:
+    secret: ${MUSICODE_JWT_SECRET:musicode-docker-secret-key-change-in-production-at-least-32-bytes}
+    access-token-expiration-ms: 900000
+    refresh-token-expiration-ms: 604800000
+  cookies:
+    secure: true
+
+logging:
+  level:
+    com.musicode: INFO
+    org.hibernate.SQL: WARN
