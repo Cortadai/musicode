@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router';
-import { Disc3, Users, Music, Search, Settings, UserCog, LogOut } from 'lucide-react';
+import { Disc3, Users, Music, Search, Settings, UserCog, LogOut, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Sidebar() {
@@ -11,6 +11,7 @@ export default function Sidebar() {
     { to: '/artists', label: 'Artists', icon: Users },
     { to: '/tracks', label: 'Tracks', icon: Music },
     { to: '/search', label: 'Search', icon: Search },
+    { to: '/stats', label: 'Stats', icon: TrendingUp },
   ];
 
   const adminItems = [

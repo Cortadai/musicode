@@ -13,6 +13,7 @@ import ArtistDetailPage from './pages/ArtistDetailPage';
 import TracksPage from './pages/TracksPage';
 import SearchPage from './pages/SearchPage';
 import SettingsPage from './pages/SettingsPage';
+import StatsPage from './pages/StatsPage';
 import UsersPage from './pages/UsersPage';
 
 const queryClient = new QueryClient({
@@ -44,6 +45,7 @@ export default function App() {
                   <Route path="/artists/:id" element={<ArtistDetailPage />} />
                   <Route path="/tracks" element={<TracksPage />} />
                   <Route path="/search" element={<SearchPage />} />
+                  <Route path="/stats" element={<StatsPage />} />
 
                   {/* Admin-only routes */}
                   <Route path="/settings" element={<SettingsPage />} />
