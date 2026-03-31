@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T11:02:45.363Z",
+  "exported_at": "2026-03-31T12:41:22.433Z",
   "milestones": [
     {
       "id": "M001",
@@ -331,6 +331,135 @@
       ],
       "requirement_coverage": "R010 (Spectrum Visualizer) → S03. R011 (Media Session API) → S01. R012 (PWA) → S02. All three deferred requirements addressed.",
       "boundary_map_markdown": "```\\nS01 — Media Session API (usePlayer.ts)\\n  navigator.mediaSession.metadata + action handlers\\n  No new dependencies, browser API only\\n\\nS02 — PWA (manifest + service worker)\\n  manifest.json → install prompt\\n  Service worker → app shell cache + cover art cache\\n  vite-plugin-pwa or manual\\n\\nS03 — Spectrum Visualizer + micro-animations\\n  AudioContext + AnalyserNode → Canvas 2D frequency bars\\n  Connects to existing singleton Audio element\\n  CSS micro-animations: PlayerBar fade-in, cover art fade, disc spin\\n```"
+    },
+    {
+      "id": "M006",
+      "title": "",
+      "status": "queued",
+      "depends_on": [],
+      "created_at": "2026-03-31T11:39:58.821Z",
+      "completed_at": null,
+      "vision": "Add interactive API documentation via SpringDoc OpenAPI (Swagger UI) and end-to-end browser tests via Playwright. Swagger gives a living, auto-generated API reference that stays in sync with the code. Playwright tests exercise the real app from a browser — login, browse, play, admin flows — catching integration regressions that unit/integration tests miss.",
+      "success_criteria": [
+        "Swagger UI accessible at /swagger-ui.html behind authentication, showing all REST endpoints with descriptions, request/response schemas, and try-it-out capability",
+        "OpenAPI 3.0 spec available at /v3/api-docs in JSON format",
+        "Playwright test suite covers core user flows: login, browse albums, play a track, search, admin user management",
+        "Playwright tests run headless via a single npm command and exit with pass/fail",
+        "All existing backend tests (98) and frontend tests continue passing — zero regressions"
+      ],
+      "key_risks": [
+        {
+          "risk": "Swagger UI and Spring Security cookie auth interaction",
+          "whyItMatters": "Swagger UI normally uses Bearer tokens. Our app uses HttpOnly cookies — the try-it-out feature may not work without configuration for cookie-based auth."
+        },
+        {
+          "risk": "Playwright audio playback verification",
+          "whyItMatters": "HTML5 Audio in headless Chromium may not actually decode audio. Tests need to verify playback state (currentTime advancing) rather than audible output."
+        },
+        {
+          "risk": "Test flakiness from timing-dependent UI state",
+          "whyItMatters": "Player state, loading spinners, and async data fetches can cause intermittent failures if tests don't wait properly."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "Swagger + cookie auth",
+          "retireIn": "S01",
+          "whatWillBeProven": "Swagger UI loads, endpoints are listed, and try-it-out works after logging in via the app"
+        },
+        {
+          "riskOrUnknown": "Playwright audio playback",
+          "retireIn": "S02",
+          "whatWillBeProven": "Playwright test clicks play, verifies audio element currentTime > 0 and player bar shows track info"
+        },
+        {
+          "riskOrUnknown": "Test flakiness",
+          "retireIn": "S02",
+          "whatWillBeProven": "Core flow tests pass 5 consecutive headless runs without failure"
+        }
+      ],
+      "verification_contract": "Backend: mvn clean verify (98+ tests, JaCoCo ≥80%). Frontend: npm run test:coverage (thresholds met). Playwright: npx playwright test exits 0.",
+      "verification_integration": "Swagger UI served through Spring Security filter chain with cookie auth. Playwright tests run against real Spring Boot + Vite dev servers.",
+      "verification_operational": "Spring Boot starts with springdoc on classpath without errors. Playwright tests launch and tear down browser cleanly.",
+      "verification_uat": "Swagger UI is usable by a developer to explore and test the API. Playwright test output clearly shows which flows passed/failed.",
+      "definition_of_done": [
+        "All 3 slices complete with summaries",
+        "Swagger UI accessible at /swagger-ui.html with all endpoints documented",
+        "OpenAPI 3.0 spec generated at /v3/api-docs",
+        "Playwright test suite covers login, browse, playback, search, and admin flows",
+        "npx playwright test passes headless with zero failures",
+        "mvn clean verify passes (98+ tests, ≥80% coverage)",
+        "npm run test:coverage passes (existing thresholds)",
+        "No regressions in any existing functionality"
+      ],
+      "requirement_coverage": "New tooling milestone — does not advance existing requirements. Establishes E2E verification layer that strengthens confidence in all validated requirements (R001-R009, R017-R019).",
+      "boundary_map_markdown": "```\nS01 (SpringDoc OpenAPI) ─provides→ /swagger-ui.html, /v3/api-docs\nS02 (Playwright Core Flows) ─provides→ E2E test suite, test infrastructure\n  ─depends→ running Spring Boot + Vite servers\nS03 (Playwright Extended) ─depends→ S02 test infrastructure\n  ─provides→ search, settings, error state tests, CI config\n```"
+    },
+    {
+      "id": "M007",
+      "title": "",
+      "status": "queued",
+      "depends_on": [],
+      "created_at": "2026-03-31T12:39:23.029Z",
+      "completed_at": null,
+      "vision": "Know what you listen to. Track every play, surface listening patterns through dashboards, share activity with your users, and optionally scrobble to Last.fm and ListenBrainz. Turns Musicode from a passive player into an active listening companion.",
+      "success_criteria": [
+        "Every track play beyond 50% duration is recorded as a PlaybackEvent with timestamp, user, and track reference",
+        "Stats page shows top artists, top albums, top tracks, total listening time, and plays-per-week chart",
+        "Stats are scoped per-user — each user sees their own listening history",
+        "Scrobbling to Last.fm and/or ListenBrainz can be enabled per-user via settings",
+        "Activity feed shows recent plays in real-time via Server-Sent Events",
+        "All existing tests pass — zero regressions"
+      ],
+      "key_risks": [
+        {
+          "risk": "PlaybackEvent volume with H2",
+          "whyItMatters": "A heavy listener generates ~50 events/day. Over a year that's 18K rows per user. H2 should handle it, but query performance on aggregation needs verification."
+        },
+        {
+          "risk": "Last.fm API reliability and auth flow",
+          "whyItMatters": "Last.fm uses a callback-based auth flow. Handling API keys, session tokens, rate limits, and retries adds integration complexity."
+        },
+        {
+          "risk": "SSE connection management",
+          "whyItMatters": "Server-Sent Events require long-lived HTTP connections. Spring Boot handles this well with SseEmitter, but connection cleanup on client disconnect needs care."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "H2 aggregation performance",
+          "retireIn": "S01",
+          "whatWillBeProven": "Stats queries return in <200ms with 1000+ PlaybackEvent rows"
+        },
+        {
+          "riskOrUnknown": "Last.fm auth + scrobble flow",
+          "retireIn": "S03",
+          "whatWillBeProven": "A track play scrobbles to Last.fm and appears in the user's history"
+        },
+        {
+          "riskOrUnknown": "SSE lifecycle",
+          "retireIn": "S04",
+          "whatWillBeProven": "Activity feed updates in real-time, connections clean up on page close"
+        }
+      ],
+      "verification_contract": "Backend: mvn clean verify (all tests pass, JaCoCo ≥80%). Frontend: npm run test:coverage (thresholds met). E2E: npx playwright test (19+ tests pass).",
+      "verification_integration": "PlaybackEvent recorded from frontend via API. Stats queries aggregate correctly. Scrobble POST reaches Last.fm/ListenBrainz. SSE pushes events to connected clients.",
+      "verification_operational": "Spring Boot starts cleanly with new entities. SSE connections don't leak. Scrobble failures don't crash playback.",
+      "verification_uat": "Stats page shows meaningful data after playing several tracks. Activity feed updates in real-time when another tab plays music.",
+      "definition_of_done": [
+        "All 4 slices complete with summaries",
+        "PlaybackEvent entity persists plays correctly",
+        "Stats page renders charts with real data",
+        "Scrobbling configurable and functional (at least one service)",
+        "Activity feed works with SSE",
+        "New Playwright E2E tests for stats page",
+        "mvn clean verify passes",
+        "npm run test:coverage passes",
+        "npx playwright test passes",
+        "No regressions in existing functionality"
+      ],
+      "requirement_coverage": "Advances R013 (Scrobbling — Last.fm / ListenBrainz). Introduces new capabilities: playback tracking, statistics, activity feed.",
+      "boundary_map_markdown": "```\nS01 (Playback Tracking + Stats Backend) ─provides→ PlaybackEvent entity, /api/stats endpoints\nS02 (Stats Dashboard UI) ─depends→ S01 stats API\n  ─provides→ Stats page with charts (Recharts)\nS03 (Scrobbling) ─depends→ S01 PlaybackEvent hook\n  ─provides→ Last.fm + ListenBrainz integration, user settings\nS04 (Activity Feed) ─depends→ S01 PlaybackEvent creation\n  ─provides→ SSE endpoint, activity timeline in sidebar/page\n```"
     }
   ],
   "slices": [
@@ -759,6 +888,154 @@
       "proof_level": "manual-verification",
       "integration_closure": "Visualizer component uses shared AudioContext connected to singleton Audio. Micro-animations are CSS-only. No new dependencies.",
       "observability_impact": "console.debug for AudioContext creation and AnalyserNode connection.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M006",
+      "id": "S01",
+      "title": "SpringDoc OpenAPI + Swagger UI",
+      "status": "pending",
+      "risk": "low",
+      "depends": [],
+      "demo": "After this: /swagger-ui.html shows all Musicode REST endpoints grouped by controller, with request/response schemas and try-it-out. /v3/api-docs returns the OpenAPI 3.0 JSON spec.",
+      "created_at": "2026-03-31T11:40:41.475Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Add SpringDoc OpenAPI dependency, configure for cookie-based auth, annotate controllers with descriptions, verify Swagger UI works behind Spring Security.",
+      "success_criteria": "- /swagger-ui.html loads after authentication\\n- All controllers visible with endpoint descriptions\\n- Request/response DTOs shown with field types\\n- Try-it-out works for authenticated endpoints\\n- /v3/api-docs returns valid OpenAPI 3.0 JSON\\n- mvn clean verify passes with no regressions",
+      "proof_level": "contract + integration",
+      "integration_closure": "Swagger UI served through Spring Security filter chain, cookie auth works for try-it-out",
+      "observability_impact": "API documentation surface accessible at /swagger-ui.html",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M006",
+      "id": "S02",
+      "title": "Playwright E2E — Setup + Core Flows",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [],
+      "demo": "After this: npx playwright test runs headless and verifies login → browse albums → play track → admin user CRUD. Clear pass/fail output.",
+      "created_at": "2026-03-31T11:40:41.475Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Install Playwright, configure test project, write E2E tests for the critical user flows: authentication, library browsing, audio playback, and admin user management.",
+      "success_criteria": "- Playwright installed and configured in musicode-ui/\\n- Login flow test: valid login, invalid credentials, logout\\n- Browse flow test: albums page loads, album detail shows tracks\\n- Playback flow test: click track, player bar appears, audio currentTime advances\\n- Admin flow test: create user, verify in list, delete user\\n- All tests pass headless 5 consecutive runs\\n- npm run test:e2e command defined",
+      "proof_level": "contract + integration",
+      "integration_closure": "Tests exercise real Spring Boot backend + React frontend together",
+      "observability_impact": "Playwright HTML report shows per-test pass/fail with screenshots on failure",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M006",
+      "id": "S03",
+      "title": "Playwright Extended Flows + CI Config",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S02"
+      ],
+      "demo": "After this: E2E suite covers search, settings/library management, error states, and artist/track views. Tests run in CI-ready headless mode with HTML report.",
+      "created_at": "2026-03-31T11:40:41.475Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Extend Playwright test coverage to secondary flows (search, settings, artists, tracks) and error states. Configure for CI execution.",
+      "success_criteria": "- Search flow test: search query returns results, click navigates to detail\\n- Settings flow test: admin adds/removes library folder\\n- Artist/track views test: navigation and content verification\\n- Error state test: handles 404 or empty states gracefully\\n- Playwright config supports CI mode (retries, reporter)\\n- All tests pass headless",
+      "proof_level": "contract + integration",
+      "integration_closure": "Full E2E coverage of all major UI flows",
+      "observability_impact": "HTML report with full flow coverage, screenshots on failure, CI-compatible exit codes",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M007",
+      "id": "S01",
+      "title": "Playback Tracking + Stats API",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [],
+      "demo": "After this: play several tracks in the browser, then curl /api/stats/summary shows play count and listening time. curl /api/stats/top-artists returns ranked list.",
+      "created_at": "2026-03-31T12:41:22.399Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Create PlaybackEvent entity, record plays from frontend, build stats query endpoints.",
+      "success_criteria": "- PlaybackEvent entity with user, track, timestamp, listenDurationSec\\n- POST /api/plays/{trackId} records a play event\\n- Frontend fires play event when currentTime passes 50% of duration\\n- GET /api/stats/top-artists?period=week|month|year returns top artists by play count\\n- GET /api/stats/top-albums, /top-tracks with same period support\\n- GET /api/stats/summary returns total plays, total listening time, unique artists/albums\\n- GET /api/stats/history?period=week returns plays-per-day for charting\\n- All queries scoped to authenticated user\\n- Stats queries perform <200ms with 1000+ rows\\n- mvn clean verify passes",
+      "proof_level": "contract + integration",
+      "integration_closure": "Frontend reports plays to backend, stats endpoints aggregate correctly",
+      "observability_impact": "PlaybackEvent table queryable, stats endpoints return structured data",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M007",
+      "id": "S02",
+      "title": "Stats Dashboard UI",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S01"
+      ],
+      "demo": "After this: click Stats in sidebar → see your top artists chart, plays-per-day graph, and total listening time. Change period to month → data updates.",
+      "created_at": "2026-03-31T12:41:22.399Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Build a Stats page in the frontend with charts showing listening patterns.",
+      "success_criteria": "- New StatsPage at /stats route\\n- Sidebar link to Stats (visible to all users)\\n- Top artists, top albums, top tracks as ranked lists\\n- Plays-per-day bar chart using Recharts\\n- Total listening time and play count summary cards\\n- Period selector (week/month/year/all-time)\\n- Responsive layout consistent with existing dark theme\\n- Playwright E2E test for stats page\\n- npm run test:coverage passes",
+      "proof_level": "contract + integration",
+      "integration_closure": "Stats page consumes /api/stats endpoints and renders charts",
+      "observability_impact": "Visual stats surface accessible from sidebar",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M007",
+      "id": "S03",
+      "title": "Scrobbling — Last.fm & ListenBrainz",
+      "status": "pending",
+      "risk": "high",
+      "depends": [
+        "S01"
+      ],
+      "demo": "After this: configure Last.fm in settings, play a track, check Last.fm profile → track appears in recent listens.",
+      "created_at": "2026-03-31T12:41:22.399Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Integrate with Last.fm and ListenBrainz scrobbling APIs. Configurable per-user.",
+      "success_criteria": "- User settings: Last.fm API key + session, ListenBrainz token\\n- Scrobble triggered alongside PlaybackEvent creation\\n- Async scrobble — never blocks playback\\n- Retry with backoff on failure (max 3 retries)\\n- Scrobble status visible in user settings\\n- Last.fm auth callback flow (or manual session key entry)\\n- ListenBrainz simple token-based auth\\n- mvn clean verify passes\\n- Scrobble failures logged, not thrown",
+      "proof_level": "contract + integration",
+      "integration_closure": "PlaybackEvent creation triggers scrobble to configured services",
+      "observability_impact": "Scrobble success/failure logged with track info, retry count visible",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M007",
+      "id": "S04",
+      "title": "Activity Feed (Server-Sent Events)",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "After this: open two browser tabs with different users. Play a track in tab A → tab B shows 'User X listened to Track Y' within seconds.",
+      "created_at": "2026-03-31T12:41:22.399Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Real-time listening activity feed via SSE. Shows what users are listening to.",
+      "success_criteria": "- GET /api/activity/stream returns SSE event stream\\n- Events pushed when any user records a PlaybackEvent\\n- Event payload: username, track title, artist, album, cover art URL, timestamp\\n- Frontend ActivityFeed component showing recent plays\\n- Accessible from sidebar or dedicated route\\n- SSE connections clean up on client disconnect\\n- Reconnect logic in frontend (EventSource auto-reconnect)\\n- Works with 1-5 concurrent users\\n- mvn clean verify passes",
+      "proof_level": "contract + integration",
+      "integration_closure": "PlaybackEvent creation pushes SSE to all connected clients",
+      "observability_impact": "Real-time activity stream, connection count logged",
       "sequence": 0,
       "replan_triggered_at": null
     }
@@ -3240,6 +3517,366 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M006",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "Add SpringDoc dependency + Security config",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Add springdoc-openapi-starter-webmvc-ui dependency to pom.xml\n2. Configure SecurityConfig to permit /swagger-ui/**, /v3/api-docs/**, /swagger-ui.html\n3. Add OpenAPI configuration bean with app title, version, description\n4. Configure cookie-based auth scheme in OpenAPI config so try-it-out sends cookies\n5. Verify Spring Boot starts with springdoc on classpath\n6. Verify /swagger-ui.html is accessible",
+      "estimate": "30min",
+      "files": [
+        "musicode-server/pom.xml",
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java",
+        "musicode-server/src/main/java/com/musicode/config/OpenApiConfig.java"
+      ],
+      "verify": "mvn spring-boot:run, then curl -s http://localhost:8080/swagger-ui.html returns 200 or redirect. curl -s http://localhost:8080/v3/api-docs returns JSON.",
+      "inputs": [
+        "musicode-server/pom.xml",
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java"
+      ],
+      "expected_output": [
+        "musicode-server/src/main/java/com/musicode/config/OpenApiConfig.java",
+        "Updated pom.xml with springdoc dependency",
+        "Updated SecurityConfig with swagger paths permitted"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M006",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "Annotate controllers with OpenAPI descriptions",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Add @Tag annotations to each controller with name and description\n2. Add @Operation annotations to key endpoints with summary and description\n3. Add @ApiResponse annotations for error codes (400, 401, 404, 409, 500)\n4. Ensure DTOs (Records) are properly documented via @Schema where needed\n5. Verify Swagger UI shows descriptions and schemas for all endpoints",
+      "estimate": "40min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/controller/AuthController.java",
+        "musicode-server/src/main/java/com/musicode/controller/UserController.java",
+        "musicode-server/src/main/java/com/musicode/controller/AlbumController.java",
+        "musicode-server/src/main/java/com/musicode/controller/ArtistController.java",
+        "musicode-server/src/main/java/com/musicode/controller/TrackController.java",
+        "musicode-server/src/main/java/com/musicode/controller/SearchController.java",
+        "musicode-server/src/main/java/com/musicode/controller/LibraryController.java",
+        "musicode-server/src/main/java/com/musicode/controller/CoverArtController.java"
+      ],
+      "verify": "Start server, open /swagger-ui.html in browser, verify all controllers and endpoints visible with descriptions. mvn clean verify passes.",
+      "inputs": [
+        "All controller files"
+      ],
+      "expected_output": [
+        "Annotated controller files"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M006",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "Verify integration + run all tests",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Start Spring Boot and verify /swagger-ui.html loads\n2. Verify /v3/api-docs returns valid OpenAPI 3.0 JSON with all paths\n3. Verify try-it-out works for an authenticated endpoint (login first, then call /api/users)\n4. Run mvn clean verify — all 98+ tests pass, coverage ≥80%\n5. Commit",
+      "estimate": "15min",
+      "files": [],
+      "verify": "mvn clean verify exits 0. /swagger-ui.html shows all endpoints. /v3/api-docs returns valid JSON.",
+      "inputs": [
+        "Running Spring Boot server"
+      ],
+      "expected_output": [
+        "Verified Swagger UI integration",
+        "All tests passing"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M006",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "Install Playwright + project config",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. cd musicode-ui && npm init playwright@latest (Chromium only for now)\n2. Configure playwright.config.ts: baseURL http://localhost:5173, webServer for Vite dev, timeout, retries\n3. Configure webServer to start Vite dev server automatically\n4. Add test:e2e script to package.json\n5. Write a smoke test (navigate to /, expect redirect to /login)\n6. Run npx playwright test to verify setup",
+      "estimate": "30min",
+      "files": [
+        "musicode-ui/playwright.config.ts",
+        "musicode-ui/package.json",
+        "musicode-ui/e2e/smoke.spec.ts"
+      ],
+      "verify": "npx playwright test e2e/smoke.spec.ts passes headless.",
+      "inputs": [
+        "musicode-ui/package.json",
+        "musicode-ui/vite.config.ts"
+      ],
+      "expected_output": [
+        "musicode-ui/playwright.config.ts",
+        "musicode-ui/e2e/ directory",
+        "package.json with test:e2e script",
+        "Smoke test passing"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M006",
+      "slice_id": "S02",
+      "id": "T02",
+      "title": "Auth flow E2E tests",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Write login.spec.ts:\n   - Test valid login: fill username+password, submit, verify redirect to /\n   - Test invalid credentials: fill wrong password, verify error message shown\n   - Test logout: login, click logout, verify redirect to /login\n2. Create test helpers: login function reusable across specs\n3. Verify tests pass headless",
+      "estimate": "30min",
+      "files": [
+        "musicode-ui/e2e/login.spec.ts",
+        "musicode-ui/e2e/helpers.ts"
+      ],
+      "verify": "npx playwright test e2e/login.spec.ts passes headless.",
+      "inputs": [
+        "Auth flow structure from AuthController and LoginPage"
+      ],
+      "expected_output": [
+        "musicode-ui/e2e/login.spec.ts",
+        "musicode-ui/e2e/helpers.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M006",
+      "slice_id": "S02",
+      "id": "T03",
+      "title": "Browse + playback E2E tests",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Write browse.spec.ts:\n   - Test albums page: login, verify album cards render with cover art\n   - Test album detail: click album, verify track list appears\n   - Test artist page: navigate to artists, verify artist list\n   - Test artist detail: click artist, verify albums shown\n2. Write playback.spec.ts:\n   - Test play track: login, navigate to album, click first track\n   - Verify player bar appears with track title\n   - Verify audio element currentTime advances (> 0 after short wait)\n   - Test pause: click pause, verify currentTime stops advancing\n3. Verify all tests pass headless",
+      "estimate": "45min",
+      "files": [
+        "musicode-ui/e2e/browse.spec.ts",
+        "musicode-ui/e2e/playback.spec.ts"
+      ],
+      "verify": "npx playwright test e2e/browse.spec.ts e2e/playback.spec.ts passes headless.",
+      "inputs": [
+        "Page component structure, PlayerBar, AlbumCard"
+      ],
+      "expected_output": [
+        "musicode-ui/e2e/browse.spec.ts",
+        "musicode-ui/e2e/playback.spec.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M006",
+      "slice_id": "S02",
+      "id": "T04",
+      "title": "Admin user management E2E tests + stability",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Write admin.spec.ts:\n   - Test create user: login as admin, navigate to /users, create new user\n   - Verify user appears in list\n   - Test delete user: delete the created user, verify removed from list\n   - Test cannot delete self: verify error when trying to delete admin\n2. Run full test suite 5 consecutive times to verify stability\n3. Verify no regressions: npm run test:coverage, mvn clean verify",
+      "estimate": "30min",
+      "files": [
+        "musicode-ui/e2e/admin.spec.ts"
+      ],
+      "verify": "npx playwright test passes headless. Run 5 times with 0 failures. npm run test:coverage passes.",
+      "inputs": [
+        "UsersPage component, UserController"
+      ],
+      "expected_output": [
+        "musicode-ui/e2e/admin.spec.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M006",
+      "slice_id": "S03",
+      "id": "T01",
+      "title": "Search + settings E2E tests",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Write search.spec.ts:\n   - Test search with results: type query, verify results appear for tracks/albums/artists\n   - Test search click: click a result, verify navigation to detail page\n   - Test empty search: search for nonsense, verify empty state message\n2. Write settings.spec.ts:\n   - Test view settings: login as admin, navigate to /settings\n   - Test library folder management if scan is safe in test context\n3. Verify tests pass headless",
+      "estimate": "30min",
+      "files": [
+        "musicode-ui/e2e/search.spec.ts",
+        "musicode-ui/e2e/settings.spec.ts"
+      ],
+      "verify": "npx playwright test e2e/search.spec.ts e2e/settings.spec.ts passes headless.",
+      "inputs": [
+        "SearchPage, SettingsPage components"
+      ],
+      "expected_output": [
+        "musicode-ui/e2e/search.spec.ts",
+        "musicode-ui/e2e/settings.spec.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M006",
+      "slice_id": "S03",
+      "id": "T02",
+      "title": "Navigation + error state E2E tests",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Write navigation.spec.ts:\n   - Test tracks page: login, navigate to /tracks, verify track list renders\n   - Test artist flow: /artists → click artist → see albums → click album → see tracks\n   - Test sidebar navigation: verify all sidebar links work\n2. Write error-states.spec.ts:\n   - Test 404 page: navigate to /nonexistent, verify error handling\n   - Test unauthorized access: access /users as listener (if role-restricted in frontend)\n3. Verify tests pass headless",
+      "estimate": "30min",
+      "files": [
+        "musicode-ui/e2e/navigation.spec.ts",
+        "musicode-ui/e2e/error-states.spec.ts"
+      ],
+      "verify": "npx playwright test e2e/navigation.spec.ts e2e/error-states.spec.ts passes headless.",
+      "inputs": [
+        "Page components, routing structure"
+      ],
+      "expected_output": [
+        "musicode-ui/e2e/navigation.spec.ts",
+        "musicode-ui/e2e/error-states.spec.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M006",
+      "slice_id": "S03",
+      "id": "T03",
+      "title": "CI config + documentation + final verification",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Update playwright.config.ts for CI:\n   - retries: 2 in CI, 0 in local\n   - reporter: html + list\n   - screenshot: only-on-failure\n   - trace: retain-on-failure\n2. Add .gitignore entries for test-results/, playwright-report/\n3. Update musicode-ui/README.md with E2E test instructions\n4. Update root README.md with E2E section\n5. Run full suite: npx playwright test — all pass\n6. Run existing tests: npm run test:coverage, verify no regressions\n7. Commit all",
+      "estimate": "20min",
+      "files": [
+        "musicode-ui/playwright.config.ts",
+        "musicode-ui/.gitignore",
+        "musicode-ui/README.md",
+        "README.md"
+      ],
+      "verify": "npx playwright test passes headless. npm run test:coverage passes. git diff shows no unexpected changes.",
+      "inputs": [
+        "Existing playwright.config.ts"
+      ],
+      "expected_output": [
+        "Updated playwright.config.ts",
+        "Updated READMEs",
+        "Updated .gitignore"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -3432,6 +4069,18 @@
       "choice": "Migrate DTOs to Java Records in cleanup task post-M003",
       "rationale": "Java 21 Records are idiomatic for immutable data carriers. All current DTOs qualify. JPA entities stay with Lombok. Deferred to avoid churn mid-milestone.",
       "revisable": "No",
+      "made_by": "collaborative",
+      "superseded_by": null
+    },
+    {
+      "seq": 29,
+      "id": "D017",
+      "when_context": "",
+      "scope": "roadmap",
+      "decision": "Post-M006 milestone sequence and feature grouping",
+      "choice": "M007 Listening Intelligence → M008 Audio Experience → M009 Smart Library → M010 Visual Experience → M011 Integrations & Streaming",
+      "rationale": "M007 first: redondest milestone (backend + frontend + external API), each slice delivers visible value. M008 second: touches the core player, defines identity as an audiophile tool. M009-M011 follow by decreasing priority — smart library management, then visual polish, then external integrations. Letras (.lrc) considered for M008 but kept in M011 to avoid scope creep on the audio pipeline milestone.",
+      "revisable": "Yes — features can move between milestones during planning",
       "made_by": "collaborative",
       "superseded_by": null
     }

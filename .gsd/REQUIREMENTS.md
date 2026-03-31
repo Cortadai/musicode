@@ -103,40 +103,40 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: M001 S05 — docker-compose.yml with Spring Boot serving React static build. Music folder mounted read-only. H2 data persisted in volume. Single docker-compose up starts everything.
 - Notes: Frontend can be served from Spring Boot static resources or separate nginx container.
 
-## Deferred
-
 ### R010 — Real-time audio spectrum visualizer using Web Audio API AnalyserNode, rendered on Canvas/SVG.
 - Class: differentiator
-- Status: deferred
+- Status: validated
 - Description: Real-time audio spectrum visualizer using Web Audio API AnalyserNode, rendered on Canvas/SVG.
 - Why it matters: Visual flair that distinguishes this from boring players.
 - Source: user
-- Primary owning slice: M005/S03
+- Primary owning slice: none
 - Supporting slices: none
-- Validation: unmapped
+- Validation: M005/S03 — Canvas 2D frequency bars from Web Audio API AnalyserNode, toggleable from PlayerBar, 60fps with Page Visibility awareness.
 - Notes: Deferred to post-MVP (Phase 2 in original plan).
 
 ### R011 — Browser Media Session API integration so OS-level media controls (play/pause/next/prev keys) work with the player.
 - Class: quality-attribute
-- Status: deferred
+- Status: validated
 - Description: Browser Media Session API integration so OS-level media controls (play/pause/next/prev keys) work with the player.
 - Why it matters: Without this, keyboard media keys do nothing — feels broken on desktop.
 - Source: user
-- Primary owning slice: M005/S01
+- Primary owning slice: none
 - Supporting slices: none
-- Validation: unmapped
+- Validation: M005/S01 — Media Session API integrated in usePlayer.ts. OS media keys (play/pause/next/prev), now-playing overlay with track/artist/cover art, OS seek bar.
 - Notes: Deferred to post-MVP (Phase 2).
 
 ### R012 — App installable as PWA with manifest.json and service worker. Opens in its own window without browser chrome.
 - Class: quality-attribute
-- Status: deferred
+- Status: validated
 - Description: App installable as PWA with manifest.json and service worker. Opens in its own window without browser chrome.
 - Why it matters: Makes the web app feel native — own window, own icon, offline UI shell.
 - Source: user
-- Primary owning slice: M005/S02
+- Primary owning slice: none
 - Supporting slices: none
-- Validation: unmapped
+- Validation: M005/S02 — manifest.json, hand-written service worker (network-first shell, cache-first covers, network-only API), installable as standalone window.
 - Notes: Deferred to post-MVP (Phase 2).
+
+## Deferred
 
 ### R013 — Scrobble completed tracks to Last.fm and/or ListenBrainz for listening history.
 - Class: integration
@@ -171,39 +171,6 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: unmapped
 - Notes: Deferred to Phase 4. Requires ffmpeg integration.
 
-### R017 — Authentication with JWT in Secure Cookies
-- Class: core-capability
-- Status: validated
-- Description: Spring Security with stateless JWT authentication. Access token (15 min) and refresh token (7 days) stored in HttpOnly/Secure/SameSite=Strict cookies. Login, refresh, and logout endpoints. Refresh tokens persisted server-side in H2 for revocation. Logout invalidates refresh token in DB.
-- Why it matters: Required before exposing the app outside localhost. Secure cookies prevent XSS token theft. Server-side refresh token storage enables real logout.
-- Source: user
-- Primary owning slice: M003/S02
-- Supporting slices: M003/S01 (user model), M003/S04 (frontend)
-- Validation: unmapped
-- Notes: CSRF decision needed (SameSite=Strict vs CookieCsrfTokenRepository). Secure flag profile-aware (false in dev, true in docker). Access token short-lived, refresh token rotated on use.
-
-### R018 — Multi-User with Admin-Managed Roles
-- Class: core-capability
-- Status: validated
-- Description: User entity with ADMIN and LISTENER roles. Admin creates/manages user accounts — no public registration. ADMIN can CRUD users and manage library. LISTENER can browse and play only. Folder management and scan restricted to ADMIN.
-- Why it matters: 5 users max, all controlled. No registration form = no attack surface. Role separation prevents listeners from modifying the library.
-- Source: user
-- Primary owning slice: M003/S03
-- Supporting slices: M003/S01 (user model)
-- Validation: unmapped
-- Notes: Admin user seeded on first startup. Password never returned in API responses.
-
-### R019 — HTTPS via Caddy Reverse Proxy
-- Class: operability
-- Status: validated
-- Description: Caddy as TLS-terminating reverse proxy in Docker Compose. Only Caddy exposes ports (80/443) externally. Spring Boot internal only. Automatic certificate management — Caddy internal CA for localhost/LAN, Let's Encrypt when domain is available. HTTP redirects to HTTPS.
-- Why it matters: Secure cookies require HTTPS. Auth without TLS is security theater. Caddy makes TLS zero-config.
-- Source: user
-- Primary owning slice: M003/S05
-- Supporting slices: none
-- Validation: unmapped
-- Notes: Caddyfile swap (localhost → IP/domain) is the only change for NAS deployment. Caddy also serves React static build in production for efficiency.
-
 ## Out of Scope
 
 ### R016 — No integration with TIDAL, Spotify, Deezer, or any DRM-protected streaming service.
@@ -230,20 +197,17 @@ This file is the explicit capability and coverage contract for the project.
 | R007 | primary-user-loop | validated | M001/S04 | M002/S02 (shuffle, repeat modes) | M001 S04 + M002 S02 — Click-to-play queues album/artist context. Queue persists across navigation. Shuffle randomizes order, repeat loops track/queue. 22 reducer tests covering all queue operations. |
 | R008 | launchability | validated | M001/S04 | none | M001 S04 — Dark theme (zinc + indigo), sidebar navigation, content area, persistent bottom player bar. Lucide icons. Loading skeletons, empty states. Responsive layout. Tailwind CSS. |
 | R009 | operability | validated | M001/S05 | none | M001 S05 — docker-compose.yml with Spring Boot serving React static build. Music folder mounted read-only. H2 data persisted in volume. Single docker-compose up starts everything. |
-| R010 | differentiator | active | M005/S03 | none | unmapped |
-| R011 | quality-attribute | active | M005/S01 | none | unmapped |
-| R012 | quality-attribute | active | M005/S02 | none | unmapped |
+| R010 | differentiator | validated | none | none | M005/S03 — Canvas 2D frequency bars from Web Audio API AnalyserNode, toggleable from PlayerBar, 60fps with Page Visibility awareness. |
+| R011 | quality-attribute | validated | none | none | M005/S01 — Media Session API integrated in usePlayer.ts. OS media keys (play/pause/next/prev), now-playing overlay with track/artist/cover art, OS seek bar. |
+| R012 | quality-attribute | validated | none | none | M005/S02 — manifest.json, hand-written service worker (network-first shell, cache-first covers, network-only API), installable as standalone window. |
 | R013 | integration | deferred | none | none | unmapped |
 | R014 | integration | deferred | none | none | unmapped |
 | R015 | differentiator | deferred | none | none | unmapped |
 | R016 | anti-feature | out-of-scope | none | none | n/a |
-| R017 | core-capability | validated | M003/S02 | M003/S01, M003/S04 | M003 S02+S04 — JWT in HttpOnly/Secure/SameSite=Strict cookies. Access 15min, refresh 7 days with rotation and theft detection. Login/refresh/logout. Axios interceptor with refresh queue. 97 backend + 35 frontend tests. |
-| R018 | core-capability | validated | M003/S03 | M003/S01 | M003 S01+S03+S04 — User with ADMIN/LISTENER roles. Admin CRUD, no public registration. Role enforcement on all endpoints. Admin Settings/Users, listener browse/play only. 16 role tests. |
-| R019 | operability | validated | M003/S05 | none | M003 S05 — Caddy TLS in Docker Compose. HTTPS localhost with internal CA. HTTP 308 redirect. Port 8080 isolated. NAS-ready. |
 
 ## Coverage Summary
 
 - Active requirements: 0
 - Mapped to slices: 0
-- Validated: 12 (R001-R009, R017, R018, R019)
+- Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012)
 - Unmapped active requirements: 0
