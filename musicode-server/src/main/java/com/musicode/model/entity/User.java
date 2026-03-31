@@ -33,4 +33,12 @@ public class User {
     @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    // --- Scrobble integration ---
+
+    /** ListenBrainz user token (from https://listenbrainz.org/profile/) */
+    private String listenbrainzToken;
+
+    /** Last.fm session key (obtained via auth.getMobileSession, valid indefinitely) */
+    private String lastfmSessionKey;
 }

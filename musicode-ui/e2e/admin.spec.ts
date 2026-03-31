@@ -9,7 +9,7 @@ test.describe('Admin User Management', () => {
     await login(page);
 
     // Navigate to users page
-    await page.getByRole('link', { name: /users/i }).click();
+    await page.getByRole('link', { name: 'Users', exact: true }).click();
     await page.waitForURL('/users');
 
     // Fill the create user form
@@ -31,7 +31,7 @@ test.describe('Admin User Management', () => {
 
   test('cannot delete own admin account', async ({ page }) => {
     await login(page);
-    await page.getByRole('link', { name: /users/i }).click();
+    await page.getByRole('link', { name: 'Users', exact: true }).click();
     await page.waitForURL('/users');
 
     // Find the admin row and try to delete

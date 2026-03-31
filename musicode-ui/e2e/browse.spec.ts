@@ -27,14 +27,14 @@ test.describe('Browse Library', () => {
   });
 
   test('artists page shows artist list', async ({ page }) => {
-    await page.getByRole('link', { name: /artists/i }).click();
+    await page.getByRole('link', { name: 'Artists', exact: true }).click();
     await page.waitForURL('/artists');
     // Should have artist entries
     await expect(page.locator('a[href^="/artists/"]').first()).toBeVisible({ timeout: 10_000 });
   });
 
   test('artist detail shows albums', async ({ page }) => {
-    await page.getByRole('link', { name: /artists/i }).click();
+    await page.getByRole('link', { name: 'Artists', exact: true }).click();
     await page.waitForURL('/artists');
     await page.locator('a[href^="/artists/"]').first().click();
     await page.waitForURL(/\/artists\/\d+/);

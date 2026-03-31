@@ -10,7 +10,7 @@ test.describe('Stats Page', () => {
     await page.waitForURL('/stats');
 
     // Should show the Stats heading
-    await expect(page.getByText('Stats')).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByRole('link', { name: 'Stats' })).toBeVisible({ timeout: 5_000 });
 
     // Summary cards should be visible (scoped to main content area)
     const main = page.locator('main');

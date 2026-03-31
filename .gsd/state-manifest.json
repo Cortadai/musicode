@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T12:44:12.704Z",
+  "exported_at": "2026-03-31T13:16:23.362Z",
   "milestones": [
     {
       "id": "M001",
@@ -1010,7 +1010,7 @@
       "full_summary_md": "",
       "full_uat_md": "",
       "goal": "Integrate with Last.fm and ListenBrainz scrobbling APIs. Configurable per-user.",
-      "success_criteria": "- User settings: Last.fm API key + session, ListenBrainz token\\n- Scrobble triggered alongside PlaybackEvent creation\\n- Async scrobble — never blocks playback\\n- Retry with backoff on failure (max 3 retries)\\n- Scrobble status visible in user settings\\n- Last.fm auth callback flow (or manual session key entry)\\n- ListenBrainz simple token-based auth\\n- mvn clean verify passes\\n- Scrobble failures logged, not thrown",
+      "success_criteria": "- User entity extended with ListenBrainz token and Last.fm session key fields\\n- ScrobbleService fires asynchronously on play recording\\n- ListenBrainz: POST /1/submit-listens with user token\\n- Last.fm: track.scrobble with session key + API signature\\n- Retry with backoff (max 3 retries)\\n- Settings UI: configure/disconnect scrobble services\\n- Scrobble failures logged, never block playback\\n- mvn clean verify passes\\n- npx playwright test passes",
       "proof_level": "contract + integration",
       "integration_closure": "PlaybackEvent creation triggers scrobble to configured services",
       "observability_impact": "Scrobble success/failure logged with track info, retry count visible",
@@ -4027,6 +4027,154 @@
         "PlayControllerTest.java",
         "StatsControllerTest.java",
         "All tests green"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M007",
+      "slice_id": "S03",
+      "id": "T01",
+      "title": "User scrobble settings + config",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Add scrobble config fields to User entity: lastfmSessionKey, listenbrainzToken\n2. Create ScrobbleSettingsResponse DTO (shows which services are connected)\n3. Add PUT /api/users/me/scrobble endpoint for updating scrobble settings\n4. Add GET /api/users/me/scrobble endpoint for reading current config (masks tokens)\n5. Add Last.fm env vars: LASTFM_API_KEY, LASTFM_API_SECRET in application.yml with defaults\n6. Create LastfmConfig properties class\n7. Verify: mvn compile",
+      "estimate": "25min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/model/entity/User.java",
+        "musicode-server/src/main/java/com/musicode/controller/UserController.java",
+        "musicode-server/src/main/java/com/musicode/config/LastfmConfig.java",
+        "musicode-server/src/main/resources/application.yml"
+      ],
+      "verify": "mvn compile. curl GET /api/users/me/scrobble returns scrobble status.",
+      "inputs": [
+        "User entity",
+        "application.yml"
+      ],
+      "expected_output": [
+        "Updated User.java",
+        "ScrobbleSettings endpoints",
+        "LastfmConfig.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M007",
+      "slice_id": "S03",
+      "id": "T02",
+      "title": "ListenBrainz + Last.fm service implementations",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Create ListenBrainzService with submitListen(track, token) method\n2. POST to https://api.listenbrainz.org/1/submit-listens\n3. Payload: {listen_type: 'single', payload: [{listened_at, track_metadata: {artist_name, track_name, release_name}}]}\n4. Header: Authorization: Token {user_token}\n5. Create LastfmService with scrobble(track, sessionKey) method\n6. POST to https://ws.audioscrobbler.com/2.0/ with method=track.scrobble\n7. Params: artist, track, album, timestamp, api_key, sk (session key)\n8. Generate API signature: md5 of sorted params + api_secret\n9. Add Last.fm auth.getMobileSession for initial auth (username+password → session key)\n10. Verify: unit test with mocked HTTP",
+      "estimate": "45min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/service/ListenBrainzService.java",
+        "musicode-server/src/main/java/com/musicode/service/LastfmService.java"
+      ],
+      "verify": "mvn compile. Services instantiate correctly.",
+      "inputs": [
+        "Last.fm API docs",
+        "ListenBrainz API docs"
+      ],
+      "expected_output": [
+        "ListenBrainzService.java",
+        "LastfmService.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M007",
+      "slice_id": "S03",
+      "id": "T03",
+      "title": "ScrobbleService orchestration + PlayController hook",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Create ScrobbleService that orchestrates both services\n2. @Async method scrobble(PlaybackEvent) — never blocks caller\n3. Check user's config: if listenbrainzToken set → call ListenBrainzService\n4. If lastfmSessionKey set → call LastfmService\n5. Retry with exponential backoff: 1s, 2s, 4s (max 3 retries)\n6. Log success/failure with track info, never throw\n7. Hook into PlayController: after saving PlaybackEvent, call scrobbleService.scrobble(event)\n8. Verify: enable async, configure a test token, play a track",
+      "estimate": "30min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/service/ScrobbleService.java",
+        "musicode-server/src/main/java/com/musicode/controller/PlayController.java"
+      ],
+      "verify": "mvn compile. Play a track → scrobble log entry appears.",
+      "inputs": [
+        "ListenBrainzService",
+        "LastfmService",
+        "PlaybackEvent entity"
+      ],
+      "expected_output": [
+        "ScrobbleService.java",
+        "Updated PlayController.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M007",
+      "slice_id": "S03",
+      "id": "T04",
+      "title": "Settings UI + tests + verification",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "1. Add scrobble section to frontend Settings page (or create a new ScrobbleSettings component)\n2. ListenBrainz: text input for token, save/clear buttons\n3. Last.fm: username + password fields for initial auth, connected/disconnected status\n4. Call PUT /api/users/me/scrobble to save config\n5. Show connection status (connected/disconnected)\n6. Run full test suite: mvn clean verify, npm test:coverage, npx playwright test\n7. Commit",
+      "estimate": "30min",
+      "files": [
+        "musicode-ui/src/pages/SettingsPage.tsx",
+        "musicode-ui/src/api/auth.ts"
+      ],
+      "verify": "mvn clean verify passes. npx playwright test passes. Settings page shows scrobble config.",
+      "inputs": [
+        "Scrobble API endpoints",
+        "SettingsPage"
+      ],
+      "expected_output": [
+        "Updated SettingsPage or new ScrobbleSettings component",
+        "All tests passing"
       ],
       "observability_impact": "",
       "full_plan_md": "",

@@ -145,6 +145,9 @@
                         <exclude>com/musicode/service/MetadataService.class</exclude>
                         <exclude>com/musicode/service/CoverArtService.class</exclude>
                         <exclude>com/musicode/service/AudioStreamService.class</exclude>
+                        <exclude>com/musicode/service/LastfmService.class</exclude>
+                        <exclude>com/musicode/service/ListenBrainzService.class</exclude>
+                        <exclude>com/musicode/service/ScrobbleService.class</exclude>
                         <exclude>com/musicode/MusicodeApplication.class</exclude>
                     </excludes>
                 </configuration>

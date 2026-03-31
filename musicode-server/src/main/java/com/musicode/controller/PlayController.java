@@ -5,6 +5,7 @@ import com.musicode.model.entity.PlaybackEvent;
 import com.musicode.repository.PlaybackEventRepository;
 import com.musicode.repository.TrackRepository;
 import com.musicode.repository.UserRepository;
+import com.musicode.service.ScrobbleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class PlayController {
     private final PlaybackEventRepository playbackEventRepository;
     private final TrackRepository trackRepository;
     private final UserRepository userRepository;
+    private final ScrobbleService scrobbleService;
 
     @PostMapping("/{trackId}")
     @ResponseStatus(HttpStatus.CREATED)
@@ -50,6 +52,9 @@ public class PlayController {
 
         event = playbackEventRepository.save(event);
         log.debug("Recorded play: user='{}' track='{}' (id={})", principal.getName(), track.getTitle(), track.getId());
+
+        // Fire-and-forget scrobble to configured services (async)
+        scrobbleService.scrobble(event);
 
         return Map.of(
                 "id", event.getId(),

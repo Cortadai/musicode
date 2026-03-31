@@ -11,7 +11,7 @@ test.describe('Navigation', () => {
     await expect(page.getByText('Albums').first()).toBeVisible();
 
     // Artists
-    await page.getByRole('link', { name: 'Artists' }).click();
+    await page.getByRole('link', { name: 'Artists', exact: true }).click();
     await expect(page).toHaveURL('/artists');
     await expect(page.locator('a[href^="/artists/"]').first()).toBeVisible({ timeout: 5_000 });
 
@@ -45,7 +45,7 @@ test.describe('Navigation', () => {
 
   test('full browse flow: artists → artist → album → play track', async ({ page }) => {
     // Start at artists
-    await page.getByRole('link', { name: 'Artists' }).click();
+    await page.getByRole('link', { name: 'Artists', exact: true }).click();
     await page.waitForURL('/artists');
 
     // Click first artist

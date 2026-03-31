@@ -34,5 +34,8 @@ musicode:
     refresh-token-expiration-ms: 604800000  # 7 days
   cookies:
     secure: false  # true in docker/prod profile
+  lastfm:
+    api-key: ${LASTFM_API_KEY:}
+    api-secret: ${LASTFM_API_SECRET:}
 
 # Logging configured in logback-spring.xml (profile-aware)

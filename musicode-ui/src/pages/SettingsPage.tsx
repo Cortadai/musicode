@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus } from '../api/library';
+import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink } from 'lucide-react';
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
@@ -138,6 +139,128 @@ export default function SettingsPage() {
           </div>
         )}
       </section>
+
+      {/* Scrobbling */}
+      <ScrobbleSection />
     </div>
+  );
+}
+
+function ScrobbleSection() {
+  const queryClient = useQueryClient();
+  const [lbToken, setLbToken] = useState('');
+  const [lfmUsername, setLfmUsername] = useState('');
+  const [lfmPassword, setLfmPassword] = useState('');
+
+  const { data: settings } = useQuery({
+    queryKey: ['scrobbleSettings'],
+    queryFn: getScrobbleSettings,
+  });
+
+  const connectMutation = useMutation({
+    mutationFn: updateScrobbleSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scrobbleSettings'] });
+      setLbToken('');
+      setLfmUsername('');
+      setLfmPassword('');
+    },
+  });
+
+  const disconnectLbMutation = useMutation({
+    mutationFn: disconnectListenBrainz,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['scrobbleSettings'] }),
+  });
+
+  const disconnectLfmMutation = useMutation({
+    mutationFn: disconnectLastfm,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['scrobbleSettings'] }),
+  });
+
+  return (
+    <section className="mt-8">
+      <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">Scrobbling</h3>
+
+      {/* ListenBrainz */}
+      <div className="p-4 bg-zinc-900 rounded-lg mb-3">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Radio className="w-4 h-4 text-orange-400" />
+            <span className="text-sm font-medium text-zinc-200">ListenBrainz</span>
+          </div>
+          {settings?.listenbrainzConnected && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-300">Connected</span>
+          )}
+        </div>
+        {settings?.listenbrainzConnected ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-zinc-500">Token: {settings.listenbrainzTokenMasked}</span>
+            <button
+              onClick={() => disconnectLbMutation.mutate()}
+              className="flex items-center gap-1 text-xs text-zinc-500 hover:text-red-400 transition-colors"
+            >
+              <Unlink className="w-3 h-3" /> Disconnect
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={(e) => { e.preventDefault(); connectMutation.mutate({ listenbrainzToken: lbToken }); }} className="flex gap-2">
+            <input
+              type="text"
+              value={lbToken}
+              onChange={(e) => setLbToken(e.target.value)}
+              placeholder="Paste your ListenBrainz token"
+              className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
+            />
+            <button type="submit" disabled={!lbToken.trim() || connectMutation.isPending}
+              className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium rounded transition-colors disabled:opacity-50">
+              Connect
+            </button>
+          </form>
+        )}
+      </div>
+
+      {/* Last.fm */}
+      <div className="p-4 bg-zinc-900 rounded-lg">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Radio className="w-4 h-4 text-red-400" />
+            <span className="text-sm font-medium text-zinc-200">Last.fm</span>
+          </div>
+          {settings?.lastfmConnected && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-300">Connected</span>
+          )}
+        </div>
+        {settings?.lastfmConnected ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-zinc-500">Session: {settings.lastfmSessionKeyMasked}</span>
+            <button
+              onClick={() => disconnectLfmMutation.mutate()}
+              className="flex items-center gap-1 text-xs text-zinc-500 hover:text-red-400 transition-colors"
+            >
+              <Unlink className="w-3 h-3" /> Disconnect
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={(e) => { e.preventDefault(); connectMutation.mutate({ lastfmUsername: lfmUsername, lastfmPassword: lfmPassword }); }} className="space-y-2">
+            <div className="flex gap-2">
+              <input type="text" value={lfmUsername} onChange={(e) => setLfmUsername(e.target.value)}
+                placeholder="Last.fm username"
+                className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600" />
+              <input type="password" value={lfmPassword} onChange={(e) => setLfmPassword(e.target.value)}
+                placeholder="Last.fm password"
+                className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600" />
+            </div>
+            <button type="submit" disabled={!lfmUsername.trim() || !lfmPassword.trim() || connectMutation.isPending}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-medium rounded transition-colors disabled:opacity-50">
+              Connect Last.fm
+            </button>
+          </form>
+        )}
+      </div>
+
+      {connectMutation.isError && (
+        <p className="text-red-400 text-sm mt-2">{getErrorMessage(connectMutation.error, 'Connection failed')}</p>
+      )}
+    </section>
   );
 }
