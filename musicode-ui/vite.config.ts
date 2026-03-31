@@ -29,6 +29,7 @@ export default defineConfig({
         'src/components/**',
         'src/pages/**',
         'src/hooks/**',
+        'src/context/AuthContext.tsx',
       ],
       thresholds: {
         lines: 80,

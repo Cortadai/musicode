@@ -70,3 +70,16 @@ export interface Page<T> {
   first: boolean;
   last: boolean;
 }
+
+// Auth types
+export interface UserInfo {
+  id: number;
+  username: string;
+  role: 'ADMIN' | 'LISTENER';
+  enabled: boolean;
+}
+
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
