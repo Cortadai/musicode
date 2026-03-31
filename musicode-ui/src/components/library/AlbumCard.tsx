@@ -2,12 +2,19 @@ import { Link } from 'react-router';
 import { getCoverUrl } from '../../api/albums';
 import type { Album } from '../../types';
 import { Disc3 } from 'lucide-react';
+import { useCallback, useRef } from 'react';
 
 interface Props {
   album: Album;
 }
 
 export default function AlbumCard({ album }: Props) {
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const handleLoad = useCallback(() => {
+    imgRef.current?.classList.add('loaded');
+  }, []);
+
   return (
     <Link
       to={`/albums/${album.id}`}
@@ -16,10 +23,12 @@ export default function AlbumCard({ album }: Props) {
       <div className="aspect-square bg-zinc-800 relative overflow-hidden">
         {album.hasCoverArt ? (
           <img
+            ref={imgRef}
             src={getCoverUrl(album.id)}
             alt={album.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 animate-cover-fade"
             loading="lazy"
+            onLoad={handleLoad}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

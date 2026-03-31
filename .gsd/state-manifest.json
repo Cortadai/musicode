@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T10:58:22.514Z",
+  "exported_at": "2026-03-31T11:02:45.363Z",
   "milestones": [
     {
       "id": "M001",
@@ -260,10 +260,10 @@
     {
       "id": "M005",
       "title": "",
-      "status": "queued",
+      "status": "complete",
       "depends_on": [],
       "created_at": "2026-03-31T10:48:35.167Z",
-      "completed_at": null,
+      "completed_at": "2026-03-31T11:02:45.319Z",
       "vision": "Transform Musicode from a functional web app into a polished music player experience — OS-integrated media controls, installable as a native-feeling PWA, and a real-time spectrum visualizer that makes listening visual.",
       "success_criteria": [
         "Media keys (play/pause/next/prev) control Musicode playback",
@@ -744,20 +744,20 @@
       "milestone_id": "M005",
       "id": "S03",
       "title": "Spectrum Visualizer & Micro-animations",
-      "status": "pending",
+      "status": "complete",
       "risk": "medium",
       "depends": [
         "S01"
       ],
       "demo": "After this: frequency spectrum bars animate in real-time during playback. PlayerBar fades in smoothly on first play. Cover art fades in on load. Cover disc spins while playing.",
       "created_at": "2026-03-31T10:49:39.791Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
+      "completed_at": "2026-03-31T11:02:19.545Z",
+      "full_summary_md": "---\nid: S03\nparent: M005\nmilestone: M005\nprovides:\n  - (none)\nrequires:\n  - slice: S01\n    provides: globalAudio export for AudioContext connection\naffects:\n  []\nkey_files:\n  - musicode-ui/src/hooks/useAudioAnalyser.ts\n  - musicode-ui/src/components/player/Visualizer.tsx\n  - musicode-ui/src/components/player/PlayerBar.tsx\n  - musicode-ui/src/index.css\nkey_decisions:\n  - Canvas 2D over WebGL for simplicity\n  - Lazy AudioContext init on user gesture\n  - Module-level guard for createMediaElementSource\n  - CSS-only micro-animations (no Framer Motion dependency)\npatterns_established:\n  - Lazy AudioContext init on user gesture (autoplay policy)\n  - Module-level guard for createMediaElementSource\n  - CSS-only micro-animations without animation library\n  - requestAnimationFrame with Page Visibility pause\nobservability_surfaces:\n  - console.debug [visualizer] for AudioContext creation and source connection\ndrill_down_paths:\n  - .gsd/milestones/M005/slices/S03/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M005/slices/S03/tasks/T02-SUMMARY.md\n  - .gsd/milestones/M005/slices/S03/tasks/T03-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T11:02:19.545Z\nblocker_discovered: false\n---\n\n# S03: Spectrum Visualizer & Micro-animations\n\n**Spectrum visualizer with indigo frequency bars + disc spin, slide-up, and cover fade animations.**\n\n## What Happened\n\nBuilt the audio spectrum visualizer and micro-animations. useAudioAnalyser hook manages AudioContext lifecycle with lazy initialization (deferred to user gesture for autoplay policy compliance) and a guarded createMediaElementSource call (once per Audio element, module-level flag). Visualizer component renders indigo frequency bars on Canvas 2D using requestAnimationFrame, pauses when not visible/playing/tab hidden, and scales for HiDPI displays. Integrated into PlayerBar with a BarChart3 toggle button. Three CSS micro-animations: PlayerBar slides up on first appearance, cover art in PlayerBar spins like a vinyl disc while playing (8s rotation, pauses when paused), AlbumCard covers fade in on load. All animations are CSS-only — no external animation library needed.\n\n## Verification\n\nnpm run build + npm run test:coverage \\u2014 both pass, no regressions.\n\n## Requirements Advanced\n\n- R010 — Real-time Canvas 2D frequency bars from Web Audio API AnalyserNode, toggleable from PlayerBar\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nConsider adding visualizer style options (waveform, circular) in a future milestone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/hooks/useAudioAnalyser.ts` — AudioContext + AnalyserNode hook with lazy init\n- `musicode-ui/src/components/player/Visualizer.tsx` — Canvas 2D frequency bar visualizer\n- `musicode-ui/src/components/player/PlayerBar.tsx` — Visualizer toggle, disc spin, slide-up, AudioContext init on gesture\n- `musicode-ui/src/components/library/AlbumCard.tsx` — Cover art fade-in on load\n- `musicode-ui/src/index.css` — Slide-up and cover-fade CSS animations\n",
+      "full_uat_md": "# S03: Spectrum Visualizer & Micro-animations — UAT\n\n**Milestone:** M005\n**Written:** 2026-03-31T11:02:19.546Z\n\n## UAT: S03 \\u2014 Spectrum Visualizer & Micro-animations\\n\\n### Test 1: Visualizer toggle\\n1. Play a track\\n2. Click the BarChart3 icon next to volume\\n3. **Expected:** Indigo frequency bars animate above the progress bar\\n4. Click again\\n5. **Expected:** Visualizer hides\\n\\n### Test 2: Visualizer responds to music\\n1. Toggle visualizer on, play a track with bass\\n2. **Expected:** Left bars (low frequencies) jump higher than right bars\\n3. Pause playback\\n4. **Expected:** Bars freeze/disappear\\n\\n### Test 3: Disc spin\\n1. Play a track\\n2. Look at the cover art circle in the PlayerBar\\n3. **Expected:** Cover rotates slowly (8s per revolution)\\n4. Pause\\n5. **Expected:** Rotation stops\\n\\n### Test 4: PlayerBar slide-up\\n1. Refresh the page (no track playing)\\n2. Click play on a track\\n3. **Expected:** PlayerBar slides up from the bottom smoothly\\n\\n### Test 5: Cover art fade-in\\n1. Navigate to Albums page\\n2. **Expected:** Album covers fade in as images load\\n\\n### Test 6: Build and tests\\n1. npm run build + npm run test:coverage\\n2. **Expected:** Both pass\n",
       "goal": "Add real-time audio spectrum visualizer and CSS micro-animations for visual polish",
-      "success_criteria": "AudioContext created on first user play gesture (autoplay policy safe). AnalyserNode connected to singleton Audio element via createMediaElementSource (called once, guarded). Canvas 2D renders frequency bars in real-time. Visualizer toggleable (button in PlayerBar). CSS: PlayerBar slides up on first track. Cover art fade-in on load. Album cover in PlayerBar rotates while playing (CSS animate-spin). Performance: visualizer uses requestAnimationFrame, pauses when not visible. Build compiles. Tests pass.",
+      "success_criteria": "AudioContext created on first play gesture. AnalyserNode connected to singleton Audio via createMediaElementSource (once, guarded). Canvas 2D renders frequency bars in real-time. Visualizer toggleable from PlayerBar. CSS: PlayerBar slides up on first track, cover art fade-in on load, album cover in PlayerBar spins while playing. requestAnimationFrame pauses when not visible. Build compiles. Tests pass.",
       "proof_level": "manual-verification",
-      "integration_closure": "Visualizer component uses shared AudioContext. Micro-animations are CSS-only. No new dependencies.",
+      "integration_closure": "Visualizer component uses shared AudioContext connected to singleton Audio. Micro-animations are CSS-only. No new dependencies.",
       "observability_impact": "console.debug for AudioContext creation and AnalyserNode connection.",
       "sequence": 0,
       "replan_triggered_at": null
@@ -3112,6 +3112,134 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M005",
+      "slice_id": "S03",
+      "id": "T01",
+      "title": "AudioContext + AnalyserNode hook with lazy init and single-connection guard.",
+      "status": "complete",
+      "one_liner": "AudioContext + AnalyserNode hook with lazy init and single-connection guard.",
+      "narrative": "Created useAudioAnalyser hook with lazy AudioContext initialization (deferred to user gesture), guarded createMediaElementSource (called once via module-level flag), and AnalyserNode with fftSize 256. Exported initAudioContext for PlayerBar to call on play/visualizer toggle. Hook polls for analyser availability after external init.",
+      "verification_result": "npm run build compiles cleanly.",
+      "duration": "",
+      "completed_at": "2026-03-31T11:01:20.097Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/hooks/useAudioAnalyser.ts"
+      ],
+      "key_decisions": [
+        "Module-level singletons for AudioContext/AnalyserNode/sourceConnected — survives React lifecycle",
+        "fftSize 256 (128 frequency bins) — good balance of resolution and responsiveness",
+        "Polling interval (200ms) for analyser availability — simple, low overhead"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S03\nmilestone: M005\nkey_files:\n  - musicode-ui/src/hooks/useAudioAnalyser.ts\nkey_decisions:\n  - Module-level singletons for AudioContext/AnalyserNode/sourceConnected — survives React lifecycle\n  - fftSize 256 (128 frequency bins) — good balance of resolution and responsiveness\n  - Polling interval (200ms) for analyser availability — simple, low overhead\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T11:01:20.098Z\nblocker_discovered: false\n---\n\n# T01: AudioContext + AnalyserNode hook with lazy init and single-connection guard.\n\n**AudioContext + AnalyserNode hook with lazy init and single-connection guard.**\n\n## What Happened\n\nCreated useAudioAnalyser hook with lazy AudioContext initialization (deferred to user gesture), guarded createMediaElementSource (called once via module-level flag), and AnalyserNode with fftSize 256. Exported initAudioContext for PlayerBar to call on play/visualizer toggle. Hook polls for analyser availability after external init.\n\n## Verification\n\nnpm run build compiles cleanly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | ✅ pass | 4300ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/hooks/useAudioAnalyser.ts`\n",
+      "description": "Create hooks/useAudioAnalyser.ts — manages AudioContext + AnalyserNode lifecycle. Creates AudioContext on first call (lazy — avoids autoplay policy block). Connects to globalAudio via createMediaElementSource (once, guarded by module-level flag). Returns analyserNode and a boolean indicating if the context is ready. Exports initAudioContext() that can be called on user gesture. The AudioContext must be resumed on user gesture if in 'suspended' state (Chrome autoplay policy).",
+      "estimate": "15min",
+      "files": [
+        "musicode-ui/src/hooks/useAudioAnalyser.ts"
+      ],
+      "verify": "npm run build compiles",
+      "inputs": [
+        "globalAudio from usePlayer.ts"
+      ],
+      "expected_output": [
+        "hooks/useAudioAnalyser.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M005",
+      "slice_id": "S03",
+      "id": "T02",
+      "title": "Canvas 2D frequency visualizer with indigo bars, rAF, and visibility-aware pausing.",
+      "status": "complete",
+      "one_liner": "Canvas 2D frequency visualizer with indigo bars, rAF, and visibility-aware pausing.",
+      "narrative": "Canvas 2D visualizer component rendering frequency bars from AnalyserNode data. Uses requestAnimationFrame for smooth 60fps, pauses when not visible/playing/tab hidden. Bars use indigo HSL gradient with amplitude-driven lightness and opacity. Canvas responsive to container width with devicePixelRatio scaling.",
+      "verification_result": "npm run build compiles cleanly.",
+      "duration": "",
+      "completed_at": "2026-03-31T11:01:33.869Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/player/Visualizer.tsx"
+      ],
+      "key_decisions": [
+        "Canvas 2D over WebGL — simpler, sufficient for frequency bars",
+        "Uses 60% of frequency bins (higher bins mostly empty for music)",
+        "HSL color with indigo hue, lightness/opacity tied to amplitude",
+        "Page Visibility API pauses rendering when tab hidden",
+        "devicePixelRatio for sharp rendering on HiDPI displays"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S03\nmilestone: M005\nkey_files:\n  - musicode-ui/src/components/player/Visualizer.tsx\nkey_decisions:\n  - Canvas 2D over WebGL — simpler, sufficient for frequency bars\n  - Uses 60% of frequency bins (higher bins mostly empty for music)\n  - HSL color with indigo hue, lightness/opacity tied to amplitude\n  - Page Visibility API pauses rendering when tab hidden\n  - devicePixelRatio for sharp rendering on HiDPI displays\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T11:01:33.869Z\nblocker_discovered: false\n---\n\n# T02: Canvas 2D frequency visualizer with indigo bars, rAF, and visibility-aware pausing.\n\n**Canvas 2D frequency visualizer with indigo bars, rAF, and visibility-aware pausing.**\n\n## What Happened\n\nCanvas 2D visualizer component rendering frequency bars from AnalyserNode data. Uses requestAnimationFrame for smooth 60fps, pauses when not visible/playing/tab hidden. Bars use indigo HSL gradient with amplitude-driven lightness and opacity. Canvas responsive to container width with devicePixelRatio scaling.\n\n## Verification\n\nnpm run build compiles cleanly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | ✅ pass | 4300ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/player/Visualizer.tsx`\n",
+      "description": "Create components/player/Visualizer.tsx — Canvas 2D component that renders frequency bars. Uses useAudioAnalyser() to get the AnalyserNode. On each requestAnimationFrame: getByteFrequencyData() into Uint8Array, draw bars on canvas with indigo gradient. Pauses animation when isPlaying=false or document is hidden (Page Visibility API). Accepts visible prop to show/hide. Bars should be responsive to canvas width. Style: indigo bars with slight transparency, matching the app theme.",
+      "estimate": "20min",
+      "files": [
+        "musicode-ui/src/components/player/Visualizer.tsx"
+      ],
+      "verify": "npm run build compiles",
+      "inputs": [
+        "useAudioAnalyser from T01"
+      ],
+      "expected_output": [
+        "components/player/Visualizer.tsx"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M005",
+      "slice_id": "S03",
+      "id": "T03",
+      "title": "Visualizer toggle in PlayerBar + slide-up, disc spin, and cover fade-in animations.",
+      "status": "complete",
+      "one_liner": "Visualizer toggle in PlayerBar + slide-up, disc spin, and cover fade-in animations.",
+      "narrative": "Integrated visualizer into PlayerBar with toggle button (BarChart3 icon, indigo highlight when active). AudioContext initialized on play button click and visualizer toggle. Three micro-animations added: PlayerBar slides up on first appearance (CSS keyframes), cover art in PlayerBar spins while playing (8s CSS spin, pauses when paused), AlbumCard covers fade in on load (opacity transition via onLoad class toggle). Cover art container changed to rounded-full for vinyl disc effect. Volume section widened to accommodate visualizer toggle button.",
+      "verification_result": "npm run build + npm run test:coverage — both pass.",
+      "duration": "",
+      "completed_at": "2026-03-31T11:01:50.028Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/player/PlayerBar.tsx",
+        "musicode-ui/src/components/library/AlbumCard.tsx",
+        "musicode-ui/src/index.css"
+      ],
+      "key_decisions": [
+        "Visualizer toggle button uses BarChart3 icon from Lucide",
+        "AudioContext init piggybacked on play button and visualizer toggle (user gesture)",
+        "Cover art in PlayerBar rounded to circle (rounded-full) with CSS spin animation",
+        "Spin animation 8s linear infinite, paused via inline style when !isPlaying",
+        "AlbumCard cover fade uses CSS class toggle (animate-cover-fade + loaded) via onLoad",
+        "Slide-up animation on PlayerBar via CSS @keyframes"
+      ],
+      "full_summary_md": "---\nid: T03\nparent: S03\nmilestone: M005\nkey_files:\n  - musicode-ui/src/components/player/PlayerBar.tsx\n  - musicode-ui/src/components/library/AlbumCard.tsx\n  - musicode-ui/src/index.css\nkey_decisions:\n  - Visualizer toggle button uses BarChart3 icon from Lucide\n  - AudioContext init piggybacked on play button and visualizer toggle (user gesture)\n  - Cover art in PlayerBar rounded to circle (rounded-full) with CSS spin animation\n  - Spin animation 8s linear infinite, paused via inline style when !isPlaying\n  - AlbumCard cover fade uses CSS class toggle (animate-cover-fade + loaded) via onLoad\n  - Slide-up animation on PlayerBar via CSS @keyframes\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-03-31T11:01:50.028Z\nblocker_discovered: false\n---\n\n# T03: Visualizer toggle in PlayerBar + slide-up, disc spin, and cover fade-in animations.\n\n**Visualizer toggle in PlayerBar + slide-up, disc spin, and cover fade-in animations.**\n\n## What Happened\n\nIntegrated visualizer into PlayerBar with toggle button (BarChart3 icon, indigo highlight when active). AudioContext initialized on play button click and visualizer toggle. Three micro-animations added: PlayerBar slides up on first appearance (CSS keyframes), cover art in PlayerBar spins while playing (8s CSS spin, pauses when paused), AlbumCard covers fade in on load (opacity transition via onLoad class toggle). Cover art container changed to rounded-full for vinyl disc effect. Volume section widened to accommodate visualizer toggle button.\n\n## Verification\n\nnpm run build + npm run test:coverage — both pass.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | ✅ pass | 4300ms |\n| 2 | `npm run test:coverage` | 0 | ✅ pass — 40 tests, 91.54% lines | 4300ms |\n\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/player/PlayerBar.tsx`\n- `musicode-ui/src/components/library/AlbumCard.tsx`\n- `musicode-ui/src/index.css`\n",
+      "description": "Add visualizer toggle button to PlayerBar (Activity/BarChart3 icon from Lucide). Wire Visualizer component above the progress bar area, toggleable. Initialize AudioContext on first play (call initAudioContext from usePlayer's play actions). Add CSS micro-animations: 1) PlayerBar slide-up transition when currentTrack goes from null to set (CSS transform + transition). 2) Cover art fade-in on load (opacity transition on img onLoad). 3) Album cover in PlayerBar rotates while playing (CSS animate-spin, slower — 8s duration, pauses when !isPlaying via animation-play-state). Verify build and tests pass.",
+      "estimate": "25min",
+      "files": [
+        "musicode-ui/src/components/player/PlayerBar.tsx",
+        "musicode-ui/src/components/library/AlbumCard.tsx"
+      ],
+      "verify": "npm run build + npm run test:coverage — all pass",
+      "inputs": [
+        "Visualizer from T02",
+        "useAudioAnalyser from T01",
+        "Current PlayerBar.tsx"
+      ],
+      "expected_output": [
+        "Updated PlayerBar.tsx with visualizer toggle + micro-animations",
+        "Updated AlbumCard.tsx with cover fade-in"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -4287,6 +4415,50 @@
       "verdict": "✅ pass — 40 tests, 91.54% lines",
       "duration_ms": 4400,
       "created_at": "2026-03-31T10:57:55.605Z"
+    },
+    {
+      "id": 90,
+      "task_id": "T01",
+      "slice_id": "S03",
+      "milestone_id": "M005",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4300,
+      "created_at": "2026-03-31T11:01:20.097Z"
+    },
+    {
+      "id": 91,
+      "task_id": "T02",
+      "slice_id": "S03",
+      "milestone_id": "M005",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4300,
+      "created_at": "2026-03-31T11:01:33.869Z"
+    },
+    {
+      "id": 92,
+      "task_id": "T03",
+      "slice_id": "S03",
+      "milestone_id": "M005",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 4300,
+      "created_at": "2026-03-31T11:01:50.028Z"
+    },
+    {
+      "id": 93,
+      "task_id": "T03",
+      "slice_id": "S03",
+      "milestone_id": "M005",
+      "command": "npm run test:coverage",
+      "exit_code": 0,
+      "verdict": "✅ pass — 40 tests, 91.54% lines",
+      "duration_ms": 4300,
+      "created_at": "2026-03-31T11:01:50.028Z"
     }
   ]
 }

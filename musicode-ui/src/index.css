@@ -1,1 +1,27 @@
 @import "tailwindcss";
+
+/* PlayerBar slide-up animation on first appearance */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Cover art fade-in on load */
+.animate-cover-fade {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+.animate-cover-fade.loaded {
+  opacity: 1;
+}
