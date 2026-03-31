@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T10:25:15.149Z",
+  "exported_at": "2026-03-31T10:49:39.820Z",
   "milestones": [
     {
       "id": "M001",
@@ -256,6 +256,81 @@
       ],
       "requirement_coverage": "No new requirements. This milestone improves code quality on validated R001-R009, R017-R019.",
       "boundary_map_markdown": "```\\nS01 — Java modernization (entities, DTOs, services)\\n  No new behavior, no API changes, all tests must pass\\n\\nS02 — Backend quality (controllers, config, services)\\n  @ControllerAdvice replaces inline error handling\\n  logback-spring.xml for structured logging\\n  MDC filter for request tracing\\n  Didactic comments in security layer\\n\\nS03 — Frontend quality (components, context, api)\\n  ErrorBoundary wraps app\\n  ErrorMessage replaces inline error strings\\n  API error extraction utility\\n  console.debug in auth/player\\n  Didactic comments in player/interceptor\\n```"
+    },
+    {
+      "id": "M005",
+      "title": "",
+      "status": "queued",
+      "depends_on": [],
+      "created_at": "2026-03-31T10:48:35.167Z",
+      "completed_at": null,
+      "vision": "Transform Musicode from a functional web app into a polished music player experience — OS-integrated media controls, installable as a native-feeling PWA, and a real-time spectrum visualizer that makes listening visual.",
+      "success_criteria": [
+        "Media keys (play/pause/next/prev) control Musicode playback",
+        "OS shows now-playing with title, artist, and cover art",
+        "App installable as PWA — standalone window without browser chrome",
+        "App shell cached for instant load",
+        "Frequency spectrum bars render in real-time during playback",
+        "Visualizer toggleable from PlayerBar",
+        "CSS micro-animations: PlayerBar slide-up, cover fade-in, disc spin",
+        "No regressions on auth, playback, browse, or streaming",
+        "Build compiles and test thresholds maintained"
+      ],
+      "key_risks": [
+        {
+          "risk": "AudioContext creation blocked by browser autoplay policy",
+          "whyItMatters": "AudioContext requires user gesture to start. If created too early, it stays suspended and the visualizer shows nothing. Must create/resume on first user interaction."
+        },
+        {
+          "risk": "createMediaElementSource can only be called once per Audio element",
+          "whyItMatters": "If called twice (e.g. React re-render, HMR in dev), it throws. Must guard with a flag or check."
+        },
+        {
+          "risk": "CORS restrictions on audio for AudioContext",
+          "whyItMatters": "AnalyserNode needs the audio to not be tainted by CORS. Our audio streams from same-origin /api/stream/ so this should be fine, but proxy in dev could cause issues."
+        },
+        {
+          "risk": "Service worker caching interferes with auth cookies",
+          "whyItMatters": "If the SW caches API responses, stale auth state could cause confusing behavior. Must cache only static assets, not API calls."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "Media Session browser support",
+          "retireIn": "S01",
+          "whatWillBeProven": "Media keys control playback in Chrome and Edge, metadata shows in OS overlay"
+        },
+        {
+          "riskOrUnknown": "AudioContext autoplay policy",
+          "retireIn": "S03",
+          "whatWillBeProven": "AudioContext created on first play gesture, visualizer renders immediately"
+        },
+        {
+          "riskOrUnknown": "createMediaElementSource single-call",
+          "retireIn": "S03",
+          "whatWillBeProven": "AudioContext and source node created once at module level, guarded by flag"
+        },
+        {
+          "riskOrUnknown": "Service worker caching scope",
+          "retireIn": "S02",
+          "whatWillBeProven": "SW caches static assets only, API calls pass through, auth flow unaffected"
+        }
+      ],
+      "verification_contract": "npm run build compiles. npm run test:coverage passes with thresholds. mvn clean verify passes (no backend changes expected but verify no regressions).",
+      "verification_integration": "End-to-end: login → browse albums → play track → media keys work → visualizer shows → OS overlay shows track info → close browser → reopen installed PWA → still works.",
+      "verification_operational": "docker compose build succeeds with PWA assets included.",
+      "verification_uat": "1) Play a track → press keyboard media pause → track pauses. 2) Check OS now-playing overlay → shows title + artist + cover. 3) In Chrome, click install → app opens in standalone window. 4) Toggle visualizer → frequency bars animate. 5) Close and reopen PWA → app shell loads instantly.",
+      "definition_of_done": [
+        "All 3 slices complete with summaries",
+        "npm run build compiles cleanly",
+        "npm run test:coverage passes with thresholds met",
+        "Media keys control playback",
+        "App installable as PWA from browser",
+        "Visualizer renders frequency bars during playback",
+        "No regressions — all existing features work"
+      ],
+      "requirement_coverage": "R010 (Spectrum Visualizer) → S03. R011 (Media Session API) → S01. R012 (PWA) → S02. All three deferred requirements addressed.",
+      "boundary_map_markdown": "```\\nS01 — Media Session API (usePlayer.ts)\\n  navigator.mediaSession.metadata + action handlers\\n  No new dependencies, browser API only\\n\\nS02 — PWA (manifest + service worker)\\n  manifest.json → install prompt\\n  Service worker → app shell cache + cover art cache\\n  vite-plugin-pwa or manual\\n\\nS03 — Spectrum Visualizer + micro-animations\\n  AudioContext + AnalyserNode → Canvas 2D frequency bars\\n  Connects to existing singleton Audio element\\n  CSS micro-animations: PlayerBar fade-in, cover art fade, disc spin\\n```"
     }
   ],
   "slices": [
@@ -622,6 +697,68 @@
       "proof_level": "build-passes",
       "integration_closure": "Frontend handles errors gracefully. Debug logging aids troubleshooting. Code self-documenting for future developers.",
       "observability_impact": "console.debug for auth events, API failures, playback events. ErrorBoundary prevents white-screen crashes.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M005",
+      "id": "S01",
+      "title": "Media Session API",
+      "status": "pending",
+      "risk": "low",
+      "depends": [],
+      "demo": "After this: keyboard media keys (play/pause/next/prev) control Musicode. OS shows now-playing notification with track title, artist, and cover art.",
+      "created_at": "2026-03-31T10:49:39.791Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Integrate Media Session API so OS media controls and keyboard media keys work with the player",
+      "success_criteria": "navigator.mediaSession.metadata set on track change with title, artist, album, artwork. Action handlers for play, pause, nexttrack, previoustrack, seekto. Metadata clears on stop. Works in Chrome, Edge, Firefox. OS media overlay shows track info.",
+      "proof_level": "manual-verification",
+      "integration_closure": "Media Session metadata synced with PlayerContext state. No new components — pure hook integration.",
+      "observability_impact": "console.debug for Media Session registration and action handling.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M005",
+      "id": "S02",
+      "title": "PWA Support",
+      "status": "pending",
+      "risk": "low",
+      "depends": [],
+      "demo": "After this: browser shows 'Install Musicode' prompt. Installed app opens in standalone window without browser chrome. App shell loads instantly from cache.",
+      "created_at": "2026-03-31T10:49:39.791Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Make Musicode installable as PWA with app shell caching for instant load",
+      "success_criteria": "manifest.json with name, icons (192+512px), theme_color, background_color, display:standalone. Service worker caches app shell (HTML, CSS, JS, fonts). Cover art cached on fetch. API calls (fetch /api/*) pass through uncached. Install prompt appears in Chrome. Standalone window works. Auth flow unaffected after install.",
+      "proof_level": "manual-verification",
+      "integration_closure": "manifest.json + service worker registered. No changes to existing components.",
+      "observability_impact": "console.debug for SW registration, cache hits/misses.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M005",
+      "id": "S03",
+      "title": "Spectrum Visualizer & Micro-animations",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "After this: frequency spectrum bars animate in real-time during playback. PlayerBar fades in smoothly on first play. Cover art fades in on load. Cover disc spins while playing.",
+      "created_at": "2026-03-31T10:49:39.791Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Add real-time audio spectrum visualizer and CSS micro-animations for visual polish",
+      "success_criteria": "AudioContext created on first user play gesture (autoplay policy safe). AnalyserNode connected to singleton Audio element via createMediaElementSource (called once, guarded). Canvas 2D renders frequency bars in real-time. Visualizer toggleable (button in PlayerBar). CSS: PlayerBar slides up on first track. Cover art fade-in on load. Album cover in PlayerBar rotates while playing (CSS animate-spin). Performance: visualizer uses requestAnimationFrame, pauses when not visible. Build compiles. Tests pass.",
+      "proof_level": "manual-verification",
+      "integration_closure": "Visualizer component uses shared AudioContext. Micro-animations are CSS-only. No new dependencies.",
+      "observability_impact": "console.debug for AudioContext creation and AnalyserNode connection.",
       "sequence": 0,
       "replan_triggered_at": null
     }

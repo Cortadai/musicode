@@ -45,4 +45,6 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 - [x] M001: Core MVP — Scan local music, browse library, stream and play audio in browser
 - [x] M002: Polish + Quality Baseline — Multi-format, shuffle/repeat, keyboard shortcuts, 73 tests with 80% coverage
-- [ ] M003: Security & Multi-User — Spring Security JWT, admin-managed users, role enforcement, Caddy HTTPS
+- [x] M003: Security & Multi-User — Spring Security JWT, admin-managed users, role enforcement, Caddy HTTPS
+- [x] M004: Code Quality & Modern Idioms — Records, @ControllerAdvice, logback MDC, ErrorBoundary
+- [ ] M005: Reproductor Experience — Media Session API, PWA, spectrum visualizer

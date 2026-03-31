@@ -111,7 +111,7 @@ This file is the explicit capability and coverage contract for the project.
 - Description: Real-time audio spectrum visualizer using Web Audio API AnalyserNode, rendered on Canvas/SVG.
 - Why it matters: Visual flair that distinguishes this from boring players.
 - Source: user
-- Primary owning slice: none
+- Primary owning slice: M005/S03
 - Supporting slices: none
 - Validation: unmapped
 - Notes: Deferred to post-MVP (Phase 2 in original plan).
@@ -122,7 +122,7 @@ This file is the explicit capability and coverage contract for the project.
 - Description: Browser Media Session API integration so OS-level media controls (play/pause/next/prev keys) work with the player.
 - Why it matters: Without this, keyboard media keys do nothing — feels broken on desktop.
 - Source: user
-- Primary owning slice: none
+- Primary owning slice: M005/S01
 - Supporting slices: none
 - Validation: unmapped
 - Notes: Deferred to post-MVP (Phase 2).
@@ -133,7 +133,7 @@ This file is the explicit capability and coverage contract for the project.
 - Description: App installable as PWA with manifest.json and service worker. Opens in its own window without browser chrome.
 - Why it matters: Makes the web app feel native — own window, own icon, offline UI shell.
 - Source: user
-- Primary owning slice: none
+- Primary owning slice: M005/S02
 - Supporting slices: none
 - Validation: unmapped
 - Notes: Deferred to post-MVP (Phase 2).
@@ -230,9 +230,9 @@ This file is the explicit capability and coverage contract for the project.
 | R007 | primary-user-loop | validated | M001/S04 | M002/S02 (shuffle, repeat modes) | M001 S04 + M002 S02 — Click-to-play queues album/artist context. Queue persists across navigation. Shuffle randomizes order, repeat loops track/queue. 22 reducer tests covering all queue operations. |
 | R008 | launchability | validated | M001/S04 | none | M001 S04 — Dark theme (zinc + indigo), sidebar navigation, content area, persistent bottom player bar. Lucide icons. Loading skeletons, empty states. Responsive layout. Tailwind CSS. |
 | R009 | operability | validated | M001/S05 | none | M001 S05 — docker-compose.yml with Spring Boot serving React static build. Music folder mounted read-only. H2 data persisted in volume. Single docker-compose up starts everything. |
-| R010 | differentiator | deferred | none | none | unmapped |
-| R011 | quality-attribute | deferred | none | none | unmapped |
-| R012 | quality-attribute | deferred | none | none | unmapped |
+| R010 | differentiator | active | M005/S03 | none | unmapped |
+| R011 | quality-attribute | active | M005/S01 | none | unmapped |
+| R012 | quality-attribute | active | M005/S02 | none | unmapped |
 | R013 | integration | deferred | none | none | unmapped |
 | R014 | integration | deferred | none | none | unmapped |
 | R015 | differentiator | deferred | none | none | unmapped |
