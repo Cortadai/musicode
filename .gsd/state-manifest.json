@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-03-31T13:29:21.004Z",
+  "exported_at": "2026-03-31T13:54:36.804Z",
   "milestones": [
     {
       "id": "M001",
@@ -460,6 +460,73 @@
       ],
       "requirement_coverage": "Advances R013 (Scrobbling — Last.fm / ListenBrainz). Introduces new capabilities: playback tracking, statistics, activity feed.",
       "boundary_map_markdown": "```\nS01 (Playback Tracking + Stats Backend) ─provides→ PlaybackEvent entity, /api/stats endpoints\nS02 (Stats Dashboard UI) ─depends→ S01 stats API\n  ─provides→ Stats page with charts (Recharts)\nS03 (Scrobbling) ─depends→ S01 PlaybackEvent hook\n  ─provides→ Last.fm + ListenBrainz integration, user settings\nS04 (Activity Feed) ─depends→ S01 PlaybackEvent creation\n  ─provides→ SSE endpoint, activity timeline in sidebar/page\n```"
+    },
+    {
+      "id": "M008",
+      "title": "",
+      "status": "queued",
+      "depends_on": [],
+      "created_at": "2026-03-31T13:53:32.244Z",
+      "completed_at": null,
+      "vision": "Stop, fortify, verify. Address every known gap in testing, data integrity, security, and code structure before adding new features. When this milestone is done, every service has tests, scrobbling is verified against real APIs, the database has migration tooling, and the frontend is structured to scale.",
+      "success_criteria": [
+        "Every service with non-trivial logic has unit tests (StatsService, LastfmService signature, ScrobbleService retry, ActivityService broadcast)",
+        "Scrobbling verified with real Last.fm and ListenBrainz credentials — at least one successful scrobble to each",
+        "Flyway manages database schema — ddl-auto:update replaced with migration scripts",
+        "Frontend routes are lazy-loaded with React.lazy + Suspense",
+        "StatsPage and SettingsPage refactored into smaller components",
+        "JaCoCo exclusions reduced — scrobble services re-included with proper test coverage",
+        "All 3 test suites pass: backend ≥80% coverage, frontend thresholds, E2E green",
+        "Scrobble tokens encrypted at rest (not plaintext in H2)"
+      ],
+      "key_risks": [
+        {
+          "risk": "Flyway migration from ddl-auto may break existing H2 data",
+          "whyItMatters": "Users have a live database with 877 tracks, plays, users. The initial migration must capture the current schema exactly or data is lost."
+        },
+        {
+          "risk": "Real API testing requires real credentials",
+          "whyItMatters": "Last.fm and ListenBrainz need actual accounts and API keys. Rate limits and auth failures need to be handled in test context."
+        },
+        {
+          "risk": "Encrypting existing plaintext tokens requires migration",
+          "whyItMatters": "Existing users may have tokens stored. Migration must encrypt in-place without losing them."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "Flyway migration safety",
+          "retireIn": "S03",
+          "whatWillBeProven": "App starts with Flyway, existing data survives, schema matches Hibernate expectations"
+        },
+        {
+          "riskOrUnknown": "Real scrobble verification",
+          "retireIn": "S02",
+          "whatWillBeProven": "Track appears in Last.fm recent scrobbles and ListenBrainz listens page"
+        },
+        {
+          "riskOrUnknown": "Token encryption migration",
+          "retireIn": "S03",
+          "whatWillBeProven": "Tokens encrypted in DB, decrypted transparently by the app, existing tokens migrate cleanly"
+        }
+      ],
+      "verification_contract": "Backend: mvn clean verify with JaCoCo ≥80% and scrobble services included. Frontend: npm run test:coverage. E2E: npx playwright test.",
+      "verification_integration": "Scrobble to real Last.fm and ListenBrainz. Flyway migrations applied on startup. Encrypted tokens read/write correctly.",
+      "verification_operational": "App starts from scratch with Flyway. App starts with existing H2 data and Flyway baseline. Frontend lazy loading works with direct URL navigation.",
+      "verification_uat": "Play a track, verify it appears on Last.fm profile. Stats page still works after Flyway migration. All pages load correctly with lazy routes.",
+      "definition_of_done": [
+        "All 4 slices complete",
+        "JaCoCo exclusions for scrobble services removed",
+        "Scrobbling proven against real APIs",
+        "Flyway manages schema, ddl-auto removed",
+        "Frontend routes lazy-loaded",
+        "Large pages decomposed into components",
+        "Tokens encrypted at rest",
+        "mvn clean verify + npm test:coverage + npx playwright test all green",
+        "No regressions in any existing functionality"
+      ],
+      "requirement_coverage": "No new requirements. Hardens existing validated requirements (R001-R019) by improving test coverage, data integrity, and operational reliability.",
+      "boundary_map_markdown": "```\nS01 (Service Tests) ─provides→ unit tests for untested services, JaCoCo coverage restored\nS02 (Scrobble Verification) ─depends→ real API keys from user\n  ─provides→ proven scrobble integration, edge case handling\nS03 (Flyway + Token Security) ─provides→ migration scripts, encrypted tokens\n  ─depends→ existing schema knowledge\nS04 (Frontend Structure) ─provides→ lazy routes, component decomposition\n  ─independent of backend slices\n```"
     }
   ],
   "slices": [
@@ -1036,6 +1103,88 @@
       "proof_level": "contract + integration",
       "integration_closure": "PlaybackEvent creation pushes SSE to all connected clients",
       "observability_impact": "Real-time activity stream, connection count logged",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M008",
+      "id": "S01",
+      "title": "Service Unit Tests + Coverage Restoration",
+      "status": "pending",
+      "risk": "low",
+      "depends": [],
+      "demo": "After this: mvn clean verify passes with scrobble services included in JaCoCo. StatsService, LastfmService (signature), ScrobbleService (retry), ActivityService (broadcast) all have dedicated unit tests.",
+      "created_at": "2026-03-31T13:54:36.757Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Write unit tests for all untested services. Remove JaCoCo exclusions for scrobble services. Restore honest coverage metrics.",
+      "success_criteria": "- StatsService: period conversion, empty results, aggregation logic\\n- LastfmService: API signature generation with known inputs\\n- ScrobbleService: retry behavior (mock success/failure)\\n- ActivityService: emitter lifecycle, broadcast, recent buffer\\n- JaCoCo exclusions reduced to only truly I/O-bound classes (LibraryScanService, MetadataService, CoverArtService, AudioStreamService)\\n- mvn clean verify passes with ≥80% coverage",
+      "proof_level": "contract",
+      "integration_closure": "All services testable in isolation with mocks",
+      "observability_impact": "Honest coverage metrics — no hidden gaps",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M008",
+      "id": "S02",
+      "title": "Scrobble Integration Verification",
+      "status": "pending",
+      "risk": "high",
+      "depends": [
+        "S01"
+      ],
+      "demo": "After this: play a track in Musicode, check Last.fm profile → track appears in recent scrobbles. Check ListenBrainz → listen recorded.",
+      "created_at": "2026-03-31T13:54:36.757Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Configure real API keys, verify scrobble flow end-to-end, handle edge cases (Unicode titles, rate limits, network errors).",
+      "success_criteria": "- Last.fm API key configured via secure_env_collect\\n- ListenBrainz token configured for test user\\n- Scrobble verified: track appears in Last.fm recent and ListenBrainz listens\\n- Edge cases handled: Unicode track titles, long album names, missing metadata\\n- Rate limit handling (Last.fm 5 req/s)\\n- Error messages surfaced in settings UI\\n- Integration test with WireMock for CI (optional)",
+      "proof_level": "integration",
+      "integration_closure": "Scrobble flow proven against real external APIs",
+      "observability_impact": "Scrobble success/failure clearly logged with context",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M008",
+      "id": "S03",
+      "title": "Flyway Migrations + Token Encryption",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [],
+      "demo": "After this: app starts with Flyway managing schema. Existing H2 data survives. Scrobble tokens encrypted at rest in DB.",
+      "created_at": "2026-03-31T13:54:36.757Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Replace ddl-auto:update with Flyway. Baseline current schema. Encrypt scrobble tokens in DB.",
+      "success_criteria": "- Flyway dependency added\\n- V1 baseline migration captures current schema exactly\\n- spring.jpa.hibernate.ddl-auto set to validate (not update)\\n- App starts clean with Flyway from scratch\\n- App starts with existing H2 data (baseline)\\n- Scrobble tokens encrypted with app-level key\\n- Transparent encrypt/decrypt in User entity\\n- Existing plaintext tokens migrated via Flyway script\\n- mvn clean verify passes",
+      "proof_level": "contract + integration",
+      "integration_closure": "Schema managed by Flyway, tokens protected at rest",
+      "observability_impact": "Flyway migration history visible. DB no longer has plaintext secrets.",
+      "sequence": 0,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M008",
+      "id": "S04",
+      "title": "Frontend Structure + Lazy Loading",
+      "status": "pending",
+      "risk": "low",
+      "depends": [],
+      "demo": "After this: route navigation shows brief loading indicator on first visit. StatsPage and SettingsPage are composed of focused sub-components. Bundle chunks split by route.",
+      "created_at": "2026-03-31T13:54:36.757Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Add React.lazy + Suspense for route code splitting. Decompose large page components. Improve frontend maintainability for future milestones.",
+      "success_criteria": "- All page imports use React.lazy() in App.tsx\\n- Suspense fallback shows Spinner component\\n- Direct URL navigation works (e.g. /stats, /settings)\\n- StatsPage split: SummaryCards, PlayChart, TopList as separate components\\n- SettingsPage split: LibrarySection, ScrobbleSection as separate files\\n- npm run build produces route-based chunks\\n- npm run test:coverage passes\\n- npx playwright test passes\\n- No visual regressions",
+      "proof_level": "contract",
+      "integration_closure": "Frontend structured for growth, routes split for performance",
+      "observability_impact": "Build output shows route-based chunks instead of one monolith",
       "sequence": 0,
       "replan_triggered_at": null
     }
@@ -4461,6 +4610,78 @@
       "choice": "M007 Listening Intelligence → M008 Audio Experience → M009 Smart Library → M010 Visual Experience → M011 Integrations & Streaming",
       "rationale": "M007 first: redondest milestone (backend + frontend + external API), each slice delivers visible value. M008 second: touches the core player, defines identity as an audiophile tool. M009-M011 follow by decreasing priority — smart library management, then visual polish, then external integrations. Letras (.lrc) considered for M008 but kept in M011 to avoid scope creep on the audio pipeline milestone.",
       "revisable": "Yes — features can move between milestones during planning",
+      "made_by": "collaborative",
+      "superseded_by": null
+    },
+    {
+      "seq": 30,
+      "id": "D018",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "API documentation tooling",
+      "choice": "SpringDoc OpenAPI 2.8.14 with springdoc-openapi-starter-webmvc-ui",
+      "rationale": "Auto-generated from controller annotations, Swagger UI for interactive testing, OpenAPI 3.0 spec reusable. Chosen over Bruno (manual maintenance). Pinned to 2.8.14 — 2.8.15+ incompatible with Spring Boot 3.4.4.",
+      "revisable": "Yes",
+      "made_by": "collaborative",
+      "superseded_by": null
+    },
+    {
+      "seq": 31,
+      "id": "D019",
+      "when_context": "",
+      "scope": "quality",
+      "decision": "E2E testing framework",
+      "choice": "Playwright with Chromium, sequential single-worker, HTML reporter",
+      "rationale": "Real browser testing covers integration gaps unit tests miss. Sequential + single worker avoids H2 race conditions. Vite dev server auto-started via webServer config. Backend must be pre-started manually.",
+      "revisable": "Yes",
+      "made_by": "collaborative",
+      "superseded_by": null
+    },
+    {
+      "seq": 32,
+      "id": "D020",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Scrobbling integration architecture",
+      "choice": "Per-user scrobbling via Last.fm session key + ListenBrainz token, async fire-and-forget from PlayController",
+      "rationale": "Two-level credentials: app-level API key for Last.fm (env vars), user-level tokens stored in User entity. Async with retry — never blocks playback. Last.fm mobile auth flow gives permanent session key. ListenBrainz uses simple bearer token. Both optional, configured per user in Settings.",
+      "revisable": "Yes",
+      "made_by": "collaborative",
+      "superseded_by": null
+    },
+    {
+      "seq": 33,
+      "id": "D021",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Album grouping strategy during library scan",
+      "choice": "ALBUM_ARTIST tag for album grouping, fallback to track ARTIST",
+      "rationale": "Prevents compilation albums from fragmenting into N entries when each track has a different artist. ALBUM_ARTIST is the ID3/Vorbis standard for this purpose. Compilations without ALBUM_ARTIST still fragment — fixable via future metadata editing feature.",
+      "revisable": "Yes",
+      "made_by": "agent",
+      "superseded_by": null
+    },
+    {
+      "seq": 34,
+      "id": "D022",
+      "when_context": "",
+      "scope": "library",
+      "decision": "Charting library for stats dashboard",
+      "choice": "Recharts for stats charts in the frontend",
+      "rationale": "Recharts is React-native, composable, well-maintained, and matches the project's dark theme with custom styling. Simpler than D3 for the bar/line charts needed. Only used in StatsPage.",
+      "revisable": "Yes",
+      "made_by": "agent",
+      "superseded_by": null
+    },
+    {
+      "seq": 35,
+      "id": "D023",
+      "when_context": "",
+      "scope": "roadmap",
+      "decision": "Pause new features and consolidate existing codebase first",
+      "choice": "Consolidation milestone (M008) before new features. Address test gaps, verify scrobbling, add Flyway, lazy routes, and frontend structure.",
+      "rationale": "7 milestones of feature work accumulated tech debt: untested services, unverified external integrations, no DB migrations, growing frontend without structure. Shipping more features on a shaky foundation multiplies future cost. Original M008 (Audio Experience) renumbered to M009+.",
+      "revisable": "Yes",
       "made_by": "collaborative",
       "superseded_by": null
     }

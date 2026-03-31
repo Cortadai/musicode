@@ -122,3 +122,4 @@
 {"cmd":"plan-slice","params":{"milestoneId":"M007","sliceId":"S01"},"ts":"2026-03-31T12:44:12.710Z","actor":"agent","hash":"b2f58284294a3ef8","session_id":"7827385f-237b-49d7-ac96-b1b432303d98"}
 {"cmd":"plan-slice","params":{"milestoneId":"M007","sliceId":"S03"},"ts":"2026-03-31T13:16:23.368Z","actor":"agent","hash":"fed6edccbdb34d86","session_id":"7827385f-237b-49d7-ac96-b1b432303d98"}
 {"cmd":"plan-slice","params":{"milestoneId":"M007","sliceId":"S04"},"ts":"2026-03-31T13:29:21.010Z","actor":"agent","hash":"9519e79b3dbc7ad6","session_id":"7827385f-237b-49d7-ac96-b1b432303d98"}
+{"cmd":"plan-milestone","params":{"milestoneId":"M008"},"ts":"2026-03-31T13:54:36.810Z","actor":"agent","hash":"a17e013ae4c6fbc7","session_id":"7827385f-237b-49d7-ac96-b1b432303d98"}

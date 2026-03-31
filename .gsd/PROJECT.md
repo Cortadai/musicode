@@ -71,10 +71,11 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 ## Planned Milestones
 
-- [ ] M008: Audio Experience — Gapless playback, crossfade, parametric equalizer, enhanced visualizer
-- [ ] M009: Smart Library — Metadata editing, filesystem watcher, smart playlists, radio mode
-- [ ] M010: Visual Experience — Now Playing screensaver, dynamic theme, waveform preview, cassette mode
-- [ ] M011: Integrations & Streaming — Synchronized lyrics (.lrc), transcoding, Subsonic API, Bandcamp import
+- [ ] M008: Consolidation & Hardening — Service tests, scrobble verification, Flyway, lazy routes, token encryption
+- [ ] M009: Audio Experience — Gapless playback, crossfade, parametric equalizer, enhanced visualizer
+- [ ] M010: Smart Library — Metadata editing, filesystem watcher, smart playlists, radio mode
+- [ ] M011: Visual Experience — Now Playing screensaver, dynamic theme, waveform preview, cassette mode
+- [ ] M012: Integrations & Streaming — Synchronized lyrics (.lrc), transcoding, Subsonic API, Bandcamp import
 
 ## Pending Setup
 
