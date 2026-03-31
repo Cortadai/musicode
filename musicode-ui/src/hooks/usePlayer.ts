@@ -27,6 +27,10 @@ globalAudio.preload = 'metadata';
  */
 let audioOwnerRef: symbol | null = null;
 
+// Expose the singleton for AudioContext connection in the visualizer (S03).
+// The visualizer needs createMediaElementSource(globalAudio) — can only be called once.
+export { globalAudio };
+
 export function usePlayer() {
   const state = usePlayerState();
   const dispatch = usePlayerDispatch();
@@ -109,6 +113,94 @@ export function usePlayer() {
       }
     }
   }, [state.currentTime]);
+
+  // --- Media Session API ---
+  // Syncs track metadata and playback controls with the OS.
+  // This enables: keyboard media keys, OS now-playing overlay (Windows/macOS),
+  // lock screen controls on mobile, and Bluetooth headset buttons.
+
+  // Sync metadata when track changes
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+
+    if (!state.currentTrack) {
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.playbackState = 'none';
+      return;
+    }
+
+    const track = state.currentTrack;
+    const artwork: MediaImage[] = [];
+
+    // Cover art URL — needs absolute URL for Media Session
+    if (track.album?.hasCoverArt && track.album.id) {
+      const coverUrl = `${window.location.origin}/api/covers/${track.album.id}`;
+      artwork.push({ src: coverUrl, sizes: '512x512', type: 'image/jpeg' });
+    }
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: track.title,
+      artist: track.artist?.name ?? 'Unknown Artist',
+      album: track.album?.title ?? 'Unknown Album',
+      artwork,
+    });
+
+    console.debug('[mediaSession] Metadata set:', track.title, '—', track.artist?.name);
+  }, [state.currentTrack?.id]);
+
+  // Sync playback state
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.playbackState = state.currentTrack
+      ? (state.isPlaying ? 'playing' : 'paused')
+      : 'none';
+  }, [state.isPlaying, state.currentTrack]);
+
+  // Register action handlers (once)
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    if (audioOwnerRef !== ownerSymbol.current) return;
+
+    const actions: Array<[MediaSessionAction, () => void]> = [
+      ['play', () => dispatch({ type: 'RESUME' })],
+      ['pause', () => dispatch({ type: 'PAUSE' })],
+      ['nexttrack', () => dispatch({ type: 'NEXT' })],
+      ['previoustrack', () => dispatch({ type: 'PREV' })],
+    ];
+
+    for (const [action, handler] of actions) {
+      navigator.mediaSession.setActionHandler(action, handler);
+    }
+
+    // Seek handler — receives details with seekTime
+    navigator.mediaSession.setActionHandler('seekto', (details) => {
+      if (details.seekTime != null) {
+        globalAudio.currentTime = details.seekTime;
+        dispatch({ type: 'SET_TIME', time: details.seekTime });
+      }
+    });
+
+    console.debug('[mediaSession] Action handlers registered');
+
+    return () => {
+      for (const [action] of actions) {
+        navigator.mediaSession.setActionHandler(action, null);
+      }
+      navigator.mediaSession.setActionHandler('seekto', null);
+    };
+  }, [dispatch]);
+
+  // Update position state for OS seek bar
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    if (!state.currentTrack || !state.duration) return;
+
+    navigator.mediaSession.setPositionState({
+      duration: state.duration,
+      playbackRate: 1,
+      position: Math.min(state.currentTime, state.duration),
+    });
+  }, [state.currentTime, state.duration, state.currentTrack]);
 
   const playTrack = useCallback(
     (track: Track, queue?: Track[], queueIndex?: number) => {
