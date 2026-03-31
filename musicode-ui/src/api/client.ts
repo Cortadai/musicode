@@ -38,12 +38,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Don't intercept: non-401s, login/refresh endpoints, already-retried requests
+    // Don't intercept: non-401s, login/refresh/me endpoints, already-retried requests
     if (
       !error.response ||
       error.response.status !== 401 ||
       originalRequest.url === '/auth/login' ||
       originalRequest.url === '/auth/refresh' ||
+      originalRequest.url === '/auth/me' ||
       originalRequest._retry
     ) {
       return Promise.reject(error);
@@ -67,9 +68,10 @@ api.interceptors.response.use(
       processQueue(null);
       return api(originalRequest);
     } catch (refreshError) {
-      console.debug('[axios] Refresh failed, redirecting to login');
+      console.debug('[axios] Refresh failed — letting auth context handle redirect');
       processQueue(refreshError);
-      window.location.href = '/login';
+      // Don't redirect here — AuthContext/ProtectedRoute handle navigation.
+      // window.location.href would cause a full reload → getMe() → 401 → refresh → fail → loop.
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
