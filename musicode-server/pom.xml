@@ -116,6 +116,14 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- WireMock — HTTP wire-level tests for external integrations (Last.fm, ListenBrainz) -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>3.9.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -145,9 +153,6 @@
                         <exclude>com/musicode/service/MetadataService.class</exclude>
                         <exclude>com/musicode/service/CoverArtService.class</exclude>
                         <exclude>com/musicode/service/AudioStreamService.class</exclude>
-                        <exclude>com/musicode/service/LastfmService.class</exclude>
-                        <exclude>com/musicode/service/ListenBrainzService.class</exclude>
-                        <exclude>com/musicode/service/ScrobbleService.class</exclude>
                         <exclude>com/musicode/MusicodeApplication.class</exclude>
                     </excludes>
                 </configuration>

@@ -4,6 +4,7 @@ import com.musicode.config.LastfmConfig;
 import com.musicode.model.entity.Track;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -30,7 +31,9 @@ import java.util.TreeMap;
 @Slf4j
 public class LastfmService {
 
-    private static final String API_URL = "https://ws.audioscrobbler.com/2.0/";
+    @Value("${musicode.lastfm.api-url:https://ws.audioscrobbler.com/2.0/}")
+    private String apiUrl;
+
     private final LastfmConfig config;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -63,7 +66,7 @@ public class LastfmService {
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
             var request = new HttpEntity<>(form, headers);
-            var response = restTemplate.postForEntity(API_URL, request, Map.class);
+            var response = restTemplate.postForEntity(apiUrl, request, Map.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 var session = (Map<?, ?>) response.getBody().get("session");
@@ -119,7 +122,7 @@ public class LastfmService {
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
             var request = new HttpEntity<>(form, headers);
-            var response = restTemplate.postForEntity(API_URL, request, Map.class);
+            var response = restTemplate.postForEntity(apiUrl, request, Map.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.debug("[lastfm] Scrobbled: {} — {}", track.getArtist() != null ? track.getArtist().getName() : "?", track.getTitle());

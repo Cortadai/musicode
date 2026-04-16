@@ -24,7 +24,7 @@ public class ScrobbleService {
     private final TrackRepository trackRepository;
 
     private static final int MAX_RETRIES = 3;
-    private static final long BASE_DELAY_MS = 1000;
+    private long baseDelayMs = 1000;
 
     /**
      * Scrobble a playback event to all configured services for the given user.
@@ -66,7 +66,7 @@ public class ScrobbleService {
             }
 
             if (attempt < MAX_RETRIES) {
-                long delay = BASE_DELAY_MS * (1L << (attempt - 1)); // 1s, 2s, 4s
+                long delay = baseDelayMs * (1L << (attempt - 1)); // 1s, 2s, 4s
                 log.debug("[scrobble] {} retry in {}ms (attempt {}/{})", serviceName, delay, attempt, MAX_RETRIES);
                 try {
                     Thread.sleep(delay);

@@ -1,7 +1,9 @@
 package com.musicode.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.musicode.model.entity.Track;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -21,8 +23,11 @@ import java.util.Map;
 @Slf4j
 public class ListenBrainzService {
 
-    private static final String API_URL = "https://api.listenbrainz.org/1/submit-listens";
+    @Value("${musicode.listenbrainz.api-url:https://api.listenbrainz.org/1/submit-listens}")
+    private String apiUrl;
+
     private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Submit a listen to ListenBrainz.
@@ -31,28 +36,33 @@ public class ListenBrainzService {
      */
     public boolean submitListen(Track track, String userToken, Instant listenedAt) {
         try {
-            var trackMetadata = Map.of(
+            Map<String, Object> trackMetadata = Map.of(
                     "artist_name", track.getArtist() != null ? track.getArtist().getName() : "Unknown",
                     "track_name", track.getTitle(),
                     "release_name", track.getAlbum() != null ? track.getAlbum().getTitle() : "Unknown"
             );
 
-            var payload = Map.of(
+            Map<String, Object> listen = Map.of(
                     "listened_at", listenedAt.getEpochSecond(),
                     "track_metadata", trackMetadata
             );
 
-            var body = Map.of(
+            Map<String, Object> body = Map.of(
                     "listen_type", "single",
-                    "payload", List.of(payload)
+                    "payload", List.of(listen)
             );
+
+            // Serialize explicitly to JSON string to avoid RestTemplate converter ambiguity
+            // with immutable Map.of() values (observed: empty body sent to server).
+            String jsonBody = objectMapper.writeValueAsString(body);
 
             var headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Token " + userToken);
+            headers.set("User-Agent", "Musicode/1.0 (https://github.com/dcortaberria/musicode)");
 
-            var request = new HttpEntity<>(body, headers);
-            var response = restTemplate.postForEntity(API_URL, request, String.class);
+            var request = new HttpEntity<>(jsonBody, headers);
+            var response = restTemplate.postForEntity(apiUrl, request, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.debug("[listenbrainz] Scrobbled: {} — {}", track.getArtist() != null ? track.getArtist().getName() : "?", track.getTitle());
