@@ -10,7 +10,8 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      - musicode-server
+      musicode-server:
+        condition: service_healthy
 
   musicode-server:
     build: ./musicode-server
@@ -22,6 +23,12 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - MUSICODE_COVERS_DIR=/app/data/covers
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
 volumes:
   caddy_data:

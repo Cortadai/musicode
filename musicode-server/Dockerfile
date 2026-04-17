@@ -11,8 +11,9 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Data directories
-RUN mkdir -p /app/data/covers
+# curl for Docker healthcheck, data directories
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /app/data/covers
 
 EXPOSE 8080
 

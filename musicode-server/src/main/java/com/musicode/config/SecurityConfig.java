@@ -77,7 +77,8 @@ public class SecurityConfig {
                 // Public: login and refresh don't require an existing token
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/refresh").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
+                // Actuator health — used by Docker healthcheck
+                .requestMatchers("/actuator/health").permitAll()
                 // Swagger UI and OpenAPI spec
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                 // Admin-only: library mutations and user management
@@ -102,7 +103,11 @@ public class SecurityConfig {
                 })
             )
             .headers(headers -> headers
-                .frameOptions(frame -> frame.sameOrigin()))
+                .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(cto -> {})
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .includeSubDomains(true)
+                    .maxAgeInSeconds(31536000)))
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
