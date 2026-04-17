@@ -136,18 +136,18 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: M005/S02 — manifest.json, hand-written service worker (network-first shell, cache-first covers, network-only API), installable as standalone window.
 - Notes: Deferred to post-MVP (Phase 2).
 
-## Deferred
-
 ### R013 — Scrobble completed tracks to Last.fm and/or ListenBrainz for listening history.
 - Class: integration
-- Status: deferred
+- Status: validated
 - Description: Scrobble completed tracks to Last.fm and/or ListenBrainz for listening history.
 - Why it matters: Long-term listening stats and recommendations.
 - Source: user
 - Primary owning slice: none
 - Supporting slices: none
-- Validation: unmapped
+- Validation: Implemented in M007/S01-S02 (play tracking + scrobble dispatch), verified in M008/S01-S02 (unit tests + WireMock contract tests + integration chain)
 - Notes: Deferred to Phase 3.
+
+## Deferred
 
 ### R014 — Implement core Subsonic/OpenSubsonic API endpoints so existing mobile clients (Symfonium, DSub, etc.) can connect.
 - Class: integration
@@ -200,7 +200,7 @@ This file is the explicit capability and coverage contract for the project.
 | R010 | differentiator | validated | none | none | M005/S03 — Canvas 2D frequency bars from Web Audio API AnalyserNode, toggleable from PlayerBar, 60fps with Page Visibility awareness. |
 | R011 | quality-attribute | validated | none | none | M005/S01 — Media Session API integrated in usePlayer.ts. OS media keys (play/pause/next/prev), now-playing overlay with track/artist/cover art, OS seek bar. |
 | R012 | quality-attribute | validated | none | none | M005/S02 — manifest.json, hand-written service worker (network-first shell, cache-first covers, network-only API), installable as standalone window. |
-| R013 | integration | deferred | none | none | unmapped |
+| R013 | integration | validated | none | none | Implemented in M007/S01-S02 (play tracking + scrobble dispatch), verified in M008/S01-S02 (unit tests + WireMock contract tests + integration chain) |
 | R014 | integration | deferred | none | none | unmapped |
 | R015 | differentiator | deferred | none | none | unmapped |
 | R016 | anti-feature | out-of-scope | none | none | n/a |
@@ -209,5 +209,5 @@ This file is the explicit capability and coverage contract for the project.
 
 - Active requirements: 0
 - Mapped to slices: 0
-- Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012)
+- Validated: 13 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013)
 - Unmapped active requirements: 0

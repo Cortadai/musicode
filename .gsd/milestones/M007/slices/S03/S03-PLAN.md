@@ -4,7 +4,7 @@
 **Demo:** After this: After this: configure Last.fm in settings, play a track, check Last.fm profile → track appears in recent listens.
 
 ## Tasks
-- [ ] **T01: User scrobble settings + config** — 1. Add scrobble config fields to User entity: lastfmSessionKey, listenbrainzToken
+- [x] **T01: User scrobble settings + config** — 1. Add scrobble config fields to User entity: lastfmSessionKey, listenbrainzToken
 2. Create ScrobbleSettingsResponse DTO (shows which services are connected)
 3. Add PUT /api/users/me/scrobble endpoint for updating scrobble settings
 4. Add GET /api/users/me/scrobble endpoint for reading current config (masks tokens)
@@ -14,7 +14,7 @@
   - Estimate: 25min
   - Files: musicode-server/src/main/java/com/musicode/model/entity/User.java, musicode-server/src/main/java/com/musicode/controller/UserController.java, musicode-server/src/main/java/com/musicode/config/LastfmConfig.java, musicode-server/src/main/resources/application.yml
   - Verify: mvn compile. curl GET /api/users/me/scrobble returns scrobble status.
-- [ ] **T02: ListenBrainz + Last.fm service implementations** — 1. Create ListenBrainzService with submitListen(track, token) method
+- [x] **T02: ListenBrainz + Last.fm service implementations** — 1. Create ListenBrainzService with submitListen(track, token) method
 2. POST to https://api.listenbrainz.org/1/submit-listens
 3. Payload: {listen_type: 'single', payload: [{listened_at, track_metadata: {artist_name, track_name, release_name}}]}
 4. Header: Authorization: Token {user_token}
@@ -27,7 +27,7 @@
   - Estimate: 45min
   - Files: musicode-server/src/main/java/com/musicode/service/ListenBrainzService.java, musicode-server/src/main/java/com/musicode/service/LastfmService.java
   - Verify: mvn compile. Services instantiate correctly.
-- [ ] **T03: ScrobbleService orchestration + PlayController hook** — 1. Create ScrobbleService that orchestrates both services
+- [x] **T03: ScrobbleService orchestration + PlayController hook** — 1. Create ScrobbleService that orchestrates both services
 2. @Async method scrobble(PlaybackEvent) — never blocks caller
 3. Check user's config: if listenbrainzToken set → call ListenBrainzService
 4. If lastfmSessionKey set → call LastfmService
@@ -38,7 +38,7 @@
   - Estimate: 30min
   - Files: musicode-server/src/main/java/com/musicode/service/ScrobbleService.java, musicode-server/src/main/java/com/musicode/controller/PlayController.java
   - Verify: mvn compile. Play a track → scrobble log entry appears.
-- [ ] **T04: Settings UI + tests + verification** — 1. Add scrobble section to frontend Settings page (or create a new ScrobbleSettings component)
+- [x] **T04: Settings UI + tests + verification** — 1. Add scrobble section to frontend Settings page (or create a new ScrobbleSettings component)
 2. ListenBrainz: text input for token, save/clear buttons
 3. Last.fm: username + password fields for initial auth, connected/disconnected status
 4. Call PUT /api/users/me/scrobble to save config

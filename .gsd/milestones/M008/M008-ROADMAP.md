@@ -9,4 +9,5 @@ M008:
 | S01 | S01 | low | — | ✅ | TBD |
 | S02 | S02 | high | — | ✅ | TBD |
 | S03 | S03 | medium | — | ✅ | TBD |
-| S04 | Frontend Structure + Lazy Loading | low | — | ⬜ | TBD |
+| S04 | S04 | low | — | ✅ | TBD |
+| S05 | S05 | low | — | ✅ | TBD |

@@ -4,7 +4,7 @@
 **Demo:** After this: After this: play several tracks in the browser, then curl /api/stats/summary shows play count and listening time. curl /api/stats/top-artists returns ranked list.
 
 ## Tasks
-- [ ] **T01: PlaybackEvent entity + record play endpoint** — 1. Create PlaybackEvent entity: id, user (ManyToOne), track (ManyToOne), playedAt (Instant), listenDurationSec (Integer)
+- [x] **T01: PlaybackEvent entity + record play endpoint** — 1. Create PlaybackEvent entity: id, user (ManyToOne), track (ManyToOne), playedAt (Instant), listenDurationSec (Integer)
 2. Create PlaybackEventRepository with JpaRepository
 3. Create PlayController with POST /api/plays/{trackId} — accepts optional listenDurationSec in request body
 4. Endpoint resolves authenticated user from SecurityContext, creates PlaybackEvent
@@ -13,7 +13,7 @@
   - Estimate: 25min
   - Files: musicode-server/src/main/java/com/musicode/model/entity/PlaybackEvent.java, musicode-server/src/main/java/com/musicode/repository/PlaybackEventRepository.java, musicode-server/src/main/java/com/musicode/controller/PlayController.java
   - Verify: mvn compile succeeds. curl POST /api/plays/{trackId} returns 201 with event data.
-- [ ] **T02: Frontend — report play at 50% duration** — 1. In usePlayer.ts, add a ref to track whether current track has been reported
+- [x] **T02: Frontend — report play at 50% duration** — 1. In usePlayer.ts, add a ref to track whether current track has been reported
 2. In the timeupdate handler, check if currentTime > duration * 0.5
 3. If threshold crossed and not yet reported, POST /api/plays/{trackId} with listenDurationSec
 4. Reset the reported flag when track changes
@@ -22,7 +22,7 @@
   - Estimate: 20min
   - Files: musicode-ui/src/hooks/usePlayer.ts, musicode-ui/src/api/plays.ts
   - Verify: Play a track past 50% in the browser. Network tab shows POST /api/plays/{trackId} with 201 response.
-- [ ] **T03: Stats service + API endpoints** — 1. Create StatsService with methods: getTopArtists, getTopAlbums, getTopTracks, getSummary, getHistory
+- [x] **T03: Stats service + API endpoints** — 1. Create StatsService with methods: getTopArtists, getTopAlbums, getTopTracks, getSummary, getHistory
 2. Each method accepts userId and period (WEEK, MONTH, YEAR, ALL_TIME)
 3. Use JPQL or native queries in PlaybackEventRepository for aggregation
 4. Create StatsController with GET endpoints:
@@ -37,7 +37,7 @@
   - Estimate: 40min
   - Files: musicode-server/src/main/java/com/musicode/service/StatsService.java, musicode-server/src/main/java/com/musicode/controller/StatsController.java, musicode-server/src/main/java/com/musicode/repository/PlaybackEventRepository.java, musicode-server/src/main/java/com/musicode/model/dto/TopArtistStat.java, musicode-server/src/main/java/com/musicode/model/dto/TopAlbumStat.java, musicode-server/src/main/java/com/musicode/model/dto/TopTrackStat.java, musicode-server/src/main/java/com/musicode/model/dto/StatsSummary.java, musicode-server/src/main/java/com/musicode/model/dto/DailyPlayCount.java
   - Verify: curl /api/stats/top-artists?period=month returns JSON array with artist name and play count. curl /api/stats/summary returns totals.
-- [ ] **T04: Tests + verification** — 1. Write StatsController integration tests: top-artists, top-albums, top-tracks, summary, history
+- [x] **T04: Tests + verification** — 1. Write StatsController integration tests: top-artists, top-albums, top-tracks, summary, history
 2. Write PlayController test: record play, duplicate handling
 3. Add Swagger annotations to all new endpoints
 4. Run mvn clean verify — all tests pass, coverage ≥80%

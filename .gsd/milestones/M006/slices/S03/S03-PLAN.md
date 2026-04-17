@@ -4,7 +4,7 @@
 **Demo:** After this: After this: E2E suite covers search, settings/library management, error states, and artist/track views. Tests run in CI-ready headless mode with HTML report.
 
 ## Tasks
-- [ ] **T01: Search + settings E2E tests** — 1. Write search.spec.ts:
+- [x] **T01: Search + settings E2E tests** — 1. Write search.spec.ts:
    - Test search with results: type query, verify results appear for tracks/albums/artists
    - Test search click: click a result, verify navigation to detail page
    - Test empty search: search for nonsense, verify empty state message
@@ -15,7 +15,7 @@
   - Estimate: 30min
   - Files: musicode-ui/e2e/search.spec.ts, musicode-ui/e2e/settings.spec.ts
   - Verify: npx playwright test e2e/search.spec.ts e2e/settings.spec.ts passes headless.
-- [ ] **T02: Navigation + error state E2E tests** — 1. Write navigation.spec.ts:
+- [x] **T02: Navigation + error state E2E tests** — 1. Write navigation.spec.ts:
    - Test tracks page: login, navigate to /tracks, verify track list renders
    - Test artist flow: /artists → click artist → see albums → click album → see tracks
    - Test sidebar navigation: verify all sidebar links work
@@ -26,7 +26,7 @@
   - Estimate: 30min
   - Files: musicode-ui/e2e/navigation.spec.ts, musicode-ui/e2e/error-states.spec.ts
   - Verify: npx playwright test e2e/navigation.spec.ts e2e/error-states.spec.ts passes headless.
-- [ ] **T03: CI config + documentation + final verification** — 1. Update playwright.config.ts for CI:
+- [x] **T03: CI config + documentation + final verification** — 1. Update playwright.config.ts for CI:
    - retries: 2 in CI, 0 in local
    - reporter: html + list
    - screenshot: only-on-failure

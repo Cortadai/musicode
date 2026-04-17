@@ -4,7 +4,7 @@
 **Demo:** After this: After this: npx playwright test runs headless and verifies login → browse albums → play track → admin user CRUD. Clear pass/fail output.
 
 ## Tasks
-- [ ] **T01: Install Playwright + project config** — 1. cd musicode-ui && npm init playwright@latest (Chromium only for now)
+- [x] **T01: Install Playwright + project config** — 1. cd musicode-ui && npm init playwright@latest (Chromium only for now)
 2. Configure playwright.config.ts: baseURL http://localhost:5173, webServer for Vite dev, timeout, retries
 3. Configure webServer to start Vite dev server automatically
 4. Add test:e2e script to package.json
@@ -13,7 +13,7 @@
   - Estimate: 30min
   - Files: musicode-ui/playwright.config.ts, musicode-ui/package.json, musicode-ui/e2e/smoke.spec.ts
   - Verify: npx playwright test e2e/smoke.spec.ts passes headless.
-- [ ] **T02: Auth flow E2E tests** — 1. Write login.spec.ts:
+- [x] **T02: Auth flow E2E tests** — 1. Write login.spec.ts:
    - Test valid login: fill username+password, submit, verify redirect to /
    - Test invalid credentials: fill wrong password, verify error message shown
    - Test logout: login, click logout, verify redirect to /login
@@ -22,7 +22,7 @@
   - Estimate: 30min
   - Files: musicode-ui/e2e/login.spec.ts, musicode-ui/e2e/helpers.ts
   - Verify: npx playwright test e2e/login.spec.ts passes headless.
-- [ ] **T03: Browse + playback E2E tests** — 1. Write browse.spec.ts:
+- [x] **T03: Browse + playback E2E tests** — 1. Write browse.spec.ts:
    - Test albums page: login, verify album cards render with cover art
    - Test album detail: click album, verify track list appears
    - Test artist page: navigate to artists, verify artist list
@@ -36,7 +36,7 @@
   - Estimate: 45min
   - Files: musicode-ui/e2e/browse.spec.ts, musicode-ui/e2e/playback.spec.ts
   - Verify: npx playwright test e2e/browse.spec.ts e2e/playback.spec.ts passes headless.
-- [ ] **T04: Admin user management E2E tests + stability** — 1. Write admin.spec.ts:
+- [x] **T04: Admin user management E2E tests + stability** — 1. Write admin.spec.ts:
    - Test create user: login as admin, navigate to /users, create new user
    - Verify user appears in list
    - Test delete user: delete the created user, verify removed from list
