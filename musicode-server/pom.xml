@@ -39,6 +39,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Flyway — schema migrations (single source of truth, ddl-auto:validate) -->
+        <!-- H2 support lives inside flyway-core (unlike Oracle/Postgres etc. which are split into flyway-database-*). -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
         <!-- Validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

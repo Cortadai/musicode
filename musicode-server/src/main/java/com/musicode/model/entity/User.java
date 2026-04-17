@@ -1,5 +1,6 @@
 package com.musicode.model.entity;
 
+import com.musicode.util.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,10 +36,14 @@ public class User {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // --- Scrobble integration ---
+    // Stored encrypted at rest via EncryptedStringConverter ("v1:" + AES-GCM ciphertext).
+    // Reads tolerate legacy plaintext; TokenMigrationRunner re-encrypts on startup.
 
     /** ListenBrainz user token (from https://listenbrainz.org/profile/) */
+    @Convert(converter = EncryptedStringConverter.class)
     private String listenbrainzToken;
 
     /** Last.fm session key (obtained via auth.getMobileSession, valid indefinitely) */
+    @Convert(converter = EncryptedStringConverter.class)
     private String lastfmSessionKey;
 }

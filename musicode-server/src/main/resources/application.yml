@@ -13,12 +13,19 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: true
 
   h2:
     console:
@@ -40,5 +47,9 @@ musicode:
   lastfm:
     api-key: ${LASTFM_API_KEY:}
     api-secret: ${LASTFM_API_SECRET:}
+  encryption:
+    # AES-GCM key for scrobble tokens at rest. Generate with: openssl rand -hex 32
+    # Missing value fails fast at startup (TokenEncryptionService).
+    token-key: ${MUSICODE_TOKEN_ENCRYPTION_KEY:}
 
 # Logging configured in logback-spring.xml (profile-aware)

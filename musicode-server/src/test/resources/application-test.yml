@@ -7,9 +7,15 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: false
     open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
 
   h2:
     console:
@@ -22,6 +28,8 @@ musicode:
     refresh-token-expiration-ms: 604800000
   cookies:
     secure: false
+  encryption:
+    token-key: test-encryption-key-for-unit-and-integration-tests-only
 
 # Suppress logging noise in tests
 logging:
