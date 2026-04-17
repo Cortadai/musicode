@@ -134,15 +134,15 @@ function SummaryCard({ icon: Icon, label, value }: { icon: React.ElementType; la
   );
 }
 
-interface TopListProps {
+interface TopListProps<T extends { playCount: number }> {
   title: string;
   icon: React.ElementType;
-  items?: Array<Record<string, unknown>>;
-  nameKey: string;
-  subKey?: string;
+  items?: T[];
+  nameKey: keyof T & string;
+  subKey?: keyof T & string;
 }
 
-function TopList({ title, icon: Icon, items, nameKey, subKey }: TopListProps) {
+function TopList<T extends { playCount: number }>({ title, icon: Icon, items, nameKey, subKey }: TopListProps<T>) {
   if (!items || items.length === 0) {
     return (
       <div className="bg-zinc-900 rounded-xl p-4">
@@ -169,7 +169,7 @@ function TopList({ title, icon: Icon, items, nameKey, subKey }: TopListProps) {
                 <p className="text-xs text-zinc-500 truncate">{String(item[subKey])}</p>
               )}
             </div>
-            <span className="text-xs text-indigo-400 tabular-nums">{String(item.playCount)} plays</span>
+            <span className="text-xs text-indigo-400 tabular-nums">{item.playCount} plays</span>
           </div>
         ))}
       </div>
