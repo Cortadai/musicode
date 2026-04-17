@@ -169,8 +169,9 @@ public class LibraryScanService {
                         return albumRepository.save(newAlbum);
                     });
 
-            // Save cover art if album doesn't have one yet
-            if (!album.isHasCoverArt() && metadata.getCoverArt() != null) {
+            // Save cover art if album doesn't have one yet (or if file is missing on disk)
+            boolean coverMissing = !album.isHasCoverArt() || coverArtService.getCoverArtPath(album.getId()) == null;
+            if (coverMissing && metadata.getCoverArt() != null) {
                 String coverPath = coverArtService.saveCoverArt(album.getId(), metadata.getCoverArt());
                 if (coverPath != null) {
                     album.setCoverArtPath(coverPath);

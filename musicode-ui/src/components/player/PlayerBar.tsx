@@ -92,35 +92,77 @@ export default function PlayerBar() {
       <Visualizer visible={showVisualizer} />
 
       <div className="h-20 flex items-center px-4 gap-4">
-        {/* Track info — cover art with spin animation */}
-        <div className="flex items-center gap-3 w-56 shrink-0">
-          <Link
-            to={albumId ? `/albums/${albumId}` : '#'}
-            className="w-12 h-12 rounded-full overflow-hidden bg-zinc-800 shrink-0 hover:ring-2 hover:ring-indigo-500/50 transition-all"
-            title="Go to album"
-          >
-            {hasCover && albumId ? (
-              <img
-                src={getCoverUrl(albumId)}
-                alt=""
-                className="w-full h-full object-cover"
+        {/* Track info — cover sleeve + vinyl disc */}
+        <div className="flex items-center gap-3 w-60 shrink-0">
+          <div className="relative shrink-0" style={{ width: 84, height: 56 }}>
+            {/* Vinyl disc — behind the sleeve */}
+            <div
+              className="absolute rounded-full transition-transform duration-500 ease-out"
+              style={{
+                width: 48,
+                height: 48,
+                top: 4,
+                left: 4,
+                transform: isPlaying ? 'translateX(28px)' : 'translateX(0px)',
+                zIndex: 0,
+              }}
+            >
+              <div
+                className="w-full h-full rounded-full overflow-hidden vinyl-disc"
                 style={{
-                  animation: isPlaying ? 'spin 8s linear infinite' : 'none',
+                  animation: 'spin 8s linear infinite',
+                  animationPlayState: isPlaying ? 'running' : 'paused',
                 }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Disc3
-                  className="w-6 h-6 text-zinc-600"
-                  style={{
-                    animation: isPlaying ? 'spin 8s linear infinite' : 'none',
-                  }}
-                />
+              >
+                {/* Black vinyl body */}
+                <div className="w-full h-full bg-zinc-950" />
+                {/* Vinyl grooves overlay */}
+                <div className="absolute inset-0 vinyl-grooves" />
+                {/* Center label with album art */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full overflow-hidden ring-1 ring-zinc-700">
+                  {hasCover && albumId ? (
+                    <img
+                      src={getCoverUrl(albumId)}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-zinc-800" />
+                  )}
+                  {/* Center hole */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-zinc-900 ring-1 ring-zinc-700" />
+                </div>
               </div>
-            )}
-          </Link>
+            </div>
+
+            {/* Cover sleeve — square, on top */}
+            <Link
+              to={albumId ? `/albums/${albumId}` : '#'}
+              className="absolute top-0 left-0 rounded-lg overflow-hidden bg-zinc-800 shadow-md hover:ring-2 hover:ring-indigo-500/50 transition-all"
+              style={{ width: 56, height: 56, zIndex: 1 }}
+              title="Go to album"
+            >
+              {hasCover && albumId ? (
+                <img
+                  src={getCoverUrl(albumId)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Disc3 className="w-7 h-7 text-zinc-600" />
+                </div>
+              )}
+            </Link>
+          </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-zinc-100 truncate">{currentTrack.title}</p>
+            <Link
+              to={albumId ? `/albums/${albumId}` : '#'}
+              className="text-sm font-medium text-zinc-100 truncate block hover:text-indigo-400 transition-colors"
+              title="Go to album"
+            >
+              {currentTrack.title}
+            </Link>
             <p className="text-xs text-zinc-500 truncate">
               {currentTrack.artist?.name ?? 'Unknown'}
             </p>

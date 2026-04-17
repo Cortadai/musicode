@@ -77,6 +77,8 @@ public class SecurityConfig {
                 // Public: login and refresh don't require an existing token
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/refresh").permitAll()
+                // Cover art — loaded via <img> tags, no sensitive data
+                .requestMatchers("/api/covers/**").permitAll()
                 // Actuator health — used by Docker healthcheck
                 .requestMatchers("/actuator/health").permitAll()
                 // Swagger UI and OpenAPI spec

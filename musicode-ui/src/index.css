@@ -25,3 +25,21 @@
 .animate-cover-fade.loaded {
   opacity: 1;
 }
+
+/* Vinyl disc effect */
+.vinyl-disc {
+  position: relative;
+  background: radial-gradient(circle, #1a1a1a 20%, #0a0a0a 100%);
+}
+
+.vinyl-grooves {
+  background:
+    radial-gradient(circle, transparent 44%, rgba(255,255,255,0.04) 45%, transparent 46%),
+    radial-gradient(circle, transparent 52%, rgba(255,255,255,0.03) 53%, transparent 54%),
+    radial-gradient(circle, transparent 60%, rgba(255,255,255,0.04) 61%, transparent 62%),
+    radial-gradient(circle, transparent 68%, rgba(255,255,255,0.03) 69%, transparent 70%),
+    radial-gradient(circle, transparent 76%, rgba(255,255,255,0.04) 77%, transparent 78%),
+    radial-gradient(circle, transparent 84%, rgba(255,255,255,0.03) 85%, transparent 86%),
+    radial-gradient(circle, transparent 92%, rgba(255,255,255,0.04) 93%, transparent 94%);
+  pointer-events: none;
+}

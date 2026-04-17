@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getAlbum, getCoverUrl } from '../api/albums';
 import TrackList from '../components/library/TrackList';
 import { usePlayer } from '../hooks/usePlayer';
+import { usePlayerState } from '../context/PlayerContext';
 import { ArrowLeft, Disc3 } from 'lucide-react';
 import Spinner from '../components/common/Spinner';
 import ErrorMessage from '../components/common/ErrorMessage';
@@ -12,6 +13,7 @@ export default function AlbumDetailPage() {
   const { id } = useParams<{ id: string }>();
   const albumId = Number(id);
   const { playAlbum } = usePlayer();
+  const { currentTrack } = usePlayerState();
 
   const { data: album, isLoading, error } = useQuery({
     queryKey: ['album', albumId],
@@ -57,6 +59,7 @@ export default function AlbumDetailPage() {
 
       <TrackList
         tracks={tracks}
+        scrollToTrackId={currentTrack?.album?.id === album.id ? currentTrack.id : undefined}
         onPlay={(_track, index) => playAlbum(tracks, index)}
       />
     </div>
