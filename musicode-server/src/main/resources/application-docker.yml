@@ -27,5 +27,9 @@ musicode:
     refresh-token-expiration-ms: 604800000
   cookies:
     secure: true
+  security:
+    login-rate-limit:
+      max-attempts: 5          # Strict in production
+      window-seconds: 60
 
 # Logging configured in logback-spring.xml (docker profile → JSON)

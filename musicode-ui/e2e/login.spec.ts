@@ -6,7 +6,7 @@ test.describe('Authentication', () => {
     await login(page);
     // Should be on albums page with sidebar visible
     await expect(page.locator('nav')).toBeVisible();
-    await expect(page.getByText('admin', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
   });
 
   test('login with invalid credentials shows error', async ({ page }) => {

@@ -16,7 +16,7 @@ class LoginRateLimitFilterTest {
 
     @BeforeEach
     void setUp() {
-        filter = new LoginRateLimitFilter();
+        filter = new LoginRateLimitFilter(5, 60);
         chain = mock(FilterChain.class);
     }
 

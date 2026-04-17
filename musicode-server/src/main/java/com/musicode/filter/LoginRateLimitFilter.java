@@ -30,8 +30,15 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 @Slf4j
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
-    private static final int MAX_ATTEMPTS = 5;
-    private static final long WINDOW_SECONDS = 60;
+    private final int maxAttempts;
+    private final long windowSeconds;
+
+    public LoginRateLimitFilter(
+            @org.springframework.beans.factory.annotation.Value("${musicode.security.login-rate-limit.max-attempts:5}") int maxAttempts,
+            @org.springframework.beans.factory.annotation.Value("${musicode.security.login-rate-limit.window-seconds:60}") long windowSeconds) {
+        this.maxAttempts = maxAttempts;
+        this.windowSeconds = windowSeconds;
+    }
 
     private final ConcurrentHashMap<String, ConcurrentLinkedDeque<Instant>> attempts = new ConcurrentHashMap<>();
 
@@ -48,7 +55,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
 
         String ip = resolveClientIp(request);
         Instant now = Instant.now();
-        Instant windowStart = now.minusSeconds(WINDOW_SECONDS);
+        Instant windowStart = now.minusSeconds(windowSeconds);
 
         ConcurrentLinkedDeque<Instant> timestamps = attempts.computeIfAbsent(ip, k -> new ConcurrentLinkedDeque<>());
 
@@ -57,11 +64,11 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
             timestamps.pollFirst();
         }
 
-        if (timestamps.size() >= MAX_ATTEMPTS) {
+        if (timestamps.size() >= maxAttempts) {
             log.warn("Rate limit exceeded for login from IP {}", ip);
             response.setStatus(429);
             response.setContentType("application/json");
-            response.setHeader("Retry-After", String.valueOf(WINDOW_SECONDS));
+            response.setHeader("Retry-After", String.valueOf(windowSeconds));
             response.getWriter().write("{\"error\":\"Too many login attempts. Try again later.\"}");
             return;
         }
