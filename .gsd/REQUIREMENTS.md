@@ -2,6 +2,72 @@
 
 This file is the explicit capability and coverage contract for the project.
 
+## Active
+
+### R017 — Extensible audio graph pipeline — consolidate dispersed singletons (globalAudio, audioContext, analyserNode) into a centralized audioGraph module with source → gain → [insert chain] → analyser → destination.
+- Class: core-capability
+- Status: active
+- Description: Extensible audio graph pipeline — consolidate dispersed singletons (globalAudio, audioContext, analyserNode) into a centralized audioGraph module with source → gain → [insert chain] → analyser → destination.
+- Why it matters: Foundation for all audiophile features (EQ, crossfade, effects). Without it, there's no way to insert processing nodes into the audio path.
+- Source: user
+- Primary owning slice: M009/S01
+- Validation: unmapped
+
+### R018 — Near-gapless playback — consecutive tracks transition without perceptible silence using dual HTMLAudioElement with precise swap timing.
+- Class: core-capability
+- Status: active
+- Description: Near-gapless playback — consecutive tracks transition without perceptible silence using dual HTMLAudioElement with precise swap timing.
+- Why it matters: Gapless is table stakes for any serious music player. Silence between tracks breaks the listening experience, especially on live albums and continuous mixes.
+- Source: user
+- Primary owning slice: M009/S03
+- Validation: unmapped
+
+### R019 — Audio preferences persistence in localStorage — volume level, shuffle mode, and repeat mode survive page reload.
+- Class: continuity
+- Status: active
+- Description: Audio preferences persistence in localStorage — volume level, shuffle mode, and repeat mode survive page reload.
+- Why it matters: Currently all player state is ephemeral — reloading loses volume, shuffle, repeat. For a personal player you use daily, this is friction.
+- Source: user
+- Primary owning slice: M009/S02
+- Validation: unmapped
+
+### R020 — Silent degradation for secondary audio features — audio never stops playing due to errors in gapless, EQ, visualizer, or preferences. Fallback gracefully.
+- Class: failure-visibility
+- Status: active
+- Description: Silent degradation for secondary audio features — audio never stops playing due to errors in gapless, EQ, visualizer, or preferences. Fallback gracefully.
+- Why it matters: The core value is playing music. Secondary features (gapless, EQ, visualizer) must never break the primary loop.
+- Source: collaborative
+- Primary owning slice: M009/S01
+- Supporting slices: M009/S02, M009/S03, M010/S01, M010/S02, M010/S03
+- Validation: unmapped
+
+### R021 — Crossfade opt-in — configurable crossfade between tracks (0-12s slider, default off/0s). Fade out current track while fading in next track simultaneously.
+- Class: differentiator
+- Status: active
+- Description: Crossfade opt-in — configurable crossfade between tracks (0-12s slider, default off/0s). Fade out current track while fading in next track simultaneously.
+- Why it matters: Listening preference feature. Some users want smooth transitions, others want clean cuts. Must be optional — activated by choice, not by default.
+- Source: user
+- Primary owning slice: M010/S01
+- Validation: unmapped
+
+### R022 — 5-band parametric EQ opt-in — equalizer with 5 BiquadFilterNode bands (60Hz, 230Hz, 910Hz, 3.6kHz, 14kHz), presets, default flat/off. Activable per user choice.
+- Class: differentiator
+- Status: active
+- Description: 5-band parametric EQ opt-in — equalizer with 5 BiquadFilterNode bands (60Hz, 230Hz, 910Hz, 3.6kHz, 14kHz), presets, default flat/off. Activable per user choice.
+- Why it matters: Audiophile tool for tone shaping. Must default to flat/off to preserve audio fidelity — altering audio without user consent is anti-audiophile.
+- Source: user
+- Primary owning slice: M010/S02
+- Validation: unmapped
+
+### R023 — Enhanced visualizer with 3 modes (frequency bars, waveform, spectrogram) in an expandable panel with smooth open/close transitions. Mode selector persisted in localStorage.
+- Class: differentiator
+- Status: active
+- Description: Enhanced visualizer with 3 modes (frequency bars, waveform, spectrogram) in an expandable panel with smooth open/close transitions. Mode selector persisted in localStorage.
+- Why it matters: Visual flair that distinguishes Musicode. Current visualizer is a single mode in a fixed 48px strip. More modes and vertical space make it a real audiophile feature.
+- Source: user
+- Primary owning slice: M010/S03
+- Validation: unmapped
+
 ## Validated
 
 ### R001 — Backend scans configured filesystem folders recursively, reads audio file metadata (title, artist, album, track number, duration, bitrate, sample rate, genre, year, cover art) using JAudioTagger, and persists to database. Incremental rescan detects only new/changed files.
@@ -171,6 +237,33 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: unmapped
 - Notes: Deferred to Phase 4. Requires ffmpeg integration.
 
+### R024 — Fullscreen "Now Playing" overlay — immersive view covering the main content with visualizer + track info + artwork, similar to Spotify's Now Playing screen.
+- Class: differentiator
+- Status: deferred
+- Description: Fullscreen "Now Playing" overlay — immersive view covering the main content with visualizer + track info + artwork, similar to Spotify's Now Playing screen.
+- Why it matters: Visual identity feature for the player. Deferred to a future milestone to avoid scope creep on the audio pipeline work.
+- Source: user
+- Validation: unmapped
+- Notes: Deferred to M012 (Visual Experience). Depends on enhanced visualizer from M010.
+
+### R025 — Visualizer color adaptation to album cover art — extract dominant colors from cover art and use them for visualizer rendering.
+- Class: differentiator
+- Status: deferred
+- Description: Visualizer color adaptation to album cover art — extract dominant colors from cover art and use them for visualizer rendering.
+- Why it matters: Visual polish that ties the visualizer to the current album's identity. Non-trivial (color extraction problem).
+- Source: user
+- Validation: unmapped
+- Notes: Deferred to future milestone. Color extraction is a separate problem domain.
+
+### R026 — Circular/radial visualization mode — frequency bars arranged in an arc or circle around the album artwork.
+- Class: differentiator
+- Status: deferred
+- Description: Circular/radial visualization mode — frequency bars arranged in an arc or circle around the album artwork.
+- Why it matters: Alternative visual mode for variety. Lower priority than the 3 core modes.
+- Source: user
+- Validation: unmapped
+- Notes: Deferred to future milestone. Can be added as an additional mode once the visualizer architecture supports mode plugins.
+
 ## Out of Scope
 
 ### R016 — No integration with TIDAL, Spotify, Deezer, or any DRM-protected streaming service.
@@ -204,10 +297,20 @@ This file is the explicit capability and coverage contract for the project.
 | R014 | integration | deferred | none | none | unmapped |
 | R015 | differentiator | deferred | none | none | unmapped |
 | R016 | anti-feature | out-of-scope | none | none | n/a |
+| R017 | core-capability | active | M009/S01 | none | unmapped |
+| R018 | core-capability | active | M009/S03 | none | unmapped |
+| R019 | continuity | active | M009/S02 | none | unmapped |
+| R020 | failure-visibility | active | M009/S01 | M009/S02, M009/S03, M010/S01, M010/S02, M010/S03 | unmapped |
+| R021 | differentiator | active | M010/S01 | none | unmapped |
+| R022 | differentiator | active | M010/S02 | none | unmapped |
+| R023 | differentiator | active | M010/S03 | none | unmapped |
+| R024 | differentiator | deferred | none | none | unmapped |
+| R025 | differentiator | deferred | none | none | unmapped |
+| R026 | differentiator | deferred | none | none | unmapped |
 
 ## Coverage Summary
 
-- Active requirements: 0
-- Mapped to slices: 0
+- Active requirements: 7
+- Mapped to slices: 7
 - Validated: 13 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013)
 - Unmapped active requirements: 0

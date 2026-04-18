@@ -11,6 +11,7 @@ Think "my own VLC but prettier, in a browser."
 | Frontend | React 19 + Vite + TypeScript + Tailwind CSS |
 | Backend | Spring Boot 3 + Java 21 + Maven |
 | Database | H2 (embedded, zero config) |
+| Audio Pipeline | Web Audio API (dual HTMLAudioElement + AudioContext graph) |
 | Metadata | JAudioTagger 2.2.5 |
 | Auth | Spring Security + JWT in HttpOnly cookies |
 | Proxy | Caddy (automatic HTTPS) |
@@ -58,6 +59,8 @@ npm run dev
 - **Library scanning** — Recursive folder scan, reads ID3/Vorbis/MP4 tags (incl. ALBUM_ARTIST), extracts cover art
 - **Audio streaming** — HTTP Range support (206 Partial Content) for instant seeking on large files
 - **Player** — Play/pause, seek, next/prev, volume, shuffle, repeat (off/all/one), keyboard shortcuts
+- **Gapless Playback** — Dual HTMLAudioElement with pre-load and seamless swap, near-gapless transitions (~0-50ms)
+- **Audio Preferences** — Volume, shuffle, repeat mode persisted in localStorage across sessions
 - **Cover art** — Extracted during scan, cached on disk, served with 7-day cache headers
 - **Search** — Combined search across tracks, albums, and artists
 - **Authentication** — JWT in secure HttpOnly cookies, access token (15min) + refresh token (7 days) with rotation
@@ -78,6 +81,7 @@ npm run dev
 musicode/
 ├── musicode-server/     Spring Boot backend (see musicode-server/README.md)
 ├── musicode-ui/         React frontend (see musicode-ui/README.md)
+│   └── src/audio/       Audio pipeline (audioGraph.ts, audioPreferences.ts)
 ├── caddy/               Caddy Dockerfile
 ├── Caddyfile            Caddy configuration
 ├── docker-compose.yml   Full stack orchestration

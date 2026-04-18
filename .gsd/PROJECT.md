@@ -12,7 +12,7 @@ Think "my own VLC but prettier, in a browser, and personal."
 
 ## Current State
 
-Fully functional music player with 7 milestones complete. Library of 877 tracks scanned. Multi-user auth, listening stats, scrobbling integrations, real-time activity feed, Swagger API docs, and 169 tests across 3 test suites.
+Fully functional music player with 9 milestones complete. Library of 877 tracks scanned. Multi-user auth, listening stats, scrobbling integrations, real-time activity feed, Swagger API docs, gapless playback, and 169 tests across 3 test suites.
 
 ## Architecture / Key Patterns
 
@@ -22,7 +22,7 @@ Fully functional music player with 7 milestones complete. Library of 877 tracks 
 | Backend | Spring Boot 3.4 + Java 21 + Maven | REST API, async scanning, SSE |
 | Database | H2 (file mode, embedded) | Zero config, metadata + plays + users |
 | Metadata | JAudioTagger 2.2.5 | ID3/Vorbis/MP4 tag reading (incl. ALBUM_ARTIST) |
-| Audio | HTML5 `<audio>` element (singleton) | FLAC native in modern browsers |
+| Audio | Web Audio API graph (dual HTMLAudioElement) | Gapless playback, extensible node chain |
 | Auth | Spring Security + JWT in HttpOnly cookies | Access 15min, refresh 7 days, rotation |
 | API Docs | SpringDoc OpenAPI 2.8.14 | Swagger UI at /swagger-ui.html |
 | Charts | Recharts | Stats dashboard |
@@ -40,7 +40,9 @@ Fully functional music player with 7 milestones complete. Library of 877 tracks 
 - ALBUM_ARTIST tag for album grouping (prevents compilation fragmentation)
 - Cover art extracted during scan, cached as `{albumId}.jpg` on disk
 - `PlayerContext` with `useReducer` + dual contexts (state/dispatch separation)
-- Singleton Audio element at module level — survives component unmounts
+- Centralized `audioGraph.ts` — owns the full Web Audio API pipeline (gain → analyser → destination)
+- Dual HTMLAudioElement for gapless playback — pre-loads next track ~3s before end, swaps seamlessly
+- Audio preferences (volume, shuffle, repeat) persisted in localStorage
 - Playback tracking at 50% duration threshold → stats + scrobble + activity feed
 - SSE (SseEmitter) for real-time activity feed
 - Async scrobbling with exponential backoff (fire-and-forget from PlayController)
@@ -68,14 +70,15 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 - [x] M005: Reproductor Experience — Media Session API, PWA, spectrum visualizer
 - [x] M006: API Documentation & E2E Testing — Swagger UI, 21 Playwright tests
 - [x] M007: Listening Intelligence — Playback tracking, stats dashboard, scrobbling, activity feed
+- [x] M008: Consolidation & Hardening — Service tests, scrobble verification, Flyway, lazy routes, token encryption
+- [x] M009: Audio Pipeline & Gapless — Extensible audio graph, dual-element gapless playback, localStorage preferences
 
 ## Planned Milestones
 
-- [ ] M008: Consolidation & Hardening — Service tests, scrobble verification, Flyway, lazy routes, token encryption
-- [ ] M009: Audio Experience — Gapless playback, crossfade, parametric equalizer, enhanced visualizer
-- [ ] M010: Smart Library — Metadata editing, filesystem watcher, smart playlists, radio mode
-- [ ] M011: Visual Experience — Now Playing screensaver, dynamic theme, waveform preview, cassette mode
-- [ ] M012: Integrations & Streaming — Synchronized lyrics (.lrc), transcoding, Subsonic API, Bandcamp import
+- [ ] M010: Audio Experience — Crossfade opt-in, 5-band parametric EQ, enhanced visualizer (3 modes + expandable panel)
+- [ ] M011: Smart Library — Metadata editing, filesystem watcher, smart playlists, radio mode
+- [ ] M012: Visual Experience — Fullscreen Now Playing overlay, dynamic theme, waveform preview
+- [ ] M013: Integrations & Streaming — Synchronized lyrics (.lrc), transcoding, Subsonic API, Bandcamp import
 
 ## Pending Setup
 
