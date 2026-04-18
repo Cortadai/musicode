@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router';
 import { Disc3, Users, Music, Search, Settings, UserCog, LogOut, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import audioGraph from '../../audio/audioGraph';
 import ActivityFeed from '../activity/ActivityFeed';
 
 export default function Sidebar() {
@@ -21,6 +22,7 @@ export default function Sidebar() {
   ];
 
   async function handleLogout() {
+    audioGraph.stop();
     await logout();
     navigate('/login', { replace: true });
   }

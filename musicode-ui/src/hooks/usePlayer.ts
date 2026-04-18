@@ -1,97 +1,148 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { usePlayerState, usePlayerDispatch } from '../context/PlayerContext';
 import { recordPlay } from '../api/plays';
+import audioGraph from '../audio/audioGraph';
 import type { Track } from '../types';
 
 /**
- * Singleton global Audio element — shared across all usePlayer() hook instances.
+ * Player hook — wires React state to the centralized audioGraph.
  *
- * WHY SINGLETON: If each component that calls usePlayer() created its own Audio
- * element, you'd get overlapping playback — two tracks playing simultaneously
- * when navigating between pages. A module-level singleton ensures one audio
- * output regardless of how many components use the hook.
+ * All audio operations (play, pause, seek, volume, source loading) are delegated
+ * to audioGraph. This hook manages: event wiring, state sync, Media Session API,
+ * scrobble tracking, gapless pre-loading, and exposes playback controls to React.
  *
- * WHY MODULE-LEVEL (not ref/state): The Audio element must survive component
- * unmounts. If it lived in a ref, navigating away from a page would destroy
- * the ref and stop playback. Module-level variables persist for the app lifetime.
- */
-const globalAudio = new Audio();
-globalAudio.preload = 'metadata';
-
-/**
- * Owner tracking — prevents duplicate event wiring.
+ * GAPLESS STRATEGY:
+ * - On timeupdate, when ≤3s remain, pre-load the next track on the inactive element
+ * - On ended, swap elements (audio starts immediately) then dispatch NEXT for React state
+ * - Manual skip cancels any pending pre-load and loads directly on the active element
  *
- * WHY: Multiple components may call usePlayer() simultaneously (PlayerBar + TrackList).
- * Without owner tracking, each would wire timeupdate/ended handlers, causing duplicate
- * dispatches (SET_TIME fired N times per tick). The Symbol ensures exactly one instance
- * owns the event wiring at any time.
+ * Owner tracking prevents duplicate event wiring when multiple components
+ * call usePlayer() simultaneously (PlayerBar + TrackList).
  */
 let audioOwnerRef: symbol | null = null;
 
-// Expose the singleton for AudioContext connection in the visualizer (S03).
-// The visualizer needs createMediaElementSource(globalAudio) — can only be called once.
-export { globalAudio };
+// Pre-load threshold in seconds — how early to start loading the next track
+const PRELOAD_THRESHOLD = 3;
 
 export function usePlayer() {
   const state = usePlayerState();
   const dispatch = usePlayerDispatch();
   const ownerSymbol = useRef(Symbol('player-owner'));
-  const playReportedRef = useRef<number | null>(null); // trackId of last reported play
+  const playReportedRef = useRef<number | null>(null);
   const currentTrackRef = useRef<Track | null>(null);
 
-  // Keep ref in sync with state for use in event handlers (avoids stale closures)
-  useEffect(() => {
-    currentTrackRef.current = state.currentTrack;
-  }, [state.currentTrack]);
+  // Refs for gapless — need current values in event handlers without stale closures
+  const queueRef = useRef<Track[]>([]);
+  const queueIndexRef = useRef<number>(-1);
+  const repeatModeRef = useRef<string>('off');
+  const isPlayingRef = useRef<boolean>(false);
 
-  // Wire audio events — only one usePlayer instance does this
+  // Keep refs in sync with state
+  useEffect(() => { currentTrackRef.current = state.currentTrack; }, [state.currentTrack]);
+  useEffect(() => { queueRef.current = state.queue; }, [state.queue]);
+  useEffect(() => { queueIndexRef.current = state.queueIndex; }, [state.queueIndex]);
+  useEffect(() => { repeatModeRef.current = state.repeatMode; }, [state.repeatMode]);
+  useEffect(() => { isPlayingRef.current = state.isPlaying; }, [state.isPlaying]);
+
+  // Compute the next track URL based on current queue state (no dispatch needed)
+  const getNextTrackSrc = useCallback((): string | null => {
+    const queue = queueRef.current;
+    const idx = queueIndexRef.current;
+    const repeat = repeatModeRef.current;
+
+    if (repeat === 'one') return null; // repeat-one restarts, no pre-load
+
+    const nextIdx = idx + 1;
+    if (nextIdx < queue.length) {
+      return `/api/stream/${queue[nextIdx].id}`;
+    }
+    // Wrap around for repeat-all
+    if (repeat === 'all' && queue.length > 0) {
+      return `/api/stream/${queue[0].id}`;
+    }
+    return null; // End of queue, no repeat
+  }, []);
+
+  // Track whether we've already triggered pre-load for the current track
+  const preloadTriggeredRef = useRef<number | null>(null);
+
+  // Wire audio events via audioGraph callbacks — only one usePlayer instance does this
   useEffect(() => {
     if (audioOwnerRef !== null) return;
     audioOwnerRef = ownerSymbol.current;
 
-    const onTimeUpdate = () => {
-      dispatch({ type: 'SET_TIME', time: globalAudio.currentTime });
+    audioGraph.setOnTimeUpdate((time: number) => {
+      dispatch({ type: 'SET_TIME', time });
 
       // Report play when user has listened past 50% of the track
       const track = currentTrackRef.current;
+      const duration = audioGraph.getDuration();
       if (
-        globalAudio.duration > 0 &&
-        globalAudio.currentTime > globalAudio.duration * 0.5 &&
+        duration > 0 &&
+        time > duration * 0.5 &&
         track &&
         playReportedRef.current !== track.id
       ) {
-        const listenDuration = Math.round(globalAudio.currentTime);
+        const listenDuration = Math.round(time);
         playReportedRef.current = track.id;
         recordPlay(track.id, listenDuration).catch((err) => {
           console.debug('[player] Failed to record play:', err.message);
         });
         console.debug('[player] Play recorded for track:', track.id);
       }
-    };
-    const onLoadedMetadata = () => {
-      dispatch({ type: 'SET_DURATION', duration: globalAudio.duration });
-    };
-    const onEnded = () => {
-      dispatch({ type: 'NEXT' });
-    };
 
-    globalAudio.addEventListener('timeupdate', onTimeUpdate);
-    globalAudio.addEventListener('loadedmetadata', onLoadedMetadata);
-    globalAudio.addEventListener('ended', onEnded);
+      // Gapless pre-load: when ≤3s remain, pre-load next track
+      const remaining = audioGraph.getRemaining();
+      const currentId = currentTrackRef.current?.id ?? null;
+      if (
+        remaining <= PRELOAD_THRESHOLD &&
+        remaining > 0 &&
+        duration > PRELOAD_THRESHOLD && // Don't pre-load for very short tracks
+        currentId !== null &&
+        preloadTriggeredRef.current !== currentId
+      ) {
+        const nextSrc = getNextTrackSrc();
+        if (nextSrc) {
+          audioGraph.prepareNext(nextSrc);
+          preloadTriggeredRef.current = currentId;
+          console.debug('[player] Gapless: pre-loading next track');
+        }
+      }
+    });
+
+    audioGraph.setOnLoadedMetadata(() => {
+      dispatch({ type: 'SET_DURATION', duration: audioGraph.getDuration() });
+    });
+
+    audioGraph.setOnEnded(() => {
+      // Try gapless swap first — if next was pre-loaded, swap starts playback instantly
+      if (audioGraph.isNextPrepared()) {
+        const swapped = audioGraph.swap();
+        if (swapped) {
+          console.debug('[player] Gapless: swapped to next element');
+          // Dispatch NEXT to update React state (track, index, etc.)
+          // The audio is already playing on the swapped element
+          dispatch({ type: 'NEXT' });
+          return;
+        }
+      }
+      // Fallback: standard transition (reducer handles NEXT, effect loads + plays)
+      dispatch({ type: 'NEXT' });
+    });
 
     return () => {
-      globalAudio.removeEventListener('timeupdate', onTimeUpdate);
-      globalAudio.removeEventListener('loadedmetadata', onLoadedMetadata);
-      globalAudio.removeEventListener('ended', onEnded);
+      audioGraph.setOnTimeUpdate(null);
+      audioGraph.setOnLoadedMetadata(null);
+      audioGraph.setOnEnded(null);
       if (audioOwnerRef === ownerSymbol.current) {
         audioOwnerRef = null;
       }
     };
-  }, [dispatch]);
+  }, [dispatch, getNextTrackSrc]);
 
-  // Sync volume changes to the Audio element
+  // Sync volume changes to the audioGraph GainNode
   useEffect(() => {
-    globalAudio.volume = state.volume;
+    audioGraph.setVolume(state.volume);
   }, [state.volume]);
 
   // Load and play when currentTrack changes
@@ -99,52 +150,57 @@ export function usePlayer() {
     if (audioOwnerRef !== ownerSymbol.current) return;
     if (!state.currentTrack) return;
 
-    // Reset play reporting for the new track
+    // Reset play reporting and pre-load tracking for the new track
     playReportedRef.current = null;
+    preloadTriggeredRef.current = null;
 
     const src = `/api/stream/${state.currentTrack.id}`;
     const fullSrc = window.location.origin + src;
 
-    if (globalAudio.src !== fullSrc) {
-      console.debug('[player] Loading track:', state.currentTrack.title, '→', src);
-      globalAudio.src = src;
-      globalAudio.load();
+    // If the active element already has this source (from a gapless swap), skip loading
+    if (audioGraph.getCurrentSrc() === fullSrc) {
+      // Source already set via swap — just sync duration when metadata arrives
+      console.debug('[player] Track already loaded (gapless swap):', state.currentTrack.title);
+      // Re-dispatch duration in case loadedmetadata already fired on the swapped element
+      const dur = audioGraph.getDuration();
+      if (dur > 0) {
+        dispatch({ type: 'SET_DURATION', duration: dur });
+      }
+      return;
     }
 
+    console.debug('[player] Loading track:', state.currentTrack.title, '→', src);
+    audioGraph.setSource(src); // This also cancels any pending pre-load
+
     if (state.isPlaying) {
-      globalAudio.play().catch((err) => {
-        console.error('[player] Playback error:', err.message);
-      });
+      audioGraph.play();
     }
   }, [state.currentTrack?.id]);
 
-  // Sync play/pause state to the Audio element
+  // Sync play/pause state
   useEffect(() => {
     if (audioOwnerRef !== ownerSymbol.current) return;
     if (!state.currentTrack) return;
 
     if (state.isPlaying) {
-      globalAudio.play().catch(() => {});
+      audioGraph.play();
     } else {
-      globalAudio.pause();
+      audioGraph.pause();
     }
   }, [state.isPlaying]);
 
-  // Handle PREV/repeat-one: when reducer resets currentTime to 0, sync to Audio
+  // Handle PREV/repeat-one: when reducer resets currentTime to 0, sync to audio
   useEffect(() => {
     if (audioOwnerRef !== ownerSymbol.current) return;
-    if (state.currentTime === 0 && globalAudio.currentTime > 0 && state.currentTrack) {
-      globalAudio.currentTime = 0;
+    if (state.currentTime === 0 && audioGraph.getCurrentTime() > 0 && state.currentTrack) {
+      audioGraph.seek(0);
       if (state.isPlaying) {
-        globalAudio.play().catch(() => {});
+        audioGraph.play();
       }
     }
   }, [state.currentTime]);
 
   // --- Media Session API ---
-  // Syncs track metadata and playback controls with the OS.
-  // This enables: keyboard media keys, OS now-playing overlay (Windows/macOS),
-  // lock screen controls on mobile, and Bluetooth headset buttons.
 
   // Sync metadata when track changes
   useEffect(() => {
@@ -159,7 +215,6 @@ export function usePlayer() {
     const track = state.currentTrack;
     const artwork: MediaImage[] = [];
 
-    // Cover art URL — needs absolute URL for Media Session
     if (track.album?.hasCoverArt && track.album.id) {
       const coverUrl = `${window.location.origin}/api/covers/${track.album.id}`;
       artwork.push({ src: coverUrl, sizes: '512x512', type: 'image/jpeg' });
@@ -191,18 +246,23 @@ export function usePlayer() {
     const actions: Array<[MediaSessionAction, () => void]> = [
       ['play', () => dispatch({ type: 'RESUME' })],
       ['pause', () => dispatch({ type: 'PAUSE' })],
-      ['nexttrack', () => dispatch({ type: 'NEXT' })],
-      ['previoustrack', () => dispatch({ type: 'PREV' })],
+      ['nexttrack', () => {
+        audioGraph.cancelPrepare(); // Cancel gapless pre-load on manual skip
+        dispatch({ type: 'NEXT' });
+      }],
+      ['previoustrack', () => {
+        audioGraph.cancelPrepare();
+        dispatch({ type: 'PREV' });
+      }],
     ];
 
     for (const [action, handler] of actions) {
       navigator.mediaSession.setActionHandler(action, handler);
     }
 
-    // Seek handler — receives details with seekTime
     navigator.mediaSession.setActionHandler('seekto', (details) => {
       if (details.seekTime != null) {
-        globalAudio.currentTime = details.seekTime;
+        audioGraph.seek(details.seekTime);
         dispatch({ type: 'SET_TIME', time: details.seekTime });
       }
     });
@@ -231,6 +291,7 @@ export function usePlayer() {
 
   const playTrack = useCallback(
     (track: Track, queue?: Track[], queueIndex?: number) => {
+      audioGraph.cancelPrepare(); // Cancel any pending pre-load
       dispatch({ type: 'PLAY_TRACK', track, queue, queueIndex });
     },
     [dispatch]
@@ -239,6 +300,7 @@ export function usePlayer() {
   const playAlbum = useCallback(
     (tracks: Track[], startIndex = 0) => {
       if (tracks.length === 0) return;
+      audioGraph.cancelPrepare();
       dispatch({
         type: 'PLAY_TRACK',
         track: tracks[startIndex],
@@ -251,14 +313,23 @@ export function usePlayer() {
 
   const pause = useCallback(() => dispatch({ type: 'PAUSE' }), [dispatch]);
   const resume = useCallback(() => dispatch({ type: 'RESUME' }), [dispatch]);
-  const next = useCallback(() => dispatch({ type: 'NEXT' }), [dispatch]);
-  const prev = useCallback(() => dispatch({ type: 'PREV' }), [dispatch]);
+
+  const next = useCallback(() => {
+    audioGraph.cancelPrepare();
+    dispatch({ type: 'NEXT' });
+  }, [dispatch]);
+
+  const prev = useCallback(() => {
+    audioGraph.cancelPrepare();
+    dispatch({ type: 'PREV' });
+  }, [dispatch]);
+
   const toggleShuffle = useCallback(() => dispatch({ type: 'TOGGLE_SHUFFLE' }), [dispatch]);
   const toggleRepeat = useCallback(() => dispatch({ type: 'TOGGLE_REPEAT' }), [dispatch]);
 
   const seek = useCallback(
     (time: number) => {
-      globalAudio.currentTime = time;
+      audioGraph.seek(time);
       dispatch({ type: 'SET_TIME', time });
     },
     [dispatch]

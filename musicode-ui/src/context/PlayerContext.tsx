@@ -1,5 +1,6 @@
-import { createContext, useContext, useReducer, type ReactNode, type Dispatch } from 'react';
+import { createContext, useContext, useReducer, useEffect, useRef, type ReactNode, type Dispatch } from 'react';
 import type { Track } from '../types';
+import { loadPreferences, savePreferences } from '../audio/audioPreferences';
 
 /**
  * Player state management using useReducer.
@@ -41,6 +42,9 @@ export interface PlayerState {
   repeatMode: RepeatMode;
 }
 
+// Hydrate persisted preferences (volume, shuffle, repeatMode) from localStorage
+const savedPrefs = loadPreferences();
+
 export const initialState: PlayerState = {
   currentTrack: null,
   queue: [],
@@ -49,9 +53,9 @@ export const initialState: PlayerState = {
   isPlaying: false,
   currentTime: 0,
   duration: 0,
-  volume: 0.8,
-  shuffle: false,
-  repeatMode: 'off',
+  volume: savedPrefs.volume,
+  shuffle: savedPrefs.shuffle,
+  repeatMode: savedPrefs.repeatMode,
 };
 
 // --- Actions ---
@@ -214,6 +218,22 @@ const PlayerDispatchContext = createContext<Dispatch<PlayerAction>>(() => {});
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(playerReducer, initialState);
+
+  // Persist preferences to localStorage when they change
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    // Skip the initial render — we just loaded these values from localStorage
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    savePreferences({
+      volume: state.volume,
+      shuffle: state.shuffle,
+      repeatMode: state.repeatMode,
+    });
+  }, [state.volume, state.shuffle, state.repeatMode]);
+
   return (
     <PlayerStateContext.Provider value={state}>
       <PlayerDispatchContext.Provider value={dispatch}>
