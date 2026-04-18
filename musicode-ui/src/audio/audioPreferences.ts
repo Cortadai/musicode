@@ -11,6 +11,8 @@ import type { RepeatMode } from '../context/PlayerContext';
 
 const STORAGE_KEY = 'musicode-prefs';
 
+export type VisualizerMode = 'bars' | 'waveform' | 'circular';
+
 export interface AudioPreferences {
   volume: number;
   shuffle: boolean;
@@ -19,6 +21,7 @@ export interface AudioPreferences {
   eqEnabled: boolean;
   eqBands: number[]; // 5 gain values in dB (-12 to +12)
   eqPreset: string;  // preset name or 'custom'
+  visualizerMode: VisualizerMode;
 }
 
 const DEFAULTS: AudioPreferences = {
@@ -29,6 +32,7 @@ const DEFAULTS: AudioPreferences = {
   eqEnabled: false,
   eqBands: [0, 0, 0, 0, 0],
   eqPreset: 'flat',
+  visualizerMode: 'bars',
 };
 
 /**
@@ -72,7 +76,12 @@ export function loadPreferences(): AudioPreferences {
     const eqPreset =
       typeof parsed.eqPreset === 'string' ? parsed.eqPreset : DEFAULTS.eqPreset;
 
-    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreset };
+    const visualizerMode: VisualizerMode =
+      ['bars', 'waveform', 'circular'].includes(parsed.visualizerMode)
+        ? (parsed.visualizerMode as VisualizerMode)
+        : DEFAULTS.visualizerMode;
+
+    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreset, visualizerMode };
   } catch {
     // Corrupted JSON — reset to defaults
     localStorage.removeItem(STORAGE_KEY);

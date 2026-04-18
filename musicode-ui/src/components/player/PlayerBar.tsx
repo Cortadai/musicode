@@ -11,8 +11,9 @@ import {
   BarChart3, Blend, SlidersHorizontal,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import eqProcessor, { EQ_PRESETS, GAIN_MIN, GAIN_MAX, BAND_COUNT } from '../../audio/eqProcessor';
+import eqProcessor, { EQ_PRESETS, GAIN_MIN, GAIN_MAX } from '../../audio/eqProcessor';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
+import type { VisualizerMode } from '../../audio/audioPreferences';
 
 export default function PlayerBar() {
   const {
@@ -40,6 +41,7 @@ export default function PlayerBar() {
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
   const [showVisualizer, setShowVisualizer] = useState(false);
+  const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => loadPreferences().visualizerMode);
   const [showCrossfade, setShowCrossfade] = useState(false);
   const [crossfadeValue, setCrossfadeValue] = useState(() => getCrossfadeDuration());
   const crossfadePopoverRef = useRef<HTMLDivElement>(null);
@@ -88,6 +90,11 @@ export default function PlayerBar() {
   const handleToggleVisualizer = useCallback(() => {
     initAudioContext();
     setShowVisualizer((v) => !v);
+  }, []);
+
+  const handleVisualizerModeChange = useCallback((mode: VisualizerMode) => {
+    setVisualizerMode(mode);
+    savePreferences({ visualizerMode: mode });
   }, []);
 
   const handleCrossfadeChange = useCallback(
@@ -175,8 +182,8 @@ export default function PlayerBar() {
 
   return (
     <div className="bg-zinc-900 border-t border-zinc-800 shrink-0 animate-slide-up">
-      {/* Visualizer — above the player controls */}
-      <Visualizer visible={showVisualizer} />
+      {/* Visualizer — above the player controls, expand/collapse via CSS Grid */}
+      <Visualizer visible={showVisualizer} mode={visualizerMode} onModeChange={handleVisualizerModeChange} />
 
       <div className="h-20 flex items-center px-4 gap-4">
         {/* Track info — cover sleeve + vinyl disc */}

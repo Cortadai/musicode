@@ -53,6 +53,23 @@
   cursor: default;
 }
 
+/* Visualizer expand/collapse — CSS Grid row animation */
+.visualizer-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease-out, opacity 0.3s ease-out;
+  opacity: 0;
+}
+
+.visualizer-panel[data-open] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.visualizer-panel > div {
+  min-height: 0;
+}
+
 .vinyl-grooves {
   background:
     radial-gradient(circle, transparent 44%, rgba(255,255,255,0.04) 45%, transparent 46%),
