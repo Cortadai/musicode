@@ -19,13 +19,15 @@
  * Previously, globalAudio lived in usePlayer.ts and AudioContext/AnalyserNode lived in
  * useAudioAnalyser.ts — they didn't coordinate. Volume was set via HTMLAudioElement.volume
  * (bypassing the graph). This module consolidates everything into one graph with a single
- * API surface for playback, volume, analysis, and future node insertion (EQ, crossfade).
+ * API surface for playback, volume, analysis, and node insertion (EQ, crossfade).
  *
  * WHY MODULE-LEVEL SINGLETONS:
  * - HTMLAudioElements must survive React component unmounts (navigating between pages)
  * - createMediaElementSource() can only be called ONCE per element — module scope ensures this
  * - AudioContext must be created/resumed on a user gesture — init() handles this
  */
+
+import eqProcessor from './eqProcessor';
 
 // --- Singleton state ---
 
@@ -152,13 +154,18 @@ function init(): void {
   sourceB = audioContext.createMediaElementSource(elementB);
 
   // Dual-gain topology: both sources permanently connected
-  // sourceA → gainA → masterGain → analyser → destination
-  // sourceB → gainB → masterGain → analyser → destination
+  // sourceA → gainA → masterGain → [EQ chain] → analyser → destination
+  // sourceB → gainB → masterGain → [EQ chain] → analyser → destination
   sourceA.connect(gainA);
   sourceB.connect(gainB);
   gainA.connect(masterGain);
   gainB.connect(masterGain);
-  masterGain.connect(analyserNode);
+
+  // Insert EQ chain between masterGain and analyserNode
+  const eq = eqProcessor.init(audioContext);
+  masterGain.connect(eq.input);
+  eq.output.connect(analyserNode);
+
   analyserNode.connect(audioContext.destination);
 
   // Apply pending volume from pre-init setVolume calls

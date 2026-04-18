@@ -8,9 +8,11 @@ import {
   Play, Pause, SkipBack, SkipForward,
   Volume2, VolumeX, Disc3,
   Shuffle, Repeat, Repeat1,
-  BarChart3, Blend,
+  BarChart3, Blend, SlidersHorizontal,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import eqProcessor, { EQ_PRESETS, GAIN_MIN, GAIN_MAX, BAND_COUNT } from '../../audio/eqProcessor';
+import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 
 export default function PlayerBar() {
   const {
@@ -41,6 +43,13 @@ export default function PlayerBar() {
   const [showCrossfade, setShowCrossfade] = useState(false);
   const [crossfadeValue, setCrossfadeValue] = useState(() => getCrossfadeDuration());
   const crossfadePopoverRef = useRef<HTMLDivElement>(null);
+
+  // EQ state — initialized from saved preferences
+  const [showEq, setShowEq] = useState(false);
+  const [eqEnabled, setEqEnabled] = useState(() => loadPreferences().eqEnabled);
+  const [eqBands, setEqBands] = useState<number[]>(() => loadPreferences().eqBands);
+  const [eqPreset, setEqPreset] = useState(() => loadPreferences().eqPreset);
+  const eqPopoverRef = useRef<HTMLDivElement>(null);
 
   const handleProgressClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -89,6 +98,58 @@ export default function PlayerBar() {
     },
     [setCrossfadeDuration]
   );
+
+  // Apply saved EQ state on mount — values are stored immediately and applied
+  // to filter nodes when audioGraph.init() creates them on first user gesture
+  useEffect(() => {
+    eqProcessor.setAllGains(eqBands);
+    eqProcessor.setEnabled(eqEnabled);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
+
+  const handleEqToggle = useCallback(() => {
+    const next = !eqEnabled;
+    setEqEnabled(next);
+    eqProcessor.setEnabled(next);
+    savePreferences({ eqEnabled: next });
+  }, [eqEnabled]);
+
+  const handleEqBandChange = useCallback(
+    (bandIndex: number, value: number) => {
+      const newBands = [...eqBands];
+      newBands[bandIndex] = value;
+      setEqBands(newBands);
+      eqProcessor.setGain(bandIndex, value);
+      const preset = eqProcessor.getPreset();
+      setEqPreset(preset);
+      savePreferences({ eqBands: newBands, eqPreset: preset });
+    },
+    [eqBands]
+  );
+
+  const handleEqPresetChange = useCallback(
+    (presetName: string) => {
+      const preset = EQ_PRESETS.find((p) => p.name === presetName);
+      if (!preset) return;
+      setEqPreset(presetName);
+      setEqBands([...preset.gains]);
+      eqProcessor.applyPreset(presetName);
+      savePreferences({ eqBands: [...preset.gains], eqPreset: presetName });
+    },
+    []
+  );
+
+  // Close EQ popover when clicking outside
+  useEffect(() => {
+    if (!showEq) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (eqPopoverRef.current && !eqPopoverRef.current.contains(e.target as Node)) {
+        setShowEq(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showEq]);
 
   // Close crossfade popover when clicking outside
   useEffect(() => {
@@ -289,6 +350,80 @@ export default function PlayerBar() {
                 <div className="flex justify-between mt-1">
                   <span className="text-[10px] text-zinc-500">0s</span>
                   <span className="text-[10px] text-zinc-500">12s</span>
+                </div>
+              </div>
+            )}
+          </div>
+          {/* EQ popover */}
+          <div className="relative flex items-center" ref={eqPopoverRef}>
+            <button
+              onClick={() => setShowEq((v) => !v)}
+              className={`flex items-center justify-center transition-colors ${eqEnabled ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+              title={eqEnabled ? `EQ: ${eqPreset}` : 'EQ: Off'}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+            </button>
+            {showEq && (
+              <div className="absolute bottom-8 right-0 bg-zinc-800 border border-zinc-700 rounded-lg p-3 shadow-xl z-50 w-64">
+                {/* Header: toggle + preset selector */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-zinc-400">Equalizer</span>
+                    <button
+                      onClick={handleEqToggle}
+                      className={`w-8 h-4 rounded-full transition-colors relative ${eqEnabled ? 'bg-indigo-500' : 'bg-zinc-600'}`}
+                    >
+                      <span
+                        className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${eqEnabled ? 'left-4' : 'left-0.5'}`}
+                      />
+                    </button>
+                  </div>
+                  <select
+                    value={eqPreset}
+                    onChange={(e) => handleEqPresetChange(e.target.value)}
+                    className="text-[11px] bg-zinc-700 text-zinc-300 border border-zinc-600 rounded px-1.5 py-0.5 outline-none focus:border-indigo-500"
+                  >
+                    {EQ_PRESETS.map((p) => (
+                      <option key={p.name} value={p.name}>{p.label}</option>
+                    ))}
+                    {eqPreset === 'custom' && (
+                      <option value="custom">Custom</option>
+                    )}
+                  </select>
+                </div>
+
+                {/* 5-band vertical sliders */}
+                <div className="flex items-end justify-between gap-1 h-28">
+                  {eqProcessor.BAND_DEFS.map((band, i) => (
+                    <div key={band.frequency} className="flex flex-col items-center gap-1 flex-1">
+                      <span className="text-[10px] text-zinc-500 tabular-nums">
+                        {eqBands[i] > 0 ? '+' : ''}{eqBands[i]}
+                      </span>
+                      <input
+                        type="range"
+                        min={GAIN_MIN}
+                        max={GAIN_MAX}
+                        step={1}
+                        value={eqBands[i]}
+                        onChange={(e) => handleEqBandChange(i, Number(e.target.value))}
+                        disabled={!eqEnabled}
+                        className="eq-slider appearance-none cursor-pointer accent-indigo-500 disabled:opacity-40"
+                        style={{
+                          writingMode: 'vertical-lr',
+                          direction: 'rtl',
+                          height: '80px',
+                          width: '20px',
+                        }}
+                      />
+                      <span className="text-[10px] text-zinc-500">{band.label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* dB range labels */}
+                <div className="flex justify-between mt-1">
+                  <span className="text-[9px] text-zinc-600">-12 dB</span>
+                  <span className="text-[9px] text-zinc-600">+12 dB</span>
                 </div>
               </div>
             )}

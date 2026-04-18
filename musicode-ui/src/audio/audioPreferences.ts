@@ -16,6 +16,9 @@ export interface AudioPreferences {
   shuffle: boolean;
   repeatMode: RepeatMode;
   crossfadeDuration: number; // seconds, 0 = gapless (no overlap)
+  eqEnabled: boolean;
+  eqBands: number[]; // 5 gain values in dB (-12 to +12)
+  eqPreset: string;  // preset name or 'custom'
 }
 
 const DEFAULTS: AudioPreferences = {
@@ -23,6 +26,9 @@ const DEFAULTS: AudioPreferences = {
   shuffle: false,
   repeatMode: 'off',
   crossfadeDuration: 0,
+  eqEnabled: false,
+  eqBands: [0, 0, 0, 0, 0],
+  eqPreset: 'flat',
 };
 
 /**
@@ -54,7 +60,19 @@ export function loadPreferences(): AudioPreferences {
         ? parsed.crossfadeDuration
         : DEFAULTS.crossfadeDuration;
 
-    return { volume, shuffle, repeatMode, crossfadeDuration };
+    const eqEnabled = typeof parsed.eqEnabled === 'boolean' ? parsed.eqEnabled : DEFAULTS.eqEnabled;
+
+    const eqBands =
+      Array.isArray(parsed.eqBands) &&
+      parsed.eqBands.length === 5 &&
+      parsed.eqBands.every((v: unknown) => typeof v === 'number' && v >= -12 && v <= 12)
+        ? (parsed.eqBands as number[])
+        : [...DEFAULTS.eqBands];
+
+    const eqPreset =
+      typeof parsed.eqPreset === 'string' ? parsed.eqPreset : DEFAULTS.eqPreset;
+
+    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreset };
   } catch {
     // Corrupted JSON — reset to defaults
     localStorage.removeItem(STORAGE_KEY);
