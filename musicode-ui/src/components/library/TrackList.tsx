@@ -2,7 +2,7 @@ import type { Track } from '../../types';
 import { formatDuration } from '../../utils/format';
 import { usePlayerState } from '../../context/PlayerContext';
 import { Play } from 'lucide-react';
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface Props {
   tracks: Track[];

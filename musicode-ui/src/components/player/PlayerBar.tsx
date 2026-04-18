@@ -8,9 +8,9 @@ import {
   Play, Pause, SkipBack, SkipForward,
   Volume2, VolumeX, Disc3,
   Shuffle, Repeat, Repeat1,
-  BarChart3,
+  BarChart3, Blend,
 } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function PlayerBar() {
   const {
@@ -31,11 +31,16 @@ export default function PlayerBar() {
     setVolume,
     toggleShuffle,
     toggleRepeat,
+    setCrossfadeDuration,
+    getCrossfadeDuration,
   } = usePlayer();
 
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
   const [showVisualizer, setShowVisualizer] = useState(false);
+  const [showCrossfade, setShowCrossfade] = useState(false);
+  const [crossfadeValue, setCrossfadeValue] = useState(() => getCrossfadeDuration());
+  const crossfadePopoverRef = useRef<HTMLDivElement>(null);
 
   const handleProgressClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -75,6 +80,27 @@ export default function PlayerBar() {
     initAudioContext();
     setShowVisualizer((v) => !v);
   }, []);
+
+  const handleCrossfadeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = Number(e.target.value);
+      setCrossfadeValue(val);
+      setCrossfadeDuration(val);
+    },
+    [setCrossfadeDuration]
+  );
+
+  // Close crossfade popover when clicking outside
+  useEffect(() => {
+    if (!showCrossfade) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (crossfadePopoverRef.current && !crossfadePopoverRef.current.contains(e.target as Node)) {
+        setShowCrossfade(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCrossfade]);
 
   if (!currentTrack) return null;
 
@@ -232,11 +258,44 @@ export default function PlayerBar() {
           </div>
         </div>
 
-        {/* Volume + Visualizer toggle */}
-        <div className="flex items-center gap-2 w-40 shrink-0 justify-end">
+        {/* Volume + Crossfade + Visualizer toggle */}
+        <div className="flex items-center gap-2 w-48 shrink-0 justify-end">
+          {/* Crossfade popover */}
+          <div className="relative flex items-center" ref={crossfadePopoverRef}>
+            <button
+              onClick={() => setShowCrossfade((v) => !v)}
+              className={`flex items-center justify-center transition-colors ${crossfadeValue > 0 ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+              title={crossfadeValue === 0 ? 'Crossfade: Gapless' : `Crossfade: ${crossfadeValue}s`}
+            >
+              <Blend className="w-4 h-4" />
+            </button>
+            {showCrossfade && (
+              <div className="absolute bottom-8 right-0 bg-zinc-800 border border-zinc-700 rounded-lg p-3 shadow-xl z-50 w-48">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-zinc-400">Crossfade</span>
+                  <span className="text-xs font-medium text-zinc-200">
+                    {crossfadeValue === 0 ? 'Gapless' : `${crossfadeValue}s`}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={12}
+                  step={1}
+                  value={crossfadeValue}
+                  onChange={handleCrossfadeChange}
+                  className="w-full h-1 bg-zinc-600 rounded-full appearance-none cursor-pointer accent-indigo-500"
+                />
+                <div className="flex justify-between mt-1">
+                  <span className="text-[10px] text-zinc-500">0s</span>
+                  <span className="text-[10px] text-zinc-500">12s</span>
+                </div>
+              </div>
+            )}
+          </div>
           <button
             onClick={handleToggleVisualizer}
-            className={`transition-colors ${showVisualizer ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`flex items-center justify-center transition-colors ${showVisualizer ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
             title={showVisualizer ? 'Hide visualizer' : 'Show visualizer'}
           >
             <BarChart3 className="w-4 h-4" />

@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { usePlayerState, usePlayerDispatch } from '../context/PlayerContext';
 import { recordPlay } from '../api/plays';
 import audioGraph from '../audio/audioGraph';
+import { loadPreferences, savePreferences } from '../audio/audioPreferences';
 import type { Track } from '../types';
 
 /**
@@ -22,7 +23,7 @@ import type { Track } from '../types';
 let audioOwnerRef: symbol | null = null;
 
 // Pre-load threshold in seconds — how early to start loading the next track
-const PRELOAD_THRESHOLD = 3;
+const BASE_PRELOAD_THRESHOLD = 3;
 
 export function usePlayer() {
   const state = usePlayerState();
@@ -30,6 +31,11 @@ export function usePlayer() {
   const ownerSymbol = useRef(Symbol('player-owner'));
   const playReportedRef = useRef<number | null>(null);
   const currentTrackRef = useRef<Track | null>(null);
+
+  // Crossfade preference — loaded once, updated when user changes it
+  const crossfadeDurationRef = useRef<number>(loadPreferences().crossfadeDuration);
+  // Whether crossfade was already triggered for the current track
+  const crossfadeTriggeredRef = useRef<number | null>(null);
 
   // Refs for gapless — need current values in event handlers without stale closures
   const queueRef = useRef<Track[]>([]);
@@ -91,13 +97,18 @@ export function usePlayer() {
         console.debug('[player] Play recorded for track:', track.id);
       }
 
-      // Gapless pre-load: when ≤3s remain, pre-load next track
+      // Dynamic pre-load threshold: must be at least crossfadeDuration + 1s
+      // so the next track is loaded before the crossfade ramp starts.
+      const cfDuration = crossfadeDurationRef.current;
+      const preloadThreshold = Math.max(BASE_PRELOAD_THRESHOLD, cfDuration + 1);
+
+      // Pre-load: when ≤threshold remain, pre-load next track
       const remaining = audioGraph.getRemaining();
       const currentId = currentTrackRef.current?.id ?? null;
       if (
-        remaining <= PRELOAD_THRESHOLD &&
+        remaining <= preloadThreshold &&
         remaining > 0 &&
-        duration > PRELOAD_THRESHOLD && // Don't pre-load for very short tracks
+        duration > preloadThreshold && // Don't pre-load for very short tracks
         currentId !== null &&
         preloadTriggeredRef.current !== currentId
       ) {
@@ -105,7 +116,27 @@ export function usePlayer() {
         if (nextSrc) {
           audioGraph.prepareNext(nextSrc);
           preloadTriggeredRef.current = currentId;
-          console.debug('[player] Gapless: pre-loading next track');
+          console.debug('[player] Pre-loading next track (threshold:', preloadThreshold + 's)');
+        }
+      }
+
+      // Crossfade trigger: when remaining <= crossfadeDuration, start the crossfade
+      if (
+        cfDuration > 0 &&
+        remaining <= cfDuration &&
+        remaining > 0 &&
+        duration > cfDuration + 1 && // Track must be longer than crossfade
+        currentId !== null &&
+        crossfadeTriggeredRef.current !== currentId &&
+        audioGraph.isNextPrepared() &&
+        !audioGraph.isCrossfading()
+      ) {
+        crossfadeTriggeredRef.current = currentId;
+        const started = audioGraph.crossfade(remaining); // Use actual remaining, not cfDuration
+        if (started) {
+          console.debug(`[player] Crossfade started: ${remaining.toFixed(1)}s remaining`);
+          // Dispatch NEXT to update React state — audio is already transitioning
+          dispatch({ type: 'NEXT' });
         }
       }
     });
@@ -115,13 +146,18 @@ export function usePlayer() {
     });
 
     audioGraph.setOnEnded(() => {
+      // If a crossfade already handled this transition, the old element naturally
+      // reaches its end — ignore, NEXT was already dispatched when crossfade started.
+      if (audioGraph.isCrossfading()) {
+        console.debug('[player] onEnded during crossfade — ignoring (already transitioned)');
+        return;
+      }
+
       // Try gapless swap first — if next was pre-loaded, swap starts playback instantly
       if (audioGraph.isNextPrepared()) {
         const swapped = audioGraph.swap();
         if (swapped) {
           console.debug('[player] Gapless: swapped to next element');
-          // Dispatch NEXT to update React state (track, index, etc.)
-          // The audio is already playing on the swapped element
           dispatch({ type: 'NEXT' });
           return;
         }
@@ -150,9 +186,10 @@ export function usePlayer() {
     if (audioOwnerRef !== ownerSymbol.current) return;
     if (!state.currentTrack) return;
 
-    // Reset play reporting and pre-load tracking for the new track
+    // Reset play reporting, pre-load, and crossfade tracking for the new track
     playReportedRef.current = null;
     preloadTriggeredRef.current = null;
+    crossfadeTriggeredRef.current = null;
 
     const src = `/api/stream/${state.currentTrack.id}`;
     const fullSrc = window.location.origin + src;
@@ -166,6 +203,14 @@ export function usePlayer() {
       if (dur > 0) {
         dispatch({ type: 'SET_DURATION', duration: dur });
       }
+      return;
+    }
+
+    // If a crossfade is in progress, the audio transition is already handled —
+    // don't call setSource (which would cancelPrepare → cancelCrossfade).
+    // Duration will sync once the crossfade completes and the active slot flips.
+    if (audioGraph.isCrossfading()) {
+      console.debug('[player] Track change during crossfade — skipping setSource:', state.currentTrack.title);
       return;
     }
 
@@ -340,6 +385,15 @@ export function usePlayer() {
     [dispatch]
   );
 
+  const setCrossfadeDuration = useCallback((seconds: number) => {
+    const clamped = Math.max(0, Math.min(12, seconds));
+    crossfadeDurationRef.current = clamped;
+    savePreferences({ crossfadeDuration: clamped });
+    console.debug('[player] Crossfade duration set to', clamped + 's');
+  }, []);
+
+  const getCrossfadeDuration = useCallback(() => crossfadeDurationRef.current, []);
+
   return {
     ...state,
     playTrack,
@@ -352,5 +406,7 @@ export function usePlayer() {
     setVolume,
     toggleShuffle,
     toggleRepeat,
+    setCrossfadeDuration,
+    getCrossfadeDuration,
   };
 }

@@ -15,12 +15,14 @@ export interface AudioPreferences {
   volume: number;
   shuffle: boolean;
   repeatMode: RepeatMode;
+  crossfadeDuration: number; // seconds, 0 = gapless (no overlap)
 }
 
 const DEFAULTS: AudioPreferences = {
   volume: 0.8,
   shuffle: false,
   repeatMode: 'off',
+  crossfadeDuration: 0,
 };
 
 /**
@@ -45,7 +47,14 @@ export function loadPreferences(): AudioPreferences {
       ? (parsed.repeatMode as RepeatMode)
       : DEFAULTS.repeatMode;
 
-    return { volume, shuffle, repeatMode };
+    const crossfadeDuration =
+      typeof parsed.crossfadeDuration === 'number' &&
+      parsed.crossfadeDuration >= 0 &&
+      parsed.crossfadeDuration <= 12
+        ? parsed.crossfadeDuration
+        : DEFAULTS.crossfadeDuration;
+
+    return { volume, shuffle, repeatMode, crossfadeDuration };
   } catch {
     // Corrupted JSON — reset to defaults
     localStorage.removeItem(STORAGE_KEY);

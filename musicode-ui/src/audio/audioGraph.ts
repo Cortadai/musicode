@@ -1,16 +1,19 @@
 /**
  * Centralized Audio Graph — single module that owns the entire Web Audio API pipeline.
  *
- * Graph topology (dual-element for gapless):
- *   activeElement → MediaElementSourceNode ─┐
- *                                           ├→ GainNode → [insert chain] → AnalyserNode → destination
- *   nextElement   → MediaElementSourceNode ─┘  (disconnected until swap)
+ * Graph topology (dual-gain for gapless + crossfade):
+ *   sourceA → gainA ─┐
+ *                     ├→ masterGain → [insert chain] → AnalyserNode → destination
+ *   sourceB → gainB ─┘
  *
- * GAPLESS ARCHITECTURE:
- * Two HTMLAudioElements (A and B) alternate roles. While one plays, the other
- * pre-loads the next track. On swap, the active source disconnects and the next
- * source connects — the browser handles the ~0-50ms transition. Both source nodes
- * are created once at init() (createMediaElementSource is one-shot per element).
+ * Both sources are permanently connected through their per-source gain nodes.
+ * Gapless swap is a gain flip (active=1, inactive=0). Crossfade (T02) replaces
+ * the instant flip with linearRampToValueAtTime on gainA/gainB.
+ *
+ * WHY DUAL-GAIN:
+ * Single-gain with connect/disconnect can't crossfade — you need both sources
+ * audible simultaneously with independent volume control. Per-source gains also
+ * eliminate the disconnect/connect race during swap.
  *
  * WHY CENTRALIZED:
  * Previously, globalAudio lived in usePlayer.ts and AudioContext/AnalyserNode lived in
@@ -22,15 +25,14 @@
  * - HTMLAudioElements must survive React component unmounts (navigating between pages)
  * - createMediaElementSource() can only be called ONCE per element — module scope ensures this
  * - AudioContext must be created/resumed on a user gesture — init() handles this
- *
- * FUTURE (M010): The insert chain between GainNode and AnalyserNode is where EQ bands
- * and crossfade gain nodes will be inserted via connect()/disconnect().
  */
 
 // --- Singleton state ---
 
 let audioContext: AudioContext | null = null;
-let gainNode: GainNode | null = null;
+let gainA: GainNode | null = null;
+let gainB: GainNode | null = null;
+let masterGain: GainNode | null = null;
 let analyserNode: AnalyserNode | null = null;
 
 // Dual-element state
@@ -52,6 +54,10 @@ let activeSlot: 'A' | 'B' = 'A';
 let nextPrepared = false;
 
 let initialized = false;
+
+// Crossfade state — tracks whether a crossfade is currently in progress
+let crossfadeInProgress = false;
+let crossfadeTimer: ReturnType<typeof setTimeout> | null = null;
 
 // --- Helpers ---
 
@@ -132,26 +138,34 @@ function init(): void {
   analyserNode.fftSize = 256;
   analyserNode.smoothingTimeConstant = 0.8;
 
-  // GainNode — volume control lives here, not on the HTMLAudioElement
-  gainNode = audioContext.createGain();
+  // Per-source gains — independent volume for crossfade overlap
+  gainA = audioContext.createGain();
+  gainB = audioContext.createGain();
+  gainA.gain.value = 1; // Active source starts at full
+  gainB.gain.value = 0; // Inactive source starts silent
+
+  // Master gain — user volume control
+  masterGain = audioContext.createGain();
 
   // Create both source nodes (one-shot per element — must do it now)
   sourceA = audioContext.createMediaElementSource(elementA);
   sourceB = audioContext.createMediaElementSource(elementB);
 
-  // Chain: gain → analyser → destination (shared by both sources)
-  gainNode.connect(analyserNode);
+  // Dual-gain topology: both sources permanently connected
+  // sourceA → gainA → masterGain → analyser → destination
+  // sourceB → gainB → masterGain → analyser → destination
+  sourceA.connect(gainA);
+  sourceB.connect(gainB);
+  gainA.connect(masterGain);
+  gainB.connect(masterGain);
+  masterGain.connect(analyserNode);
   analyserNode.connect(audioContext.destination);
 
-  // Connect only the active source initially
-  sourceA.connect(gainNode);
-  // sourceB stays disconnected until swap
-
   // Apply pending volume from pre-init setVolume calls
-  gainNode.gain.value = pendingVolume;
+  masterGain.gain.value = pendingVolume;
 
   initialized = true;
-  console.log('[audioGraph] Graph initialized: dual-element, active=A (volume:', pendingVolume + ')');
+  console.log('[audioGraph] Graph initialized: dual-gain, active=A (volume:', pendingVolume + ')');
 }
 
 /**
@@ -189,8 +203,10 @@ function prepareNext(src: string): void {
 
 /**
  * Cancel a pending pre-load (e.g., user skipped manually).
+ * Also cancels any in-progress crossfade.
  */
 function cancelPrepare(): void {
+  cancelCrossfade();
   if (nextPrepared) {
     const { element } = getNext();
     element.removeAttribute('src');
@@ -202,8 +218,8 @@ function cancelPrepare(): void {
 
 /**
  * Swap active and next elements for gapless transition.
- * Disconnects the old active source, connects the new active source,
- * and starts playback on the new active element.
+ * Flips per-source gains (old=0, new=1) and starts playback on the new element.
+ * No disconnect/connect — both sources stay wired through their gain nodes.
  *
  * Returns true if the swap happened, false if nothing was prepared.
  */
@@ -212,12 +228,13 @@ function swap(): boolean {
 
   const oldActive = getActive();
   const newActive = getNext();
+  const [oldGain, newGain] = activeSlot === 'A' ? [gainA!, gainB!] : [gainB!, gainA!];
 
-  // Disconnect old source, connect new source to the gain chain
-  oldActive.source?.disconnect();
-  newActive.source?.connect(gainNode!);
+  // Instant gain flip — gapless, no overlap
+  oldGain.gain.value = 0;
+  newGain.gain.value = 1;
 
-  // Pause and reset old element
+  // Pause old element (it's now silent)
   oldActive.element.pause();
 
   // Flip the active slot
@@ -232,6 +249,94 @@ function swap(): boolean {
   });
 
   return true;
+}
+
+/**
+ * Start a crossfade transition over `duration` seconds.
+ * Ramps active gain 1→0 and next gain 0→1 using linearRampToValueAtTime.
+ * Starts playback on the next element immediately, pauses old element after ramp.
+ *
+ * Returns true if the crossfade started, false if preconditions weren't met.
+ */
+function crossfade(duration: number): boolean {
+  if (!nextPrepared || !initialized || crossfadeInProgress) return false;
+  if (!audioContext || !gainA || !gainB) return false;
+
+  crossfadeInProgress = true;
+  const now = audioContext.currentTime;
+  const endTime = now + duration;
+
+  const [oldGain, newGain] = activeSlot === 'A' ? [gainA, gainB] : [gainB, gainA];
+  const oldElement = getActive().element;
+  const newElement = getNext().element;
+
+  // Cancel any scheduled ramps, set current value as starting point
+  oldGain.gain.cancelScheduledValues(now);
+  newGain.gain.cancelScheduledValues(now);
+  oldGain.gain.setValueAtTime(1, now);
+  newGain.gain.setValueAtTime(0, now);
+
+  // Ramp: active fades out, next fades in
+  oldGain.gain.linearRampToValueAtTime(0, endTime);
+  newGain.gain.linearRampToValueAtTime(1, endTime);
+
+  // Start playback on the next element now (it plays under the ramp)
+  newElement.play().catch((err) => {
+    console.error('[audioGraph] Crossfade playback error:', err.message);
+  });
+
+  const newSlot = activeSlot === 'A' ? 'B' : 'A';
+  console.debug(`[audioGraph] Crossfade started: ${duration}s, ${activeSlot}→${newSlot}`);
+
+  // Flip active slot immediately — the new element is playing and should own
+  // timeupdate/loadedmetadata callbacks so React state stays in sync.
+  activeSlot = newSlot;
+  nextPrepared = false;
+
+  // After the ramp completes, pause the old element and clear crossfade state
+  crossfadeTimer = setTimeout(() => {
+    oldElement.pause();
+    crossfadeInProgress = false;
+    crossfadeTimer = null;
+    console.debug('[audioGraph] Crossfade complete, active:', activeSlot);
+  }, duration * 1000);
+
+  return true;
+}
+
+/**
+ * Cancel an in-progress crossfade (e.g., user skipped manually).
+ * Resets gains to clean state: active=1, inactive=0.
+ */
+function cancelCrossfade(): void {
+  if (!crossfadeInProgress) return;
+
+  if (crossfadeTimer) {
+    clearTimeout(crossfadeTimer);
+    crossfadeTimer = null;
+  }
+
+  if (audioContext && gainA && gainB) {
+    const now = audioContext.currentTime;
+    const [activeGain, inactiveGain] = activeSlot === 'A' ? [gainA, gainB] : [gainB, gainA];
+    activeGain.gain.cancelScheduledValues(now);
+    inactiveGain.gain.cancelScheduledValues(now);
+    activeGain.gain.setValueAtTime(1, now);
+    inactiveGain.gain.setValueAtTime(0, now);
+  }
+
+  // Pause the next element that was playing during crossfade
+  getNext().element.pause();
+
+  crossfadeInProgress = false;
+  console.debug('[audioGraph] Crossfade cancelled');
+}
+
+/**
+ * Whether a crossfade is currently in progress.
+ */
+function isCrossfading(): boolean {
+  return crossfadeInProgress;
 }
 
 /**
@@ -259,6 +364,8 @@ function pause(): void {
  * Used on logout to ensure audio doesn't keep playing after session ends.
  */
 function stop(): void {
+  cancelCrossfade();
+
   elementA.pause();
   elementA.removeAttribute('src');
   elementA.load();
@@ -267,12 +374,13 @@ function stop(): void {
   elementB.removeAttribute('src');
   elementB.load();
 
-  // Reset to element A as active, reconnect source if initialized
-  if (initialized && sourceA && sourceB && gainNode) {
-    // Disconnect whichever is currently connected
-    try { sourceA.disconnect(); } catch { /* may not be connected */ }
-    try { sourceB.disconnect(); } catch { /* may not be connected */ }
-    sourceA.connect(gainNode);
+  // Reset gains: A active (audible), B silent
+  if (initialized && gainA && gainB) {
+    const now = audioContext?.currentTime ?? 0;
+    gainA.gain.cancelScheduledValues(now);
+    gainB.gain.cancelScheduledValues(now);
+    gainA.gain.value = 1;
+    gainB.gain.value = 0;
   }
   activeSlot = 'A';
   nextPrepared = false;
@@ -295,13 +403,13 @@ function getCurrentSrc(): string {
 }
 
 /**
- * Set volume via GainNode (0.0 to 1.0).
- * The HTMLAudioElement.volume stays at 1.0 — all volume control is in the graph.
+ * Set master volume (0.0 to 1.0).
+ * Controls masterGain — per-source gains (gainA/gainB) handle crossfade independently.
  */
 function setVolume(value: number): void {
   const clamped = Math.max(0, Math.min(1, value));
-  if (gainNode) {
-    gainNode.gain.value = clamped;
+  if (masterGain) {
+    masterGain.gain.value = clamped;
   }
   pendingVolume = clamped;
 }
@@ -315,6 +423,25 @@ let pendingVolume = 0.8;
  */
 function getAnalyser(): AnalyserNode | null {
   return analyserNode;
+}
+
+/**
+ * Get per-source gain nodes for crossfade control.
+ * Returns null until init() has been called.
+ * The active gain is at 1.0, inactive at 0.0 during normal playback.
+ */
+function getSourceGains(): { gainA: GainNode; gainB: GainNode; activeSlot: 'A' | 'B' } | null {
+  if (!gainA || !gainB) return null;
+  return { gainA, gainB, activeSlot };
+}
+
+/**
+ * Get the master gain node for EQ chain insertion.
+ * EQ nodes connect between masterGain output and analyserNode input.
+ * Returns null until init() has been called.
+ */
+function getMasterGain(): GainNode | null {
+  return masterGain;
 }
 
 /**
@@ -357,6 +484,9 @@ const audioGraph = {
   prepareNext,
   cancelPrepare,
   swap,
+  crossfade,
+  cancelCrossfade,
+  isCrossfading,
   isNextPrepared,
   play,
   pause,
@@ -368,6 +498,8 @@ const audioGraph = {
   getRemaining,
   setVolume,
   getAnalyser,
+  getSourceGains,
+  getMasterGain,
   isInitialized,
   setOnTimeUpdate,
   setOnLoadedMetadata,
