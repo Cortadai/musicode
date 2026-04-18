@@ -34,6 +34,9 @@ export default function Visualizer({ visible, mode, onModeChange }: Props) {
   // Waveform smoothing — keeps previous frame data for temporal interpolation
   const prevWaveformRef = useRef<Float32Array | null>(null);
 
+  // Fade-out decay when playback stops (1.0 = full, 0.0 = cleared)
+  const decayRef = useRef(0);
+
   // --- Drawing functions ---
 
   const drawBars = useCallback(
@@ -221,29 +224,60 @@ export default function Visualizer({ visible, mode, onModeChange }: Props) {
     prevWaveformRef.current = null;
   }, [mode]);
 
+  // Fade-out loop — overlays semi-transparent black each frame until canvas clears
+  const fadeOut = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Overlay dark layer to progressively dim the last frame
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    decayRef.current -= 0.1;
+    if (decayRef.current > 0) {
+      animationRef.current = requestAnimationFrame(fadeOut);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      decayRef.current = 0;
+      prevWaveformRef.current = null;
+    }
+  }, []);
+
   // Animation lifecycle
   useEffect(() => {
-    if (!visible || !isPlaying || !analyser) {
-      cancelAnimationFrame(animationRef.current);
-      return;
+    cancelAnimationFrame(animationRef.current);
+
+    if (!visible || !analyser) return;
+
+    if (isPlaying) {
+      decayRef.current = 1;
+
+      const handleVisibility = () => {
+        if (document.hidden) {
+          cancelAnimationFrame(animationRef.current);
+        } else {
+          animationRef.current = requestAnimationFrame(draw);
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibility);
+      animationRef.current = requestAnimationFrame(draw);
+
+      return () => {
+        cancelAnimationFrame(animationRef.current);
+        document.removeEventListener('visibilitychange', handleVisibility);
+      };
     }
 
-    const handleVisibility = () => {
-      if (document.hidden) {
-        cancelAnimationFrame(animationRef.current);
-      } else {
-        animationRef.current = requestAnimationFrame(draw);
-      }
-    };
+    // Not playing — fade out if there's anything on canvas
+    if (decayRef.current > 0) {
+      animationRef.current = requestAnimationFrame(fadeOut);
+    }
 
-    document.addEventListener('visibilitychange', handleVisibility);
-    animationRef.current = requestAnimationFrame(draw);
-
-    return () => {
-      cancelAnimationFrame(animationRef.current);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, [visible, isPlaying, analyser, draw]);
+    return () => cancelAnimationFrame(animationRef.current);
+  }, [visible, isPlaying, analyser, draw, fadeOut]);
 
   // Canvas resize
   useEffect(() => {
