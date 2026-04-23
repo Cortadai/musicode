@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-04-23T17:19:06Z | Files: 213 | Described: 0/213
-<!-- gsd:codebase-meta {"generatedAt":"2026-04-23T17:19:06Z","fingerprint":"8e688264ff53ac22abe385144421bae22a8e5995","fileCount":213,"truncated":false} -->
+Generated: 2026-04-23T17:51:50Z | Files: 237 | Described: 0/237
+<!-- gsd:codebase-meta {"generatedAt":"2026-04-23T17:51:50Z","fingerprint":"79ba188fe39456ff21f09199837d776be17b3ba9","fileCount":237,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -12,6 +12,9 @@ Generated: 2026-04-23T17:19:06Z | Files: 213 | Described: 0/213
 - `personal-media-player-proyecto.md`
 - `PLAN.md`
 - `README.md`
+
+### .github/workflows/
+- `.github/workflows/ci.yml`
 
 ### caddy/
 - `caddy/Dockerfile`
@@ -69,6 +72,7 @@ Generated: 2026-04-23T17:19:06Z | Files: 213 | Described: 0/213
 - `musicode-server/src/main/java/com/musicode/model/dto/DailyPlayCount.java`
 - `musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java`
 - `musicode-server/src/main/java/com/musicode/model/dto/ScanStatus.java`
+- `musicode-server/src/main/java/com/musicode/model/dto/ScrobbleResult.java`
 - `musicode-server/src/main/java/com/musicode/model/dto/ScrobbleSettingsRequest.java`
 - `musicode-server/src/main/java/com/musicode/model/dto/ScrobbleSettingsResponse.java`
 - `musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java`
@@ -222,6 +226,7 @@ Generated: 2026-04-23T17:19:06Z | Files: 213 | Described: 0/213
 - `musicode-ui/src/App.tsx`
 - `musicode-ui/src/index.css`
 - `musicode-ui/src/main.tsx`
+- `musicode-ui/src/test-setup.ts`
 
 ### musicode-ui/src/api/
 - `musicode-ui/src/api/activity.ts`
@@ -238,7 +243,10 @@ Generated: 2026-04-23T17:19:06Z | Files: 213 | Described: 0/213
 
 ### musicode-ui/src/audio/
 - `musicode-ui/src/audio/audioGraph.ts`
+- `musicode-ui/src/audio/audioPreferences.test.ts`
 - `musicode-ui/src/audio/audioPreferences.ts`
+- `musicode-ui/src/audio/colorExtraction.test.ts`
+- `musicode-ui/src/audio/colorExtraction.ts`
 - `musicode-ui/src/audio/eqProcessor.ts`
 
 ### musicode-ui/src/components/activity/
@@ -262,8 +270,22 @@ Generated: 2026-04-23T17:19:06Z | Files: 213 | Described: 0/213
 - `musicode-ui/src/components/library/TrackList.tsx`
 
 ### musicode-ui/src/components/player/
+- `musicode-ui/src/components/player/CrossfadePopover.test.tsx`
+- `musicode-ui/src/components/player/CrossfadePopover.tsx`
+- `musicode-ui/src/components/player/EqPopover.test.tsx`
+- `musicode-ui/src/components/player/EqPopover.tsx`
+- `musicode-ui/src/components/player/NowPlayingOverlay.tsx`
 - `musicode-ui/src/components/player/PlayerBar.tsx`
+- `musicode-ui/src/components/player/ProgressBar.test.tsx`
+- `musicode-ui/src/components/player/ProgressBar.tsx`
+- `musicode-ui/src/components/player/ScrobbleIndicator.tsx`
+- `musicode-ui/src/components/player/TrackInfo.test.tsx`
+- `musicode-ui/src/components/player/TrackInfo.tsx`
+- `musicode-ui/src/components/player/TransportControls.test.tsx`
+- `musicode-ui/src/components/player/TransportControls.tsx`
 - `musicode-ui/src/components/player/Visualizer.tsx`
+- `musicode-ui/src/components/player/VolumeControl.test.tsx`
+- `musicode-ui/src/components/player/VolumeControl.tsx`
 
 ### musicode-ui/src/context/
 - `musicode-ui/src/context/AuthContext.test.ts`
@@ -273,7 +295,11 @@ Generated: 2026-04-23T17:19:06Z | Files: 213 | Described: 0/213
 
 ### musicode-ui/src/hooks/
 - `musicode-ui/src/hooks/useAudioAnalyser.ts`
+- `musicode-ui/src/hooks/useDynamicTheme.ts`
+- `musicode-ui/src/hooks/useGapless.ts`
+- `musicode-ui/src/hooks/useMediaSession.ts`
 - `musicode-ui/src/hooks/usePlayer.ts`
+- `musicode-ui/src/hooks/useScrobble.ts`
 
 ### musicode-ui/src/pages/
 - `musicode-ui/src/pages/AlbumDetailPage.tsx`

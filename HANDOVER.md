@@ -1,79 +1,81 @@
-# Handover — 18 abril 2026
+# Handover — 23 abril 2026
 
-## Resumen de sesión
+## Resumen
 
-Completado **M010: Audio Experience** (crossfade, EQ, visualizer) y planificado **M011: Quality & Hardening**.
+**12 milestones completados** (M001–M012). M013 (Visual Experience) ejecutado pero **necesita remediación** — bug de stacking context en NowPlayingOverlay.
 
-### Lo que se hizo
+### Lo que se hizo desde el último handover (18 abril)
 
-1. **M010/S01 — Crossfade**: Transiciones crossfade con dual-source audio graph. Slider 0-12s, default off. `ffb5520`
-2. **M010/S02 — EQ paramétrico 5 bandas**: 60Hz/230Hz/910Hz/3.6kHz/14kHz con presets (Flat, Bass Boost, Treble Boost, Vocal, Loudness). Persistencia en localStorage. `3abd426`
-3. **M010/S03 — Visualizer expandible**: 3 modos (bars, waveform, circular). Panel expandible con CSS Grid animation. Modo persiste en localStorage. `ebc4bf9`
-4. **Fix: fade-out suave**: Animación de desvanecimiento al pausar/parar en los 3 modos del visualizer. `4cdca62`
-5. **Auditoría completa post-M010**: Identificados 5 focos de deuda técnica que se convirtieron en M011.
-6. **Reordenación de milestones**: M011 ahora es Quality & Hardening (antes de features nuevas).
-7. **Planificación M011**: 5 slices definidos y formalizados en GSD.
+1. **M011 — Quality & Hardening**: Extracción PlayerBar (465→componentes), React.memo, 109 tests frontend, typed error handling con retry
+2. **M012 — Structural Cleanup & CI**: Descomposición usePlayer (418→190 LOC), lazy routes, role-based guards, GitHub Actions CI
+3. **M013 — Visual Experience** (4 slices ejecutados, bug pendiente):
+   - S01: Color extraction desde cover art, dynamic theme toggle
+   - S02: NowPlayingOverlay fullscreen con controles, Up Next, animaciones
+   - S03: Visualizer integrado en overlay, crossfade de artwork
+   - S04: Scrobble status indicator en PlayerBar
+4. **Reajuste GSD** (esta sesión): R017–R023 validados, R024–R026 actualizados, STATE.md corregido
 
-### Estado del repo
+### Bug activo: NowPlayingOverlay stacking context
 
-- **Branch**: `main`, limpio (todo pusheado)
-- **10 milestones cerrados** (M001–M010)
-- **Builds**: backend y frontend pasando
+El overlay se renderiza dentro del PlayerBar. El PlayerBar tiene `animate-slide-up` que usa `transform` — esto crea un containing block para `position: fixed`. Resultado:
+- El overlay no cubre toda la pantalla
+- Los controles del PlayerBar quedan visibles debajo
+- La sidebar se cuela
+
+**Fix propuesto** (acordado con usuario, no implementado):
+1. `createPortal(…, document.body)` para escapar el stacking context
+2. Visualizer como fondo del overlay completo con opacidad baja
+3. Artwork responsivo hasta `w-96 h-96` en `lg:`
+4. Ocultar/bajar z-index del PlayerBar cuando overlay está abierto
 
 ---
 
-## Siguiente: M011 — Quality & Hardening
+## Estado del repo
 
-### Objetivo
+- **Branch**: `main`
+- **12 milestones cerrados** (M001–M012)
+- **M013**: 4 slices ejecutados, needs-remediation
+- **Cambios sin commitear**: artefactos GSD actualizados (REQUIREMENTS, STATE, CODEBASE)
 
-Blindar el aplicativo existente antes de añadir funcionalidad nueva. Mejorar mantenibilidad, accesibilidad, testabilidad y robustez.
+## Métricas
 
-### Slices planificados (en GSD)
+- **877 tracks** en librería
+- **345 tests**: 236 backend + 109 frontend
+- **21 E2E Playwright**
+- **React.memo**: en uso (post-M011)
+- **Lazy routes**: en uso (post-M012)
+- **CI**: GitHub Actions (post-M012)
 
-| Slice | Título | Riesgo | Depende de | Foco |
-|-------|--------|--------|------------|------|
-| **S01** | Refactor PlayerBar — extraer componentes | `high` | — | PlayerBar.tsx tiene 465 LOC con 9 responsabilidades. Extraer EQ, crossfade, visualizer a componentes propios. Prerequisito de S02 y S04. |
-| **S02** | Memoización y rendimiento | `medium` | S01 | `React.memo` en componentes pesados, `useMemo`/`useCallback` donde faltan. Medir con Profiler. |
-| **S03** | Accesibilidad (ARIA + semántica) | `low` | — | ARIA labels, alt text, roles, landmarks. 0 archivos con ARIA actualmente. |
-| **S04** | Tests de componentes y hooks | `medium` | S01 | Vitest + Testing Library para componentes extraídos y hooks (usePlayer, useAudioAnalyser). |
-| **S05** | Error handling servicios externos + cleanup | `low` | — | Backend: distinguir timeout/auth/config en Last.fm/ListenBrainz. Frontend: AbortController. |
+## Requirements
 
-### Métricas de la auditoría (línea base)
+- **20 validados** (R001–R013, R017–R023, R026)
+- **2 activos** (R024 Now Playing overlay, R025 color extraction — ambos implementados, bloqueados por bug)
+- **3 diferidos** (R014 Subsonic, R015 transcoding, R016 out-of-scope)
 
-- `React.memo`: 0 usos
-- `useMemo`: 0 usos
-- `useCallback`: 6 archivos (ya presente)
-- ARIA labels/roles: 0 archivos
-- `alt` en imágenes: 3 de 26 componentes
-- Tests frontend: 4 unit tests (468 LOC), 0 de componentes/hooks
-- `React.lazy`: 0
-- `AbortController`: 0
+## Milestones en cola
 
-### Archivos clave para S01
+| ID | Milestone |
+|----|-----------|
+| **M013** | Visual Experience — remediar bug, validar, cerrar |
+| M014 | Smart Library — edición metadata, filesystem watcher, smart playlists |
+| M015 | Integrations & Streaming — lyrics .lrc, transcoding, Subsonic API |
 
-- `musicode-ui/src/components/PlayerBar.tsx` — 465 líneas, objetivo principal del refactor
-- `musicode-ui/src/components/Visualizer.tsx` — ya separado pero recibe muchos props desde PlayerBar
-- `musicode-ui/src/audio/audioGraph.ts` — pipeline centralizado (no tocar, solo consumir)
-- `musicode-ui/src/audio/audioPreferences.ts` — preferencias de EQ, crossfade, visualizer mode
-- `musicode-ui/src/hooks/usePlayer.ts` — lógica de playback
-- `musicode-ui/src/context/PlayerContext.tsx` — estado del player (useReducer + dual context)
+## Archivos clave para la remediación M013
 
-### Milestones en cola tras M011
+- `musicode-ui/src/components/player/NowPlayingOverlay.tsx` — overlay con el bug
+- `musicode-ui/src/components/player/PlayerBar.tsx` — parent con CSS transform
+- `musicode-ui/src/hooks/useColorExtraction.ts` — extracción de color
+- `musicode-ui/src/index.css` — animaciones y tema dinámico
 
-| Orden | ID | Milestone |
-|-------|-----|-----------|
-| 2 | M012 | Visual Experience — fullscreen Now Playing, tema dinámico, waveform preview |
-| 3 | M013 | Smart Library — edición metadata, filesystem watcher, smart playlists, radio mode |
-| 4 | M014 | Integrations & Streaming — lyrics .lrc, transcoding, Subsonic API, Bandcamp import |
-
-### Para retomar
+## Para retomar
 
 ```
 1. Leer este handover
-2. /gsd status para ver el estado de M011
-3. Arrancar S01 — planificar tasks y ejecutar el refactor de PlayerBar
+2. /gsd status para ver el estado de M013
+3. Implementar fix del portal (createPortal a document.body)
+4. Validar overlay, cerrar M013
 ```
 
 ---
 
-*No hay work-in-progress ni branches pendientes. Repo limpio.*
+*M013 tiene trabajo ejecutado con bug conocido. El fix está diagnosticado y acordado.*
