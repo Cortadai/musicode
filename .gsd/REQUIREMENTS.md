@@ -244,7 +244,7 @@ This file is the explicit capability and coverage contract for the project.
 - Why it matters: Visual identity feature for the player. Deferred to a future milestone to avoid scope creep on the audio pipeline work.
 - Source: user
 - Validation: unmapped
-- Notes: Deferred to M012 (Visual Experience). Depends on enhanced visualizer from M010.
+- Notes: Deferred to M013 (Visual Experience). Depends on enhanced visualizer from M010.
 
 ### R025 — Visualizer color adaptation to album cover art — extract dominant colors from cover art and use them for visualizer rendering.
 - Class: differentiator
@@ -253,7 +253,7 @@ This file is the explicit capability and coverage contract for the project.
 - Why it matters: Visual polish that ties the visualizer to the current album's identity. Non-trivial (color extraction problem).
 - Source: user
 - Validation: unmapped
-- Notes: Deferred to future milestone. Color extraction is a separate problem domain.
+- Notes: Deferred to M013 (Visual Experience). Color extraction is a separate problem domain.
 
 ### R026 — Circular/radial visualization mode — frequency bars arranged in an arc or circle around the album artwork.
 - Class: differentiator
@@ -262,7 +262,7 @@ This file is the explicit capability and coverage contract for the project.
 - Why it matters: Alternative visual mode for variety. Lower priority than the 3 core modes.
 - Source: user
 - Validation: unmapped
-- Notes: Deferred to future milestone. Can be added as an additional mode once the visualizer architecture supports mode plugins.
+- Notes: Deferred to M013 (Visual Experience). Can be added as an additional mode once the visualizer architecture supports mode plugins.
 
 ## Out of Scope
 

@@ -1,13 +1,14 @@
 # Codebase Map
 
-Generated: 2026-04-18T09:51:29Z | Files: 209 | Described: 0/209
-<!-- gsd:codebase-meta {"generatedAt":"2026-04-18T09:51:29Z","fingerprint":"3145d776f5d68438d0231b49ff59d549d50dd0ce","fileCount":209,"truncated":false} -->
+Generated: 2026-04-23T17:19:06Z | Files: 213 | Described: 0/213
+<!-- gsd:codebase-meta {"generatedAt":"2026-04-23T17:19:06Z","fingerprint":"8e688264ff53ac22abe385144421bae22a8e5995","fileCount":213,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
 - `.gitignore`
 - `Caddyfile`
 - `docker-compose.yml`
+- `HANDOVER.md`
 - `personal-media-player-proyecto.md`
 - `PLAN.md`
 - `README.md`
@@ -234,6 +235,11 @@ Generated: 2026-04-18T09:51:29Z | Files: 209 | Described: 0/209
 - `musicode-ui/src/api/search.ts`
 - `musicode-ui/src/api/stats.ts`
 - `musicode-ui/src/api/tracks.ts`
+
+### musicode-ui/src/audio/
+- `musicode-ui/src/audio/audioGraph.ts`
+- `musicode-ui/src/audio/audioPreferences.ts`
+- `musicode-ui/src/audio/eqProcessor.ts`
 
 ### musicode-ui/src/components/activity/
 - `musicode-ui/src/components/activity/ActivityFeed.tsx`

@@ -7,3 +7,5 @@
 {"id":"2bc57387-ccb8-4886-8a1a-424e59b7e880","ts":"2026-04-18T06:50:38.842Z","severity":"success","message":"✓ Analyzed codebase","source":"notify","read":false}
 {"id":"379c9e7c-5037-4c23-ae28-0c9a775e9e55","ts":"2026-04-18T06:50:38.843Z","severity":"info","message":"Reviewing prior context...","source":"notify","read":false}
 {"id":"e84e6f9c-95fb-4a7a-b043-9199cddb9851","ts":"2026-04-18T06:50:38.848Z","severity":"success","message":"✓ Reviewed prior context","source":"notify","read":false}
+{"id":"8c6a91fe-89d9-4e3b-a16c-06b267e1ed21","ts":"2026-04-18T15:47:35.279Z","severity":"info","message":"Claude Code MCP prepared at C:\\Users\\david\\Desktop\\musicode\\.mcp.json","source":"notify","read":false}
+{"id":"c241e308-edda-48ee-99be-24d096a545db","ts":"2026-04-23T17:18:47.695Z","severity":"info","message":"Claude Code MCP prepared at C:\\Users\\david\\Desktop\\musicode\\.mcp.json","source":"notify","read":false}
