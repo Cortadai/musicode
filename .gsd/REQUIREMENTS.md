@@ -2,28 +2,6 @@
 
 This file is the explicit capability and coverage contract for the project.
 
-## Active
-
-### R024 — Fullscreen "Now Playing" overlay — immersive view covering the main content with visualizer + track info + artwork, similar to Spotify's Now Playing screen.
-- Class: differentiator
-- Status: active
-- Description: Fullscreen "Now Playing" overlay — immersive view covering the main content with visualizer + track info + artwork, similar to Spotify's Now Playing screen.
-- Why it matters: Visual identity feature for the player. Deferred to a future milestone to avoid scope creep on the audio pipeline work.
-- Source: user
-- Primary owning slice: M013/S02
-- Validation: M013/S02 implemented NowPlayingOverlay with slide-up animation, artwork, controls, dynamic theme toggle. Known bug: stacking context broken — overlay renders inside PlayerBar's transform context, preventing true fullscreen coverage. Needs portal fix before validation.
-- Notes: Implemented in M013/S02 but blocked by stacking context bug. Fix planned: createPortal to document.body, reposition visualizer, responsive artwork.
-
-### R025 — Visualizer color adaptation to album cover art — extract dominant colors from cover art and use them for visualizer rendering.
-- Class: differentiator
-- Status: active
-- Description: Visualizer color adaptation to album cover art — extract dominant colors from cover art and use them for visualizer rendering.
-- Why it matters: Visual polish that ties the visualizer to the current album's identity. Non-trivial (color extraction problem).
-- Source: user
-- Primary owning slice: M013/S01
-- Validation: M013/S01 implemented color extraction from cover art using canvas getImageData. Dynamic theme toggle applies artwork-derived gradient to Now Playing background. Works correctly — blocked only by R024's overlay stacking bug.
-- Notes: Color extraction works. Validation depends on R024 overlay fix — once the overlay renders correctly fullscreen, this can be validated.
-
 ## Validated
 
 ### R001 — Backend scans configured filesystem folders recursively, reads audio file metadata (title, artist, album, track number, duration, bitrate, sample rate, genre, year, cover art) using JAudioTagger, and persists to database. Incremental rescan detects only new/changed files.
@@ -233,6 +211,26 @@ This file is the explicit capability and coverage contract for the project.
 - Primary owning slice: M010/S03
 - Validation: M010/S03 — 3 modes: frequency bars, waveform, circular (replaced spectrogram per user preference). Expandable panel with CSS Grid animation. Mode persisted in localStorage. Smooth fade-out on pause/stop. Verified by user in M010 VALIDATION (pass).
 
+### R024 — Fullscreen "Now Playing" overlay — immersive view covering the main content with visualizer + track info + artwork, similar to Spotify's Now Playing screen.
+- Class: differentiator
+- Status: validated
+- Description: Fullscreen "Now Playing" overlay — immersive view covering the main content with visualizer + track info + artwork, similar to Spotify's Now Playing screen.
+- Why it matters: Visual identity feature for the player. Deferred to a future milestone to avoid scope creep on the audio pipeline work.
+- Source: user
+- Primary owning slice: M013/S02
+- Validation: M013/S02 — NowPlayingOverlay rendered via createPortal to document.body, escaping PlayerBar's CSS transform stacking context. Fullscreen coverage with position:fixed + inset:0. Responsive artwork (w-64→md:w-80→lg:w-96). Visualizer selector (bars/waveform/circular) in top bar with artwork-only default mode. Volume slider centered. "Up Next" positioned correctly. User verified visually — confirmed working. Committed in 33d0c00.
+- Notes: Stacking context bug fixed via createPortal. Visualizer toggle replaced with direct 3-mode selector (click active mode to return to artwork-only). Minimize button removed (redundant with close).
+
+### R025 — Visualizer color adaptation to album cover art — extract dominant colors from cover art and use them for visualizer rendering.
+- Class: differentiator
+- Status: validated
+- Description: Visualizer color adaptation to album cover art — extract dominant colors from cover art and use them for visualizer rendering.
+- Why it matters: Visual polish that ties the visualizer to the current album's identity. Non-trivial (color extraction problem).
+- Source: user
+- Primary owning slice: M013/S01
+- Validation: M013/S01 — Color extraction from cover art via canvas getImageData. Dynamic color palette toggle in overlay top bar applies artwork-derived gradient to Now Playing background. Solid #09090b base prevents bleed-through. Works correctly with portal-based overlay. User verified visually. Committed in 33d0c00.
+- Notes: Color extraction works. Palette toggle in overlay top bar alongside visualizer mode selector.
+
 ### R026 — Circular/radial visualization mode — frequency bars arranged in an arc or circle around the album artwork.
 - Class: differentiator
 - Status: validated
@@ -307,13 +305,13 @@ This file is the explicit capability and coverage contract for the project.
 | R021 | differentiator | validated | M010/S01 | none | M010/S01 — Crossfade slider 0-12s, default off (0s). Dual-source gain nodes with linear ramps. Crossfade/gapless mutually exclusive at runtime. Verified by user in M010 VALIDATION (pass). |
 | R022 | differentiator | validated | M010/S02 | none | M010/S02 — 5 BiquadFilterNodes (60Hz/230Hz/910Hz/3.6kHz/14kHz), -12 to +12 dB range. 5 presets (Flat, Bass Boost, Treble Boost, Vocal, Loudness). Popover UI, default flat/off. Persistence in localStorage. All presets verified by user in M010 VALIDATION (pass). |
 | R023 | differentiator | validated | M010/S03 | none | M010/S03 — 3 modes: frequency bars, waveform, circular (replaced spectrogram per user preference). Expandable panel with CSS Grid animation. Mode persisted in localStorage. Smooth fade-out on pause/stop. Verified by user in M010 VALIDATION (pass). |
-| R024 | differentiator | active | M013/S02 | none | M013/S02 implemented NowPlayingOverlay with slide-up animation, artwork, controls, dynamic theme toggle. Known bug: stacking context broken — overlay renders inside PlayerBar's transform context, preventing true fullscreen coverage. Needs portal fix before validation. |
-| R025 | differentiator | active | M013/S01 | none | M013/S01 implemented color extraction from cover art using canvas getImageData. Dynamic theme toggle applies artwork-derived gradient to Now Playing background. Works correctly — blocked only by R024's overlay stacking bug. |
+| R024 | differentiator | validated | M013/S02 | none | M013/S02 — NowPlayingOverlay rendered via createPortal to document.body, escaping PlayerBar's CSS transform stacking context. Fullscreen coverage with position:fixed + inset:0. Responsive artwork (w-64→md:w-80→lg:w-96). Visualizer selector (bars/waveform/circular) in top bar with artwork-only default mode. Volume slider centered. "Up Next" positioned correctly. User verified visually — confirmed working. Committed in 33d0c00. |
+| R025 | differentiator | validated | M013/S01 | none | M013/S01 — Color extraction from cover art via canvas getImageData. Dynamic color palette toggle in overlay top bar applies artwork-derived gradient to Now Playing background. Solid #09090b base prevents bleed-through. Works correctly with portal-based overlay. User verified visually. Committed in 33d0c00. |
 | R026 | differentiator | validated | M010/S03 | none | M010/S03 — Circular visualization mode delivered as one of 3 visualizer modes (bars, waveform, circular). Replaced originally planned spectrogram per user preference. Renders frequency bars in arc/circle arrangement. Verified by user in M010 VALIDATION (pass). |
 
 ## Coverage Summary
 
-- Active requirements: 2
-- Mapped to slices: 2
-- Validated: 21 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R017, R018, R019, R020, R021, R022, R023, R026)
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 23 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R017, R018, R019, R020, R021, R022, R023, R024, R025, R026)
 - Unmapped active requirements: 0

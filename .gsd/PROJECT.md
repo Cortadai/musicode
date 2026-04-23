@@ -12,7 +12,7 @@ Think "my own VLC but prettier, in a browser, and personal."
 
 ## Current State
 
-Fully functional music player with 12 milestones complete. Library of 877 tracks scanned. Multi-user auth, listening stats, scrobbling integrations, real-time activity feed, Swagger API docs, gapless playback, crossfade, 5-band parametric EQ, expandable visualizer (3 modes), code-split routes with role-based guards, GitHub Actions CI, and 345 tests (236 backend + 109 frontend).
+Fully functional music player with 13 milestones complete. Library of 877 tracks scanned. Multi-user auth, listening stats, scrobbling integrations, real-time activity feed, Swagger API docs, gapless playback, crossfade, 5-band parametric EQ, expandable visualizer (3 modes), fullscreen Now Playing overlay with cover art color extraction and inline visualizer selector, code-split routes with role-based guards, GitHub Actions CI, and 345 tests (236 backend + 109 frontend).
 
 ## Architecture / Key Patterns
 
@@ -75,10 +75,10 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 - [x] M010: Audio Experience — Crossfade opt-in, 5-band parametric EQ, enhanced visualizer (3 modes + expandable panel)
 - [x] M011: Quality & Hardening — Component extraction (PlayerBar), React.memo optimization, keyboard accessibility, 109 frontend tests, typed error handling with retry
 - [x] M012: Structural Cleanup & CI — usePlayer decomposition (418→190 LOC), lazy routes, role-based guards, GitHub Actions CI
+- [x] M013: Visual Experience — Fullscreen Now Playing overlay (portal-based), cover art color extraction, inline visualizer selector (3 modes + artwork-only default)
 
 ## Planned Milestones
 
-- [ ] M013: Visual Experience — Fullscreen Now Playing overlay, cover art color extraction, visualizer enhancements
 - [ ] M014: Smart Library — Metadata editing, filesystem watcher, smart playlists, radio mode
 - [ ] M015: Integrations & Streaming — Synchronized lyrics (.lrc), transcoding, Subsonic API, Bandcamp import
 

@@ -2,80 +2,68 @@
 
 ## Resumen
 
-**12 milestones completados** (M001–M012). M013 (Visual Experience) ejecutado pero **necesita remediación** — bug de stacking context en NowPlayingOverlay.
+**13 milestones completados** (M001–M013). Proyecto en estado idle — sin milestone activo.
 
 ### Lo que se hizo desde el último handover (18 abril)
 
 1. **M011 — Quality & Hardening**: Extracción PlayerBar (465→componentes), React.memo, 109 tests frontend, typed error handling con retry
 2. **M012 — Structural Cleanup & CI**: Descomposición usePlayer (418→190 LOC), lazy routes, role-based guards, GitHub Actions CI
-3. **M013 — Visual Experience** (4 slices ejecutados, bug pendiente):
-   - S01: Color extraction desde cover art, dynamic theme toggle
+3. **M013 — Visual Experience** (completado):
+   - S01: Color extraction desde cover art, dynamic palette toggle
    - S02: NowPlayingOverlay fullscreen con controles, Up Next, animaciones
    - S03: Visualizer integrado en overlay, crossfade de artwork
    - S04: Scrobble status indicator en PlayerBar
-4. **Reajuste GSD** (esta sesión): R017–R023 validados, R024–R026 actualizados, STATE.md corregido
-
-### Bug activo: NowPlayingOverlay stacking context
-
-El overlay se renderiza dentro del PlayerBar. El PlayerBar tiene `animate-slide-up` que usa `transform` — esto crea un containing block para `position: fixed`. Resultado:
-- El overlay no cubre toda la pantalla
-- Los controles del PlayerBar quedan visibles debajo
-- La sidebar se cuela
-
-**Fix propuesto** (acordado con usuario, no implementado):
-1. `createPortal(…, document.body)` para escapar el stacking context
-2. Visualizer como fondo del overlay completo con opacidad baja
-3. Artwork responsivo hasta `w-96 h-96` en `lg:`
-4. Ocultar/bajar z-index del PlayerBar cuando overlay está abierto
+4. **Fix NowPlayingOverlay** (esta sesión):
+   - `createPortal(…, document.body)` para escapar stacking context del PlayerBar
+   - Visualizer toggle reemplazado por selector directo de 3 modos (bars/waveform/circular)
+   - Modo por defecto: artwork-only (sin visualizer activo)
+   - Botón minimize eliminado (redundante con close)
+   - Controles duplicados del visualizer eliminados (`hideControls` prop)
+   - "Up Next" reposicionado con margen adecuado
+   - Barra de volumen centrada horizontalmente (spacer invisible)
+   - Fondo sólido `#09090b` debajo del gradiente dinámico
+5. **Reajuste documentación** (esta sesión): R024+R025 validados, STATE/PROJECT/HANDOVER actualizados
 
 ---
 
 ## Estado del repo
 
 - **Branch**: `main`
-- **12 milestones cerrados** (M001–M012)
-- **M013**: 4 slices ejecutados, needs-remediation
-- **Cambios sin commitear**: artefactos GSD actualizados (REQUIREMENTS, STATE, CODEBASE)
+- **13 milestones cerrados** (M001–M013)
+- **Sin milestone activo**
+- **Working tree**: limpio (último commit: `33d0c00`)
 
 ## Métricas
 
 - **877 tracks** en librería
 - **345 tests**: 236 backend + 109 frontend
 - **21 E2E Playwright**
+- **22 requirements validados**, 3 diferidos, 1 out-of-scope
 - **React.memo**: en uso (post-M011)
 - **Lazy routes**: en uso (post-M012)
 - **CI**: GitHub Actions (post-M012)
 
 ## Requirements
 
-- **20 validados** (R001–R013, R017–R023, R026)
-- **2 activos** (R024 Now Playing overlay, R025 color extraction — ambos implementados, bloqueados por bug)
+- **22 validados** (R001–R013, R017–R026)
+- **0 activos**
 - **3 diferidos** (R014 Subsonic, R015 transcoding, R016 out-of-scope)
 
 ## Milestones en cola
 
 | ID | Milestone |
 |----|-----------|
-| **M013** | Visual Experience — remediar bug, validar, cerrar |
 | M014 | Smart Library — edición metadata, filesystem watcher, smart playlists |
 | M015 | Integrations & Streaming — lyrics .lrc, transcoding, Subsonic API |
-
-## Archivos clave para la remediación M013
-
-- `musicode-ui/src/components/player/NowPlayingOverlay.tsx` — overlay con el bug
-- `musicode-ui/src/components/player/PlayerBar.tsx` — parent con CSS transform
-- `musicode-ui/src/hooks/useColorExtraction.ts` — extracción de color
-- `musicode-ui/src/index.css` — animaciones y tema dinámico
 
 ## Para retomar
 
 ```
 1. Leer este handover
-2. /gsd status para ver el estado de M013
-3. Implementar fix del portal (createPortal a document.body)
-4. Validar overlay, cerrar M013
+2. /gsd status para ver el estado general
+3. Decidir próximo milestone (M014 o M015)
 ```
 
 ---
 
-*M013 tiene trabajo ejecutado con bug conocido. El fix está diagnosticado y acordado.*
+*Proyecto estable. 13 milestones entregados. Sin bugs conocidos.*

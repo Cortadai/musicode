@@ -67,7 +67,10 @@ npm run dev
 - **Multi-user** — Admin-managed users with ADMIN/LISTENER roles, no public registration
 - **Media Session** — OS media keys (play/pause/next/prev), now-playing notification with cover art, OS seek bar
 - **PWA** — Installable as a standalone app, service worker caches app shell and cover art for offline-ready loading
-- **Spectrum Visualizer** — Real-time frequency bars via Web Audio API, toggleable from the player bar
+- **Crossfade** — Configurable 0-12s crossfade between tracks (default off), dual-source gain nodes with linear ramps
+- **5-Band EQ** — Parametric equalizer (60Hz–14kHz), 5 presets, opt-in with flat default
+- **Visualizer** — 3 modes (frequency bars, waveform, circular), expandable panel, mode persisted in localStorage
+- **Now Playing Overlay** — Fullscreen immersive view with artwork, controls, dynamic color extraction from cover art, inline visualizer selector
 - **Listening Stats** — Play tracking at 50% duration, top artists/albums/tracks, plays-per-day chart, period selector
 - **Scrobbling** — Last.fm and ListenBrainz integration, per-user config, async with retry
 - **Activity Feed** — Real-time SSE stream showing what users are listening to
@@ -105,10 +108,10 @@ See `.env.example` for full documentation.
 ## Tests
 
 ```bash
-# Backend — 108 tests, JaCoCo ≥80% coverage
+# Backend — 236 tests, JaCoCo ≥80% coverage
 cd musicode-server && mvn clean verify
 
-# Frontend — 40 unit tests, Vitest v8 coverage thresholds
+# Frontend — 109 unit tests, Vitest v8 coverage thresholds
 cd musicode-ui && npm run test:coverage
 
 # E2E — 21 Playwright tests (requires backend running on :8080)
