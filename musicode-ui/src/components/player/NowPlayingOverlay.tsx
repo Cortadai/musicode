@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { X, Palette, ChevronDown, BarChart3 } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, Palette, BarChart3, AudioWaveform, Disc3 } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useDynamicTheme } from '../../hooks/useDynamicTheme';
 import { initAudioContext } from '../../hooks/useAudioAnalyser';
@@ -40,15 +41,16 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
     if (isPlaying) pause(); else resume();
   }, [isPlaying, pause, resume]);
 
-  const handleToggleVisualizer = useCallback(() => {
+  const handleSelectVisualizer = useCallback((mode: VisualizerMode) => {
     initAudioContext();
-    setShowVisualizer(v => !v);
-  }, []);
-
-  const handleVisualizerModeChange = useCallback((mode: VisualizerMode) => {
-    setVisualizerMode(mode);
-    savePreferences({ visualizerMode: mode });
-  }, []);
+    if (showVisualizer && visualizerMode === mode) {
+      setShowVisualizer(false);
+    } else {
+      setVisualizerMode(mode);
+      setShowVisualizer(true);
+      savePreferences({ visualizerMode: mode });
+    }
+  }, [showVisualizer, visualizerMode]);
 
   useEffect(() => {
     if (!open) return;
@@ -99,10 +101,10 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
   const coverSrc = hasCover && albumId ? getCoverUrl(albumId) : null;
 
   const bgStyle = dynamicEnabled && colors
-    ? { background: `radial-gradient(ellipse at center, ${colors.primary}18 0%, ${colors.background} 70%)` }
+    ? { background: `radial-gradient(ellipse at center, ${colors.primary}18 0%, ${colors.background} 70%) no-repeat, #09090b` }
     : {};
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
       role="dialog"
@@ -112,83 +114,88 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
       className={`now-playing-overlay ${open ? 'now-playing-open' : 'now-playing-closed'}`}
       style={bgStyle}
     >
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-6 pt-4 pb-2">
-        <button
-          onClick={onClose}
-          aria-label="Close Now Playing"
-          className="text-zinc-400 hover:text-zinc-100 transition-colors p-1"
-        >
-          <ChevronDown className="w-6 h-6" />
-        </button>
+      {/* Visualizer as full-overlay background */}
+      {showVisualizer && (
+        <div className="absolute inset-0 z-0 opacity-30 pointer-events-none overflow-hidden">
+          <Visualizer visible={showVisualizer && open} mode={visualizerMode} onModeChange={handleSelectVisualizer} fullSize hideControls />
+        </div>
+      )}
 
+      {/* Top bar */}
+      <div className="relative z-10 flex items-center justify-between px-6 pt-4 pb-2">
         <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Now Playing</span>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleToggleVisualizer}
-            aria-label={showVisualizer ? 'Hide visualizer' : 'Show visualizer'}
-            aria-pressed={showVisualizer}
-            className={`p-1 transition-colors ${showVisualizer ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
-          >
-            <BarChart3 className="w-5 h-5" />
-          </button>
+        <div className="flex items-center gap-1">
+          {([
+            { mode: 'bars' as VisualizerMode, Icon: BarChart3, label: 'Bars visualizer' },
+            { mode: 'waveform' as VisualizerMode, Icon: AudioWaveform, label: 'Waveform visualizer' },
+            { mode: 'circular' as VisualizerMode, Icon: Disc3, label: 'Circular visualizer' },
+          ]).map(({ mode, Icon, label }) => {
+            const active = showVisualizer && visualizerMode === mode;
+            return (
+              <button
+                key={mode}
+                onClick={() => handleSelectVisualizer(mode)}
+                aria-label={active ? `Hide ${label}` : label}
+                aria-pressed={active}
+                className={`p-1.5 rounded transition-colors ${active ? 'text-indigo-400 bg-indigo-400/10 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                <Icon className="w-4 h-4" />
+              </button>
+            );
+          })}
+
+          <div className="w-px h-4 bg-zinc-700 mx-1" />
+
           <button
             onClick={toggleDynamic}
             aria-label={dynamicEnabled ? 'Disable dynamic colors' : 'Enable dynamic colors'}
             aria-pressed={dynamicEnabled}
-            className={`p-1 transition-colors ${dynamicEnabled ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`p-1.5 rounded transition-colors ${dynamicEnabled ? 'text-indigo-400 bg-indigo-400/10 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
           >
-            <Palette className="w-5 h-5" />
+            <Palette className="w-4 h-4" />
           </button>
+
+          <div className="w-px h-4 bg-zinc-700 mx-1" />
+
           <button
             onClick={onClose}
             aria-label="Close"
-            className="text-zinc-400 hover:text-zinc-100 transition-colors p-1"
+            className="text-zinc-400 hover:text-zinc-100 transition-colors p-1.5 rounded"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 gap-6 overflow-hidden">
-        {/* Artwork + Visualizer container */}
-        <div className="relative w-64 h-64 md:w-80 md:h-80">
-          {/* Visualizer behind artwork */}
-          {showVisualizer && (
-            <div className="absolute -inset-12 z-0">
-              <Visualizer visible={showVisualizer && open} mode={visualizerMode} onModeChange={handleVisualizerModeChange} fullSize />
-            </div>
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 gap-6 overflow-hidden">
+        {/* Artwork with crossfade */}
+        <div
+          className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-2xl overflow-hidden shadow-2xl"
+          style={dynamicEnabled && colors ? { boxShadow: `0 20px 60px ${colors.primary}30` } : {}}
+        >
+          {/* Previous cover (fading out) */}
+          {coverFading && prevCoverSrc && (
+            <img
+              src={prevCoverSrc}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover np-cover-exit"
+            />
           )}
 
-          {/* Artwork with crossfade */}
-          <div
-            className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl z-10"
-            style={dynamicEnabled && colors ? { boxShadow: `0 20px 60px ${colors.primary}30` } : {}}
-          >
-            {/* Previous cover (fading out) */}
-            {coverFading && prevCoverSrc && (
-              <img
-                src={prevCoverSrc}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover np-cover-exit"
-              />
-            )}
-
-            {/* Current cover (fading in) */}
-            {coverSrc ? (
-              <img
-                src={coverSrc}
-                alt={`${currentTrack.album?.title} cover`}
-                className={`w-full h-full object-cover ${coverFading ? 'np-cover-enter' : ''}`}
-              />
-            ) : (
-              <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
-                <span className="text-6xl text-zinc-600">&#9835;</span>
-              </div>
-            )}
-          </div>
+          {/* Current cover (fading in) */}
+          {coverSrc ? (
+            <img
+              src={coverSrc}
+              alt={`${currentTrack.album?.title} cover`}
+              className={`w-full h-full object-cover ${coverFading ? 'np-cover-enter' : ''}`}
+            />
+          ) : (
+            <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+              <span className="text-6xl text-zinc-600">&#9835;</span>
+            </div>
+          )}
         </div>
 
         {/* Track info */}
@@ -222,13 +229,14 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
         </div>
 
         {/* Volume */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
+          <div className="w-4" aria-hidden="true" />
         </div>
 
         {/* Up Next */}
         {nextTrack && (
-          <div className="text-center mt-2">
+          <div className="text-center mb-8">
             <span className="text-[11px] text-zinc-600 uppercase tracking-wider">Up Next</span>
             <p className="text-sm text-zinc-400 truncate max-w-xs">
               {nextTrack.title} \u2014 {nextTrack.artist?.name ?? 'Unknown'}
@@ -236,6 +244,7 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
