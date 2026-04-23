@@ -1,24 +1,22 @@
 package com.musicode.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.musicode.model.dto.ScrobbleResult;
+import com.musicode.model.dto.ScrobbleResult.ErrorType;
 import com.musicode.model.entity.Track;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-/**
- * ListenBrainz scrobble integration.
- * API docs: https://listenbrainz.readthedocs.io/en/latest/users/api/core.html
- *
- * Auth is simple: user provides a token from their ListenBrainz profile page.
- * No OAuth flow — just a bearer token in the Authorization header.
- */
 @Service
 @Slf4j
 public class ListenBrainzService {
@@ -29,12 +27,7 @@ public class ListenBrainzService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * Submit a listen to ListenBrainz.
-     *
-     * @return true if successful, false on failure
-     */
-    public boolean submitListen(Track track, String userToken, Instant listenedAt) {
+    public ScrobbleResult submitListen(Track track, String userToken, Instant listenedAt) {
         try {
             Map<String, Object> trackMetadata = Map.of(
                     "artist_name", track.getArtist() != null ? track.getArtist().getName() : "Unknown",
@@ -52,8 +45,6 @@ public class ListenBrainzService {
                     "payload", List.of(listen)
             );
 
-            // Serialize explicitly to JSON string to avoid RestTemplate converter ambiguity
-            // with immutable Map.of() values (observed: empty body sent to server).
             String jsonBody = objectMapper.writeValueAsString(body);
 
             var headers = new HttpHeaders();
@@ -66,14 +57,27 @@ public class ListenBrainzService {
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.debug("[listenbrainz] Scrobbled: {} — {}", track.getArtist() != null ? track.getArtist().getName() : "?", track.getTitle());
-                return true;
+                return ScrobbleResult.ok();
             } else {
                 log.warn("[listenbrainz] Unexpected status {}: {}", response.getStatusCode(), response.getBody());
-                return false;
+                return ScrobbleResult.error(ErrorType.SERVER_ERROR, "Unexpected status: " + response.getStatusCode());
             }
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) {
+                log.warn("[listenbrainz] LB_AUTH_ERROR scrobble '{}': {} {}", track.getTitle(), e.getStatusCode(), e.getMessage());
+                return ScrobbleResult.error(ErrorType.AUTH_ERROR, "Auth rejected: " + e.getStatusCode());
+            }
+            log.warn("[listenbrainz] LB_CLIENT_ERROR scrobble '{}': {} {}", track.getTitle(), e.getStatusCode(), e.getMessage());
+            return ScrobbleResult.error(ErrorType.UNKNOWN, "Client error: " + e.getStatusCode());
+        } catch (HttpServerErrorException e) {
+            log.warn("[listenbrainz] LB_SERVER_ERROR scrobble '{}': {} {}", track.getTitle(), e.getStatusCode(), e.getMessage());
+            return ScrobbleResult.error(ErrorType.SERVER_ERROR, "Server error: " + e.getStatusCode());
+        } catch (ResourceAccessException e) {
+            log.warn("[listenbrainz] LB_TIMEOUT scrobble '{}': {}", track.getTitle(), e.getMessage());
+            return ScrobbleResult.error(ErrorType.TIMEOUT, e.getMessage());
         } catch (Exception e) {
-            log.warn("[listenbrainz] Failed to scrobble '{}': {}", track.getTitle(), e.getMessage());
-            return false;
+            log.warn("[listenbrainz] LB_UNKNOWN_ERROR scrobble '{}': {}", track.getTitle(), e.getMessage());
+            return ScrobbleResult.error(ErrorType.UNKNOWN, e.getMessage());
         }
     }
 }

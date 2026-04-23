@@ -2,6 +2,8 @@ package com.musicode.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.musicode.model.dto.ScrobbleResult;
+import com.musicode.model.dto.ScrobbleResult.ErrorType;
 import com.musicode.model.entity.Album;
 import com.musicode.model.entity.Artist;
 import com.musicode.model.entity.Track;
@@ -48,9 +50,9 @@ class ListenBrainzServiceWireMockTest {
         wireMock.stubFor(post(urlEqualTo(SUBMIT_PATH))
                 .willReturn(aResponse().withStatus(200).withBody("{\"status\":\"ok\"}")));
 
-        boolean ok = service.submitListen(fullTrack(), "lb-token-123", Instant.ofEpochSecond(1_700_000_000L));
+        ScrobbleResult result = service.submitListen(fullTrack(), "lb-token-123", Instant.ofEpochSecond(1_700_000_000L));
 
-        assertThat(ok).isTrue();
+        assertThat(result.success()).isTrue();
 
         var requests = wireMock.findAll(postRequestedFor(urlEqualTo(SUBMIT_PATH)));
         assertThat(requests).hasSize(1);
@@ -76,20 +78,22 @@ class ListenBrainzServiceWireMockTest {
     }
 
     @Test
-    void submitListen_401_returnsFalse() {
+    void submitListen_401_returnsAuthError() {
         wireMock.stubFor(post(urlEqualTo(SUBMIT_PATH))
                 .willReturn(aResponse()
                         .withStatus(401)
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"code\":401,\"error\":\"Invalid authorization token.\"}")));
 
-        boolean ok = service.submitListen(fullTrack(), "bad-token", Instant.ofEpochSecond(1_700_000_000L));
+        ScrobbleResult result = service.submitListen(fullTrack(), "bad-token", Instant.ofEpochSecond(1_700_000_000L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
+        assertThat(result.errorType()).isEqualTo(ErrorType.AUTH_ERROR);
+        assertThat(result.isRetryable()).isFalse();
     }
 
     @Test
-    void submitListen_429_returnsFalse() {
+    void submitListen_429_returnsClientError() {
         wireMock.stubFor(post(urlEqualTo(SUBMIT_PATH))
                 .willReturn(aResponse()
                         .withStatus(429)
@@ -97,43 +101,46 @@ class ListenBrainzServiceWireMockTest {
                         .withHeader("X-RateLimit-Reset-In", "30")
                         .withBody("{\"code\":429,\"error\":\"Rate limit exceeded\"}")));
 
-        boolean ok = service.submitListen(fullTrack(), "lb-token", Instant.ofEpochSecond(1L));
+        ScrobbleResult result = service.submitListen(fullTrack(), "lb-token", Instant.ofEpochSecond(1L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
     }
 
     @Test
-    void submitListen_503_returnsFalse() {
+    void submitListen_503_returnsServerError() {
         wireMock.stubFor(post(urlEqualTo(SUBMIT_PATH))
                 .willReturn(aResponse()
                         .withStatus(503)
                         .withBody("<html>Service Unavailable</html>")));
 
-        boolean ok = service.submitListen(fullTrack(), "lb-token", Instant.ofEpochSecond(1L));
+        ScrobbleResult result = service.submitListen(fullTrack(), "lb-token", Instant.ofEpochSecond(1L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
+        assertThat(result.errorType()).isEqualTo(ErrorType.SERVER_ERROR);
+        assertThat(result.isRetryable()).isTrue();
     }
 
     @Test
     void submitListen_malformedJsonResponse_stillHandlesGracefully() {
-        // 2xx with a non-JSON body — service should still treat as success based on status
         wireMock.stubFor(post(urlEqualTo(SUBMIT_PATH))
                 .willReturn(aResponse().withStatus(200).withBody("not-json")));
 
-        boolean ok = service.submitListen(fullTrack(), "lb-token", Instant.ofEpochSecond(1L));
+        ScrobbleResult result = service.submitListen(fullTrack(), "lb-token", Instant.ofEpochSecond(1L));
 
-        assertThat(ok).isTrue();
+        assertThat(result.success()).isTrue();
     }
 
     @Test
-    void submitListen_serverClosesConnection_returnsFalse() {
+    void submitListen_serverClosesConnection_returnsTimeoutError() {
         wireMock.stubFor(post(urlEqualTo(SUBMIT_PATH))
                 .willReturn(aResponse().withFault(
                         com.github.tomakehurst.wiremock.http.Fault.CONNECTION_RESET_BY_PEER)));
 
-        boolean ok = service.submitListen(fullTrack(), "lb-token", Instant.ofEpochSecond(1L));
+        ScrobbleResult result = service.submitListen(fullTrack(), "lb-token", Instant.ofEpochSecond(1L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
+        assertThat(result.errorType()).isEqualTo(ErrorType.TIMEOUT);
+        assertThat(result.isRetryable()).isTrue();
     }
 
     @Test
@@ -151,8 +158,8 @@ class ListenBrainzServiceWireMockTest {
                 .album(alb)
                 .build();
 
-        boolean ok = service.submitListen(t, "lb-token", Instant.ofEpochSecond(1L));
-        assertThat(ok).isTrue();
+        ScrobbleResult result = service.submitListen(t, "lb-token", Instant.ofEpochSecond(1L));
+        assertThat(result.success()).isTrue();
 
         var req = wireMock.findAll(postRequestedFor(urlEqualTo(SUBMIT_PATH))).get(0);
         Map<String, Object> body = new ObjectMapper().readValue(req.getBodyAsString(), Map.class);

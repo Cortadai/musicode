@@ -15,7 +15,7 @@ export async function logout(): Promise<void> {
   await api.post('/auth/logout');
 }
 
-export async function getMe(): Promise<UserInfo> {
-  const { data } = await api.get<UserInfo>('/auth/me');
+export async function getMe(config?: { signal?: AbortSignal }): Promise<UserInfo> {
+  const { data } = await api.get<UserInfo>('/auth/me', config);
   return data;
 }

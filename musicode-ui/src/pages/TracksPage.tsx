@@ -5,7 +5,7 @@ import { usePlayer } from '../hooks/usePlayer';
 import Spinner from '../components/common/Spinner';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Track } from '../types';
 
 const PAGE_SIZE = 30;
@@ -48,11 +48,19 @@ export default function TracksPage() {
     return () => observer.disconnect();
   }, [handleObserver]);
 
+  const allTracks: Track[] = useMemo(
+    () => data?.pages.flatMap((p) => p.content) ?? [],
+    [data?.pages]
+  );
+  const totalElements = data?.pages[0]?.totalElements ?? 0;
+
+  const handlePlay = useCallback(
+    (track: Track, index: number) => playTrack(track, allTracks, index),
+    [playTrack, allTracks]
+  );
+
   if (isLoading) return <Spinner text="Loading tracks…" />;
   if (error) return <ErrorMessage message="Failed to load tracks" detail={getErrorMessage(error)} />;
-
-  const allTracks: Track[] = data?.pages.flatMap((p) => p.content) ?? [];
-  const totalElements = data?.pages[0]?.totalElements ?? 0;
 
   if (allTracks.length === 0) {
     return (
@@ -71,7 +79,7 @@ export default function TracksPage() {
       <TrackList
         tracks={allTracks}
         showAlbum
-        onPlay={(track, index) => playTrack(track, allTracks, index)}
+        onPlay={handlePlay}
       />
       {/* Sentinel for infinite scroll */}
       <div ref={sentinelRef} className="h-8" />

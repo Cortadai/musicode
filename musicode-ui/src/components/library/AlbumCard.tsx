@@ -1,14 +1,14 @@
+import { memo, useCallback, useRef } from 'react';
 import { Link } from 'react-router';
 import { getCoverUrl } from '../../api/albums';
 import type { Album } from '../../types';
 import { Disc3 } from 'lucide-react';
-import { useCallback, useRef } from 'react';
 
 interface Props {
   album: Album;
 }
 
-export default function AlbumCard({ album }: Props) {
+function AlbumCard({ album }: Props) {
   const imgRef = useRef<HTMLImageElement>(null);
 
   const handleLoad = useCallback(() => {
@@ -18,6 +18,7 @@ export default function AlbumCard({ album }: Props) {
   return (
     <Link
       to={`/albums/${album.id}`}
+      aria-label={`${album.title} by ${album.artist?.name ?? 'Unknown Artist'}`}
       className="group block bg-zinc-900 rounded-xl overflow-hidden hover:bg-zinc-800/80 transition-colors"
     >
       <div className="aspect-square bg-zinc-800 relative overflow-hidden">
@@ -46,3 +47,5 @@ export default function AlbumCard({ album }: Props) {
     </Link>
   );
 }
+
+export default memo(AlbumCard);

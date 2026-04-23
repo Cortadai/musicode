@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { search } from '../api/search';
@@ -5,6 +6,7 @@ import TrackList from '../components/library/TrackList';
 import AlbumCard from '../components/library/AlbumCard';
 import { usePlayer } from '../hooks/usePlayer';
 import { User } from 'lucide-react';
+import type { Track } from '../types';
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
@@ -17,6 +19,11 @@ export default function SearchPage() {
     enabled: query.length > 0,
   });
 
+  const handlePlay = useCallback(
+    (track: Track, index: number) => playTrack(track, data?.tracks ?? [], index),
+    [playTrack, data?.tracks]
+  );
+
   if (!query) {
     return (
       <div className="text-zinc-500">
@@ -27,6 +34,7 @@ export default function SearchPage() {
   }
 
   if (isLoading) return <p className="text-zinc-500">Searching…</p>;
+
   if (!data) return null;
 
   const hasResults = data.tracks.length > 0 || data.albums.length > 0 || data.artists.length > 0;
@@ -74,7 +82,7 @@ export default function SearchPage() {
           <TrackList
             tracks={data.tracks}
             showAlbum
-            onPlay={(track, index) => playTrack(track, data.tracks, index)}
+            onPlay={handlePlay}
           />
         </section>
       )}

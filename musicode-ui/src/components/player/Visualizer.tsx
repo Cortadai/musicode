@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { useAudioAnalyser } from '../../hooks/useAudioAnalyser';
-import { usePlayerState } from '../../context/PlayerContext';
+import { useCurrentTrackInfo } from '../../context/PlayerContext';
 import type { VisualizerMode } from '../../audio/audioPreferences';
 import { BarChart3, AudioWaveform, Disc3 } from 'lucide-react';
 
@@ -8,6 +8,7 @@ interface Props {
   visible: boolean;
   mode: VisualizerMode;
   onModeChange: (mode: VisualizerMode) => void;
+  fullSize?: boolean;
 }
 
 const MODE_ICONS: { mode: VisualizerMode; Icon: typeof BarChart3; label: string }[] = [
@@ -25,11 +26,11 @@ const WAVEFORM_SMOOTHING = 0.25;
  * Uses Web Audio API AnalyserNode + Canvas 2D. Pauses rendering when not visible,
  * not playing, or page is hidden.
  */
-export default function Visualizer({ visible, mode, onModeChange }: Props) {
+export default function Visualizer({ visible, mode, onModeChange, fullSize }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const analyser = useAudioAnalyser();
-  const { isPlaying } = usePlayerState();
+  const { isPlaying } = useCurrentTrackInfo();
 
   // Waveform smoothing — keeps previous frame data for temporal interpolation
   const prevWaveformRef = useRef<Float32Array | null>(null);
@@ -296,27 +297,61 @@ export default function Visualizer({ visible, mode, onModeChange }: Props) {
     return () => window.removeEventListener('resize', resize);
   }, [visible]);
 
+  if (fullSize) {
+    return (
+      <div className="w-full h-full relative">
+        <canvas
+          ref={canvasRef}
+          aria-label="Audio visualizer"
+          role="img"
+          className="w-full h-full"
+          style={{ imageRendering: mode === 'bars' ? 'pixelated' : 'auto' }}
+        />
+        <div className="absolute top-1.5 right-1.5 flex gap-0.5 bg-zinc-900/80 backdrop-blur-sm rounded-md p-0.5" role="group" aria-label="Visualizer mode">
+          {MODE_ICONS.map(({ mode: m, Icon, label }) => (
+            <button
+              key={m}
+              onClick={() => onModeChange(m)}
+              aria-label={`${label} visualization`}
+              aria-pressed={mode === m}
+              className={`p-1 rounded transition-colors ${
+                mode === m
+                  ? 'text-indigo-400 bg-zinc-800'
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="visualizer-panel" data-open={visible || undefined}>
       <div className="overflow-hidden">
         <div className="relative">
           <canvas
             ref={canvasRef}
+            aria-label="Audio visualizer"
+            role="img"
             className="w-full h-24 rounded-t-lg bg-zinc-950/50"
             style={{ imageRendering: mode === 'bars' ? 'pixelated' : 'auto' }}
           />
           {/* Mode selector — overlaid top-right */}
-          <div className="absolute top-1.5 right-1.5 flex gap-0.5 bg-zinc-900/80 backdrop-blur-sm rounded-md p-0.5">
+          <div className="absolute top-1.5 right-1.5 flex gap-0.5 bg-zinc-900/80 backdrop-blur-sm rounded-md p-0.5" role="group" aria-label="Visualizer mode">
             {MODE_ICONS.map(({ mode: m, Icon, label }) => (
               <button
                 key={m}
                 onClick={() => onModeChange(m)}
+                aria-label={`${label} visualization`}
+                aria-pressed={mode === m}
                 className={`p-1 rounded transition-colors ${
                   mode === m
                     ? 'text-indigo-400 bg-zinc-800'
                     : 'text-zinc-500 hover:text-zinc-300'
                 }`}
-                title={label}
               >
                 <Icon className="w-3.5 h-3.5" />
               </button>

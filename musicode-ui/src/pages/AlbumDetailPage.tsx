@@ -1,9 +1,10 @@
+import { useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getAlbum, getCoverUrl } from '../api/albums';
 import TrackList from '../components/library/TrackList';
 import { usePlayer } from '../hooks/usePlayer';
-import { usePlayerState } from '../context/PlayerContext';
+import { useCurrentTrackInfo } from '../context/PlayerContext';
 import { ArrowLeft, Disc3 } from 'lucide-react';
 import Spinner from '../components/common/Spinner';
 import ErrorMessage from '../components/common/ErrorMessage';
@@ -13,7 +14,7 @@ export default function AlbumDetailPage() {
   const { id } = useParams<{ id: string }>();
   const albumId = Number(id);
   const { playAlbum } = usePlayer();
-  const { currentTrack } = usePlayerState();
+  const { trackId: currentTrackId } = useCurrentTrackInfo();
 
   const { data: album, isLoading, error } = useQuery({
     queryKey: ['album', albumId],
@@ -21,14 +22,22 @@ export default function AlbumDetailPage() {
     enabled: !isNaN(albumId),
   });
 
+  const tracks = useMemo(
+    () => (album?.tracks ?? []).map(t => ({
+      ...t,
+      album: { id: album!.id, title: album!.title, year: album!.year, hasCoverArt: album!.hasCoverArt },
+      artist: t.artist ?? album!.artist,
+    })),
+    [album]
+  );
+
+  const handlePlay = useCallback(
+    (_track: import('../types').Track, index: number) => playAlbum(tracks, index),
+    [playAlbum, tracks]
+  );
+
   if (isLoading) return <Spinner text="Loading album…" />;
   if (error || !album) return <ErrorMessage message="Album not found" detail={getErrorMessage(error)} />;
-
-  const tracks = (album.tracks ?? []).map(t => ({
-    ...t,
-    album: { id: album.id, title: album.title, year: album.year, hasCoverArt: album.hasCoverArt },
-    artist: t.artist ?? album.artist,
-  }));
 
   return (
     <div>
@@ -59,8 +68,8 @@ export default function AlbumDetailPage() {
 
       <TrackList
         tracks={tracks}
-        scrollToTrackId={currentTrack?.album?.id === album.id ? currentTrack.id : undefined}
-        onPlay={(_track, index) => playAlbum(tracks, index)}
+        scrollToTrackId={currentTrackId != null && tracks.some(t => t.id === currentTrackId) ? currentTrackId : undefined}
+        onPlay={handlePlay}
       />
     </div>
   );

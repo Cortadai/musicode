@@ -1,6 +1,7 @@
 package com.musicode.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.musicode.model.dto.ScrobbleResult;
 import com.musicode.model.entity.Album;
 import com.musicode.model.entity.Artist;
 import com.musicode.model.entity.Track;
@@ -42,33 +43,33 @@ class ListenBrainzServiceTest {
     }
 
     @Test
-    void submitListen_returnsTrueOn2xx() {
+    void submitListen_returnsOkOn2xx() {
         when(restTemplate.postForEntity(eq(API_URL), any(HttpEntity.class), eq(String.class)))
                 .thenReturn(ResponseEntity.ok("{\"status\":\"ok\"}"));
 
-        boolean ok = service.submitListen(fullTrack(), "lb-token-123", Instant.ofEpochSecond(1_700_000_000L));
+        ScrobbleResult result = service.submitListen(fullTrack(), "lb-token-123", Instant.ofEpochSecond(1_700_000_000L));
 
-        assertThat(ok).isTrue();
+        assertThat(result.success()).isTrue();
     }
 
     @Test
-    void submitListen_returnsFalseOnNon2xx() {
+    void submitListen_returnsErrorOnNon2xx() {
         when(restTemplate.postForEntity(eq(API_URL), any(HttpEntity.class), eq(String.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"code\":401}"));
 
-        boolean ok = service.submitListen(fullTrack(), "bad-token", Instant.ofEpochSecond(1L));
+        ScrobbleResult result = service.submitListen(fullTrack(), "bad-token", Instant.ofEpochSecond(1L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
     }
 
     @Test
-    void submitListen_returnsFalseOnException() {
+    void submitListen_returnsUnknownErrorOnException() {
         when(restTemplate.postForEntity(eq(API_URL), any(HttpEntity.class), eq(String.class)))
                 .thenThrow(new RestClientException("connection refused"));
 
-        boolean ok = service.submitListen(fullTrack(), "lb-token", Instant.ofEpochSecond(1L));
+        ScrobbleResult result = service.submitListen(fullTrack(), "lb-token", Instant.ofEpochSecond(1L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
     }
 
     @Test

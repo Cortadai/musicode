@@ -1,6 +1,8 @@
 package com.musicode.service;
 
 import com.musicode.config.LastfmConfig;
+import com.musicode.model.dto.ScrobbleResult;
+import com.musicode.model.dto.ScrobbleResult.ErrorType;
 import com.musicode.model.entity.Album;
 import com.musicode.model.entity.Artist;
 import com.musicode.model.entity.Track;
@@ -149,40 +151,42 @@ class LastfmServiceTest {
     }
 
     @Test
-    void scrobble_returnsFalseWhenConfigBlank() {
+    void scrobble_returnsConfigErrorWhenConfigBlank() {
         config.setApiSecret("");
-        boolean ok = service.scrobble(fullTrack(), "sk", Instant.ofEpochSecond(1_700_000_000L));
-        assertThat(ok).isFalse();
+        ScrobbleResult result = service.scrobble(fullTrack(), "sk", Instant.ofEpochSecond(1_700_000_000L));
+        assertThat(result.success()).isFalse();
+        assertThat(result.errorType()).isEqualTo(ErrorType.CONFIG_ERROR);
     }
 
     @Test
-    void scrobble_returnsTrueOn2xx() {
+    void scrobble_returnsOkOn2xx() {
         when(restTemplate.postForEntity(eq(API_URL), any(HttpEntity.class), eq(Map.class)))
                 .thenReturn(ResponseEntity.ok(Map.of("scrobbles", Map.of("@attr", Map.of("accepted", 1)))));
 
-        boolean ok = service.scrobble(fullTrack(), "sk", Instant.ofEpochSecond(1_700_000_000L));
+        ScrobbleResult result = service.scrobble(fullTrack(), "sk", Instant.ofEpochSecond(1_700_000_000L));
 
-        assertThat(ok).isTrue();
+        assertThat(result.success()).isTrue();
     }
 
     @Test
-    void scrobble_returnsFalseOnNon2xx() {
+    void scrobble_returnsErrorOnNon2xx() {
         when(restTemplate.postForEntity(eq(API_URL), any(HttpEntity.class), eq(Map.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", 9)));
 
-        boolean ok = service.scrobble(fullTrack(), "sk", Instant.ofEpochSecond(1_700_000_000L));
+        ScrobbleResult result = service.scrobble(fullTrack(), "sk", Instant.ofEpochSecond(1_700_000_000L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
     }
 
     @Test
-    void scrobble_returnsFalseOnException() {
+    void scrobble_returnsUnknownErrorOnException() {
         when(restTemplate.postForEntity(eq(API_URL), any(HttpEntity.class), eq(Map.class)))
                 .thenThrow(new RestClientException("network down"));
 
-        boolean ok = service.scrobble(fullTrack(), "sk", Instant.ofEpochSecond(1_700_000_000L));
+        ScrobbleResult result = service.scrobble(fullTrack(), "sk", Instant.ofEpochSecond(1_700_000_000L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
+        assertThat(result.errorType()).isEqualTo(ErrorType.UNKNOWN);
     }
 
     @Test

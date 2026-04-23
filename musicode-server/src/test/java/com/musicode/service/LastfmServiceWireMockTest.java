@@ -2,6 +2,8 @@ package com.musicode.service;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.musicode.config.LastfmConfig;
+import com.musicode.model.dto.ScrobbleResult;
+import com.musicode.model.dto.ScrobbleResult.ErrorType;
 import com.musicode.model.entity.Album;
 import com.musicode.model.entity.Artist;
 import com.musicode.model.entity.Track;
@@ -120,50 +122,54 @@ class LastfmServiceWireMockTest {
     // --- scrobble ---
 
     @Test
-    void scrobble_success_returnsTrue() {
+    void scrobble_success_returnsOk() {
         stubScrobbleOk("{\"scrobbles\":{\"@attr\":{\"ignored\":0,\"accepted\":1}}}");
 
-        boolean ok = service.scrobble(fullTrack(), "sk-42", Instant.ofEpochSecond(1_700_000_000L));
+        ScrobbleResult result = service.scrobble(fullTrack(), "sk-42", Instant.ofEpochSecond(1_700_000_000L));
 
-        assertThat(ok).isTrue();
+        assertThat(result.success()).isTrue();
+        assertThat(result.errorType()).isEqualTo(ErrorType.NONE);
     }
 
     @Test
-    void scrobble_401_returnsFalse() {
-        // Last.fm uses 403/401 for invalid session keys; test both paths
+    void scrobble_401_returnsAuthError() {
         wireMock.stubFor(post(urlEqualTo(API_PATH))
                 .willReturn(aResponse()
                         .withStatus(401)
                         .withBody("{\"error\":9,\"message\":\"Invalid session key\"}")));
 
-        boolean ok = service.scrobble(fullTrack(), "sk-stale", Instant.ofEpochSecond(1L));
+        ScrobbleResult result = service.scrobble(fullTrack(), "sk-stale", Instant.ofEpochSecond(1L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
+        assertThat(result.errorType()).isEqualTo(ErrorType.AUTH_ERROR);
+        assertThat(result.isRetryable()).isFalse();
     }
 
     @Test
-    void scrobble_429_returnsFalse() {
+    void scrobble_429_returnsUnknownError() {
         wireMock.stubFor(post(urlEqualTo(API_PATH))
                 .willReturn(aResponse()
                         .withStatus(429)
                         .withHeader("Retry-After", "60")
                         .withBody("{\"error\":29,\"message\":\"Rate limit exceeded\"}")));
 
-        boolean ok = service.scrobble(fullTrack(), "sk-42", Instant.ofEpochSecond(1L));
+        ScrobbleResult result = service.scrobble(fullTrack(), "sk-42", Instant.ofEpochSecond(1L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
     }
 
     @Test
-    void scrobble_503_returnsFalse() {
+    void scrobble_503_returnsServerError() {
         wireMock.stubFor(post(urlEqualTo(API_PATH))
                 .willReturn(aResponse()
                         .withStatus(503)
                         .withBody("<html>Service Unavailable</html>")));
 
-        boolean ok = service.scrobble(fullTrack(), "sk-42", Instant.ofEpochSecond(1L));
+        ScrobbleResult result = service.scrobble(fullTrack(), "sk-42", Instant.ofEpochSecond(1L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
+        assertThat(result.errorType()).isEqualTo(ErrorType.SERVER_ERROR);
+        assertThat(result.isRetryable()).isTrue();
     }
 
     @Test
@@ -203,8 +209,8 @@ class LastfmServiceWireMockTest {
                 .duration(440)
                 .build();
 
-        boolean ok = service.scrobble(t, "sk-42", Instant.ofEpochSecond(1L));
-        assertThat(ok).isTrue();
+        ScrobbleResult result = service.scrobble(t, "sk-42", Instant.ofEpochSecond(1L));
+        assertThat(result.success()).isTrue();
 
         var req = wireMock.findAll(postRequestedFor(urlEqualTo(API_PATH))).get(0);
         Map<String, String> form = parseForm(req.getBodyAsString());
@@ -214,14 +220,16 @@ class LastfmServiceWireMockTest {
     }
 
     @Test
-    void scrobble_connectionReset_returnsFalse() {
+    void scrobble_connectionReset_returnsTimeoutError() {
         wireMock.stubFor(post(urlEqualTo(API_PATH))
                 .willReturn(aResponse().withFault(
                         com.github.tomakehurst.wiremock.http.Fault.CONNECTION_RESET_BY_PEER)));
 
-        boolean ok = service.scrobble(fullTrack(), "sk-42", Instant.ofEpochSecond(1L));
+        ScrobbleResult result = service.scrobble(fullTrack(), "sk-42", Instant.ofEpochSecond(1L));
 
-        assertThat(ok).isFalse();
+        assertThat(result.success()).isFalse();
+        assertThat(result.errorType()).isEqualTo(ErrorType.TIMEOUT);
+        assertThat(result.isRetryable()).isTrue();
     }
 
     // --- helpers ---

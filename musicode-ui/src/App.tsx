@@ -7,8 +7,9 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AppShell from './components/layout/AppShell';
 import Spinner from './components/common/Spinner';
-import LoginPage from './pages/LoginPage';
 import AlbumsPage from './pages/AlbumsPage';
+
+const LoginPage = lazy(() => import('./pages/LoginPage'));
 
 const AlbumDetailPage = lazy(() => import('./pages/AlbumDetailPage'));
 const ArtistsPage = lazy(() => import('./pages/ArtistsPage'));
@@ -37,7 +38,7 @@ export default function App() {
             <BrowserRouter>
             <Routes>
               {/* Public route */}
-              <Route path="/login" element={<LoginPage />} />
+              <Route path="/login" element={<Suspense fallback={<Spinner />}><LoginPage /></Suspense>} />
 
               {/* Protected routes — any authenticated user */}
               <Route element={<ProtectedRoute />}>
@@ -50,7 +51,12 @@ export default function App() {
                   <Route path="/search" element={<Suspense fallback={<Spinner />}><SearchPage /></Suspense>} />
                   <Route path="/stats" element={<Suspense fallback={<Spinner />}><StatsPage /></Suspense>} />
 
-                  {/* Admin-only routes */}
+                </Route>
+              </Route>
+
+              {/* Admin-only routes */}
+              <Route element={<ProtectedRoute requiredRole="ADMIN" />}>
+                <Route element={<AppShell />}>
                   <Route path="/settings" element={<Suspense fallback={<Spinner />}><SettingsPage /></Suspense>} />
                   <Route path="/users" element={<Suspense fallback={<Spinner />}><UsersPage /></Suspense>} />
                 </Route>

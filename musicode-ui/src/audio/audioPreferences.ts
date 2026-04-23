@@ -22,6 +22,7 @@ export interface AudioPreferences {
   eqBands: number[]; // 5 gain values in dB (-12 to +12)
   eqPreset: string;  // preset name or 'custom'
   visualizerMode: VisualizerMode;
+  dynamicTheme: boolean;
 }
 
 const DEFAULTS: AudioPreferences = {
@@ -33,6 +34,7 @@ const DEFAULTS: AudioPreferences = {
   eqBands: [0, 0, 0, 0, 0],
   eqPreset: 'flat',
   visualizerMode: 'bars',
+  dynamicTheme: false,
 };
 
 /**
@@ -81,7 +83,9 @@ export function loadPreferences(): AudioPreferences {
         ? (parsed.visualizerMode as VisualizerMode)
         : DEFAULTS.visualizerMode;
 
-    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreset, visualizerMode };
+    const dynamicTheme = typeof parsed.dynamicTheme === 'boolean' ? parsed.dynamicTheme : DEFAULTS.dynamicTheme;
+
+    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreset, visualizerMode, dynamicTheme };
   } catch {
     // Corrupted JSON — reset to defaults
     localStorage.removeItem(STORAGE_KEY);

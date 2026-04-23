@@ -29,19 +29,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check existing session on mount
+  // Check existing session on mount — cancel if unmounted before response
   useEffect(() => {
+    const controller = new AbortController();
     console.debug('[auth] Checking existing session...');
-    authApi.getMe()
+    authApi.getMe({ signal: controller.signal })
       .then((u) => {
         console.debug('[auth] Session restored for:', u.username, u.role);
         setUser(u);
       })
       .catch(() => {
+        if (controller.signal.aborted) return;
         console.debug('[auth] No existing session');
         setUser(null);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, []);
 
   const login = useCallback(async (username: string, password: string) => {

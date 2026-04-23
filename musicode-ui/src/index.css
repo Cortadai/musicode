@@ -70,6 +70,49 @@
   min-height: 0;
 }
 
+/* Now Playing overlay */
+.now-playing-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  background: #09090b; /* zinc-950 */
+  outline: none;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+}
+
+.now-playing-open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.now-playing-closed {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Now Playing artwork crossfade */
+@keyframes np-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes np-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.np-cover-enter {
+  animation: np-fade-in 0.5s ease-in-out;
+}
+
+.np-cover-exit {
+  animation: np-fade-out 0.5s ease-in-out forwards;
+}
+
 .vinyl-grooves {
   background:
     radial-gradient(circle, transparent 44%, rgba(255,255,255,0.04) 45%, transparent 46%),

@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect, useRef, type ReactNode, type Dispatch } from 'react';
+import { createContext, useContext, useMemo, useReducer, useEffect, useRef, type ReactNode, type Dispatch } from 'react';
 import type { Track } from '../types';
 import { loadPreferences, savePreferences } from '../audio/audioPreferences';
 
@@ -216,6 +216,18 @@ export function playerReducer(state: PlayerState, action: PlayerAction): PlayerS
 const PlayerStateContext = createContext<PlayerState>(initialState);
 const PlayerDispatchContext = createContext<Dispatch<PlayerAction>>(() => {});
 
+/**
+ * Narrow context carrying only current-track identity and play state.
+ * Components like TrackList that need to highlight the active track can
+ * subscribe here instead of PlayerStateContext, avoiding re-renders on
+ * every currentTime tick (~4 Hz).
+ */
+interface CurrentTrackInfo {
+  trackId: number | null;
+  isPlaying: boolean;
+}
+const CurrentTrackContext = createContext<CurrentTrackInfo>({ trackId: null, isPlaying: false });
+
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(playerReducer, initialState);
 
@@ -234,11 +246,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
   }, [state.volume, state.shuffle, state.repeatMode]);
 
+  const currentTrackInfo = useMemo<CurrentTrackInfo>(
+    () => ({ trackId: state.currentTrack?.id ?? null, isPlaying: state.isPlaying }),
+    [state.currentTrack?.id, state.isPlaying]
+  );
+
   return (
     <PlayerStateContext.Provider value={state}>
-      <PlayerDispatchContext.Provider value={dispatch}>
-        {children}
-      </PlayerDispatchContext.Provider>
+      <CurrentTrackContext.Provider value={currentTrackInfo}>
+        <PlayerDispatchContext.Provider value={dispatch}>
+          {children}
+        </PlayerDispatchContext.Provider>
+      </CurrentTrackContext.Provider>
     </PlayerStateContext.Provider>
   );
 }
@@ -249,4 +268,9 @@ export function usePlayerState() {
 
 export function usePlayerDispatch() {
   return useContext(PlayerDispatchContext);
+}
+
+/** Narrow subscription — only re-renders when the playing track ID or isPlaying changes. */
+export function useCurrentTrackInfo() {
+  return useContext(CurrentTrackContext);
 }
