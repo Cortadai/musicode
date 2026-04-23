@@ -11,7 +11,7 @@ interface UseGaplessParams {
   queue: Track[];
   queueIndex: number;
   repeatMode: string;
-  isPlaying: boolean;
+
   dispatch: React.Dispatch<PlayerAction>;
   isOwner: boolean;
   onTimeUpdate: (time: number) => void;
@@ -22,7 +22,7 @@ export function useGapless({
   queue,
   queueIndex,
   repeatMode,
-  isPlaying,
+
   dispatch,
   isOwner,
   onTimeUpdate,

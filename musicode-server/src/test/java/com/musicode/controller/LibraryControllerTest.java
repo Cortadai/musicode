@@ -30,12 +30,14 @@ class LibraryControllerTest {
     @Autowired private com.musicode.repository.TrackRepository trackRepository;
     @Autowired private com.musicode.repository.AlbumRepository albumRepository;
     @Autowired private com.musicode.repository.ArtistRepository artistRepository;
+    @Autowired private com.musicode.repository.PlaybackEventRepository playbackEventRepository;
 
     @TempDir
     Path tempDir;
 
     @BeforeEach
     void setUp() {
+        playbackEventRepository.deleteAll();
         trackRepository.deleteAll();
         albumRepository.deleteAll();
         artistRepository.deleteAll();

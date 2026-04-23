@@ -45,7 +45,6 @@ export function usePlayer() {
     queue: state.queue,
     queueIndex: state.queueIndex,
     repeatMode: state.repeatMode,
-    isPlaying: state.isPlaying,
     dispatch,
     isOwner: isOwner,
     onTimeUpdate: handleTimeUpdate,
