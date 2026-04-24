@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-04-24T14:44:11Z | Files: 237 | Described: 0/237
-<!-- gsd:codebase-meta {"generatedAt":"2026-04-24T14:44:11Z","fingerprint":"79ba188fe39456ff21f09199837d776be17b3ba9","fileCount":237,"truncated":false} -->
+Generated: 2026-04-24T17:22:08Z | Files: 237 | Described: 0/237
+<!-- gsd:codebase-meta {"generatedAt":"2026-04-24T17:22:08Z","fingerprint":"70ef5468896ce2b22d308c279bcf1fc7a8b0822e","fileCount":237,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -283,6 +283,7 @@ Generated: 2026-04-24T14:44:11Z | Files: 237 | Described: 0/237
 - `musicode-ui/src/components/player/TrackInfo.tsx`
 - `musicode-ui/src/components/player/TransportControls.test.tsx`
 - `musicode-ui/src/components/player/TransportControls.tsx`
+- `musicode-ui/src/components/player/VinylVisualizer.tsx`
 - `musicode-ui/src/components/player/Visualizer.tsx`
 - `musicode-ui/src/components/player/VolumeControl.test.tsx`
 - `musicode-ui/src/components/player/VolumeControl.tsx`
@@ -294,7 +295,6 @@ Generated: 2026-04-24T14:44:11Z | Files: 237 | Described: 0/237
 - `musicode-ui/src/context/PlayerContext.tsx`
 
 ### musicode-ui/src/hooks/
-- `musicode-ui/src/hooks/useAudioAnalyser.ts`
 - `musicode-ui/src/hooks/useDynamicTheme.ts`
 - `musicode-ui/src/hooks/useGapless.ts`
 - `musicode-ui/src/hooks/useMediaSession.ts`

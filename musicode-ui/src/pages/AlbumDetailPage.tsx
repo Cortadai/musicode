@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useParams, Link } from 'react-router';
+import { useParams, Link, useLocation } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getAlbum, getCoverUrl } from '../api/albums';
 import TrackList from '../components/library/TrackList';
@@ -13,8 +13,10 @@ import { getErrorMessage } from '../utils/errors';
 export default function AlbumDetailPage() {
   const { id } = useParams<{ id: string }>();
   const albumId = Number(id);
+  const location = useLocation();
   const { playAlbum } = usePlayer();
   const { trackId: currentTrackId } = useCurrentTrackInfo();
+  const shouldScrollToTrack = !!(location.state as { scrollToTrack?: boolean })?.scrollToTrack;
 
   const { data: album, isLoading, error } = useQuery({
     queryKey: ['album', albumId],
@@ -68,7 +70,7 @@ export default function AlbumDetailPage() {
 
       <TrackList
         tracks={tracks}
-        scrollToTrackId={currentTrackId != null && tracks.some(t => t.id === currentTrackId) ? currentTrackId : undefined}
+        scrollToTrackId={shouldScrollToTrack && currentTrackId != null && tracks.some(t => t.id === currentTrackId) ? currentTrackId : undefined}
         onPlay={handlePlay}
       />
     </div>

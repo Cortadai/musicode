@@ -77,6 +77,7 @@ function TrackInfo({ title, artistName, albumId, hasCover, isPlaying, onArtworkC
       <div className="min-w-0">
         <Link
           to={albumId ? `/albums/${albumId}` : '#'}
+          state={{ scrollToTrack: true }}
           aria-label={`${title} — go to album`}
           className="text-sm font-medium text-zinc-100 truncate block hover:text-indigo-400 transition-colors"
         >
