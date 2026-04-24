@@ -241,31 +241,29 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: M010/S03 — Circular visualization mode delivered as one of 3 visualizer modes (bars, waveform, circular). Replaced originally planned spectrogram per user preference. Renders frequency bars in arc/circle arrangement. Verified by user in M010 VALIDATION (pass).
 - Notes: Deferred to future milestone. Can be added as an additional mode once the visualizer architecture supports mode plugins.
 
-## Deferred
+## Out of Scope
 
 ### R014 — Implement core Subsonic/OpenSubsonic API endpoints so existing mobile clients (Symfonium, DSub, etc.) can connect.
 - Class: integration
-- Status: deferred
+- Status: out-of-scope
 - Description: Implement core Subsonic/OpenSubsonic API endpoints so existing mobile clients (Symfonium, DSub, etc.) can connect.
 - Why it matters: Free mobile client ecosystem without building a mobile app.
 - Source: user
 - Primary owning slice: none
 - Supporting slices: none
 - Validation: unmapped
-- Notes: Deferred to Phase 3. Only core endpoints needed.
+- Notes: Descartado en reorganización de roadmap 2026-04-23. No aporta valor suficiente para el uso personal del proyecto.
 
 ### R015 — Transcode FLAC to OGG/OPUS on the fly for bandwidth-constrained clients.
 - Class: differentiator
-- Status: deferred
+- Status: out-of-scope
 - Description: Transcode FLAC to OGG/OPUS on the fly for bandwidth-constrained clients.
 - Why it matters: Mobile streaming over cellular without burning data.
 - Source: user
 - Primary owning slice: none
 - Supporting slices: none
 - Validation: unmapped
-- Notes: Deferred to Phase 4. Requires ffmpeg integration.
-
-## Out of Scope
+- Notes: Descartado en reorganización de roadmap 2026-04-23. No aporta valor suficiente para el uso personal del proyecto.
 
 ### R016 — No integration with TIDAL, Spotify, Deezer, or any DRM-protected streaming service.
 - Class: anti-feature
@@ -295,8 +293,8 @@ This file is the explicit capability and coverage contract for the project.
 | R011 | quality-attribute | validated | none | none | M005/S01 — Media Session API integrated in usePlayer.ts. OS media keys (play/pause/next/prev), now-playing overlay with track/artist/cover art, OS seek bar. |
 | R012 | quality-attribute | validated | none | none | M005/S02 — manifest.json, hand-written service worker (network-first shell, cache-first covers, network-only API), installable as standalone window. |
 | R013 | integration | validated | none | none | Implemented in M007/S01-S02 (play tracking + scrobble dispatch), verified in M008/S01-S02 (unit tests + WireMock contract tests + integration chain) |
-| R014 | integration | deferred | none | none | unmapped |
-| R015 | differentiator | deferred | none | none | unmapped |
+| R014 | integration | out-of-scope | none | none | unmapped |
+| R015 | differentiator | out-of-scope | none | none | unmapped |
 | R016 | anti-feature | out-of-scope | none | none | n/a |
 | R017 | core-capability | validated | M009/S01 | none | M009/S01 — audioGraph.ts centralizes full Web Audio API pipeline (source→gain→analyser→destination). Singleton globalAudio eliminated. GainNode controls volume. AnalyserNode stays connected across track swaps. Verified in M009 VALIDATION (pass). |
 | R018 | core-capability | validated | M009/S03 | none | M009/S03 — Dual HTMLAudioElement (A/B) with pre-load ~3s before track end, seamless swap. 8 UAT scenarios verified by user. Skip cancels pre-load. Repeat modes handled (one=restart, all=gapless wrap, off=stop). Verified in M009 VALIDATION (pass). |

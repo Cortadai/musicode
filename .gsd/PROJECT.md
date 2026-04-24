@@ -79,8 +79,10 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 ## Planned Milestones
 
-- [ ] M014: Smart Library — Metadata editing, filesystem watcher, smart playlists, radio mode
-- [ ] M015: Integrations & Streaming — Synchronized lyrics (.lrc), transcoding, Subsonic API, Bandcamp import
+- [ ] M014: Metadata Editing — Edit tags (title, artist, album, year, genre) from the UI, write back to FLAC/MP3 files, re-sync with DB
+- [ ] M015: Filesystem Watcher — Auto-detect new/deleted/moved files in registered folders without manual rescan
+- [ ] M016: Synchronized Lyrics — Display time-synced lyrics from .lrc sidecar files or embedded tags
+- [ ] M017: Retro Mode — Cassette deck UI with spinning reels, VHS scanline transitions, and optional tape audio filter (Web Audio API)
 
 ## Pending Setup
 

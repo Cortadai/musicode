@@ -9,3 +9,7 @@
 {"id":"e84e6f9c-95fb-4a7a-b043-9199cddb9851","ts":"2026-04-18T06:50:38.848Z","severity":"success","message":"✓ Reviewed prior context","source":"notify","read":false}
 {"id":"8c6a91fe-89d9-4e3b-a16c-06b267e1ed21","ts":"2026-04-18T15:47:35.279Z","severity":"info","message":"Claude Code MCP prepared at C:\\Users\\david\\Desktop\\musicode\\.mcp.json","source":"notify","read":false}
 {"id":"c241e308-edda-48ee-99be-24d096a545db","ts":"2026-04-23T17:18:47.695Z","severity":"info","message":"Claude Code MCP prepared at C:\\Users\\david\\Desktop\\musicode\\.mcp.json","source":"notify","read":false}
+{"id":"e97b7062-f90b-47b2-9482-2c43b729d8f2","ts":"2026-04-24T14:17:16.060Z","severity":"info","message":"Claude Code MCP prepared at C:\\Users\\david\\Desktop\\musicode\\.mcp.json","source":"notify","read":false}
+{"id":"2f04c1ca-76fb-47f7-8c36-93c62ec82433","ts":"2026-04-24T14:17:27.154Z","severity":"info","message":"Step-mode started. Will loop until milestone complete.","source":"notify","read":false}
+{"id":"25e1e536-7215-40f8-9602-414980b73309","ts":"2026-04-24T14:17:27.158Z","severity":"info","message":"Dynamic routing: disabled — all tasks will use claude-code/claude-opus-4-6","source":"notify","read":false}
+{"id":"42057733-20e3-4525-90f8-6f5b98ad5e88","ts":"2026-04-24T14:17:27.164Z","severity":"info","message":"Pre-flight: 13 milestones queued. All have full context.","source":"notify","read":false}
