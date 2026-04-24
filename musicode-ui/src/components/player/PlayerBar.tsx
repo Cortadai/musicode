@@ -1,5 +1,5 @@
 import { usePlayer } from '../../hooks/usePlayer';
-import { initAudioContext } from '../../hooks/useAudioAnalyser';
+import audioGraph from '../../audio/audioGraph';
 import { useCallback, useState } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
@@ -28,12 +28,12 @@ export default function PlayerBar() {
   const [showNowPlaying, setShowNowPlaying] = useState(false);
 
   const handlePlayPause = useCallback(() => {
-    initAudioContext();
+    audioGraph.init();
     if (isPlaying) pause(); else resume();
   }, [isPlaying, pause, resume]);
 
   const handleToggleVisualizer = useCallback(() => {
-    initAudioContext();
+    audioGraph.init();
     setShowVisualizer((v) => !v);
   }, []);
 

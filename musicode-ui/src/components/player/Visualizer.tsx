@@ -1,5 +1,5 @@
-import { useRef, useEffect, useCallback } from 'react';
-import { useAudioAnalyser } from '../../hooks/useAudioAnalyser';
+import { useRef, useEffect, useCallback, useState } from 'react';
+import audioGraph from '../../audio/audioGraph';
 import { useCurrentTrackInfo } from '../../context/PlayerContext';
 import type { VisualizerMode } from '../../audio/audioPreferences';
 import type { ColorPalette } from '../../audio/colorExtraction';
@@ -61,7 +61,16 @@ function hexToRgba(hex: string, alpha: number): string {
 export default function Visualizer({ visible, mode, onModeChange, fullSize, hideControls, dynamicColors }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
-  const analyser = useAudioAnalyser();
+  const [analyser, setAnalyser] = useState<AnalyserNode | null>(audioGraph.getAnalyser());
+
+  useEffect(() => {
+    if (analyser) return;
+    const interval = setInterval(() => {
+      const node = audioGraph.getAnalyser();
+      if (node) { setAnalyser(node); clearInterval(interval); }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [analyser]);
   const { isPlaying } = useCurrentTrackInfo();
 
   // Waveform smoothing — keeps previous frame data for temporal interpolation

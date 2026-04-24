@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, Palette, BarChart3, AudioWaveform, Disc3 } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useDynamicTheme } from '../../hooks/useDynamicTheme';
-import { initAudioContext } from '../../hooks/useAudioAnalyser';
+import audioGraph from '../../audio/audioGraph';
 import { getCoverUrl } from '../../api/albums';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import type { VisualizerMode } from '../../audio/audioPreferences';
@@ -37,12 +37,12 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
   const prevTrackIdRef = useRef<number | null>(null);
 
   const handlePlayPause = useCallback(() => {
-    initAudioContext();
+    audioGraph.init();
     if (isPlaying) pause(); else resume();
   }, [isPlaying, pause, resume]);
 
   const handleSelectVisualizer = useCallback((mode: VisualizerMode) => {
-    initAudioContext();
+    audioGraph.init();
     if (showVisualizer && visualizerMode === mode) {
       setShowVisualizer(false);
     } else {
