@@ -15,7 +15,7 @@ describe('audioPreferences', () => {
       expect(prefs.eqEnabled).toBe(false);
       expect(prefs.eqBands).toEqual([0, 0, 0, 0, 0]);
       expect(prefs.eqPreset).toBe('flat');
-      expect(prefs.visualizerMode).toBe('bars');
+      expect(prefs.visualizerMode).toBe('vinyl');
     });
 
     it('loads valid stored values', () => {
@@ -69,7 +69,7 @@ describe('audioPreferences', () => {
 
     it('falls back to defaults for invalid visualizerMode', () => {
       localStorage.setItem('musicode-prefs', JSON.stringify({ visualizerMode: 'invalid' }));
-      expect(loadPreferences().visualizerMode).toBe('bars');
+      expect(loadPreferences().visualizerMode).toBe('vinyl');
     });
 
     it('returns default false for dynamicTheme when not stored', () => {

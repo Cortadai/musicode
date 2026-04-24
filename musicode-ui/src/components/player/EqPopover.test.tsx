@@ -103,14 +103,16 @@ describe('EqPopover', () => {
   it('renders preset selector', () => {
     render(<EqPopover />);
     fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
-    expect(screen.getByRole('combobox', { name: /eq preset/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /eq preset/i })).toBeInTheDocument();
   });
 
   it('changes preset and calls eqProcessor.applyPreset', () => {
     render(<EqPopover />);
     fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
-    const select = screen.getByRole('combobox', { name: /eq preset/i });
-    fireEvent.change(select, { target: { value: 'rock' } });
+    const presetBtn = screen.getByRole('button', { name: /eq preset/i });
+    fireEvent.click(presetBtn);
+    const rockOption = screen.getByRole('option', { name: /rock/i });
+    fireEvent.click(rockOption);
     expect(eqProcessor.applyPreset).toHaveBeenCalledWith('rock');
     expect(savePreferences).toHaveBeenCalled();
   });
