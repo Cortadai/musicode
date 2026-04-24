@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback } from 'react';
 import { useAudioAnalyser } from '../../hooks/useAudioAnalyser';
 import { useCurrentTrackInfo } from '../../context/PlayerContext';
 import type { VisualizerMode } from '../../audio/audioPreferences';
+import type { ColorPalette } from '../../audio/colorExtraction';
 import { BarChart3, AudioWaveform, Disc3 } from 'lucide-react';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
   onModeChange: (mode: VisualizerMode) => void;
   fullSize?: boolean;
   hideControls?: boolean;
+  dynamicColors?: ColorPalette | null;
 }
 
 const MODE_ICONS: { mode: VisualizerMode; Icon: typeof BarChart3; label: string }[] = [
@@ -21,13 +23,42 @@ const MODE_ICONS: { mode: VisualizerMode; Icon: typeof BarChart3; label: string 
 /** Smoothing factor for waveform — lower = smoother/slower (0..1) */
 const WAVEFORM_SMOOTHING = 0.25;
 
+const DEFAULT_HUE = 240;
+const DEFAULT_SAT = 70;
+const DEFAULT_HEX = '#818cf8';
+const DEFAULT_RGBA = 'rgba(129, 140, 248,';
+const DEFAULT_GLOW = 'rgba(99, 102, 241,';
+
+function hexToHsl(hex: string): { h: number; s: number; l: number } {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return { h: 0, s: 0, l: l * 100 };
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else h = ((r - g) / d + 4) / 6;
+  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 /**
  * Real-time audio visualizer with 3 modes: frequency bars, waveform, and circular.
  *
  * Uses Web Audio API AnalyserNode + Canvas 2D. Pauses rendering when not visible,
  * not playing, or page is hidden.
  */
-export default function Visualizer({ visible, mode, onModeChange, fullSize, hideControls }: Props) {
+export default function Visualizer({ visible, mode, onModeChange, fullSize, hideControls, dynamicColors }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const analyser = useAudioAnalyser();
@@ -53,17 +84,19 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
       const barWidth = width / usableBins;
       const gap = 1;
 
+      const hsl = dynamicColors ? hexToHsl(dynamicColors.primary) : null;
+      const hue = hsl?.h ?? DEFAULT_HUE;
+      const saturation = hsl?.s ?? DEFAULT_SAT;
+
       for (let i = 0; i < usableBins; i++) {
         const value = dataArray[i] / 255;
         const barHeight = value * height;
-        const hue = 240;
-        const saturation = 70;
         const lightness = 40 + value * 30;
         ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${0.6 + value * 0.4})`;
         ctx.fillRect(i * barWidth + gap / 2, height - barHeight, barWidth - gap, barHeight);
       }
     },
-    []
+    [dynamicColors]
   );
 
   const drawWaveform = useCallback(
@@ -92,9 +125,12 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
 
       ctx.clearRect(0, 0, width, height);
 
+      const mainColor = dynamicColors?.primary ?? DEFAULT_HEX;
+      const glowColor = dynamicColors ? hexToRgba(dynamicColors.primary, 0.15) : `${DEFAULT_RGBA} 0.15)`;
+
       // Main line
       ctx.lineWidth = 2;
-      ctx.strokeStyle = '#818cf8'; // indigo-400
+      ctx.strokeStyle = mainColor;
       ctx.beginPath();
 
       const sliceWidth = width / bufferLength;
@@ -112,7 +148,7 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
 
       // Subtle glow effect
       ctx.lineWidth = 6;
-      ctx.strokeStyle = 'rgba(129, 140, 248, 0.15)';
+      ctx.strokeStyle = glowColor;
       ctx.beginPath();
       x = 0;
       for (let i = 0; i < bufferLength; i++) {
@@ -124,7 +160,7 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
       ctx.lineTo(width, height / 2);
       ctx.stroke();
     },
-    []
+    [dynamicColors]
   );
 
   const drawCircular = useCallback(
@@ -146,6 +182,10 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
       const usableBins = Math.floor(bufferLength * 0.6);
       const binsPerBar = Math.floor(usableBins / barCount);
 
+      const hsl = dynamicColors ? hexToHsl(dynamicColors.primary) : null;
+      const hue = hsl?.h ?? DEFAULT_HUE;
+      const saturation = hsl?.s ?? DEFAULT_SAT;
+
       for (let i = 0; i < barCount; i++) {
         // Average the frequency bins for this bar
         let sum = 0;
@@ -162,10 +202,9 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
         const x2 = centerX + Math.cos(angle) * (innerRadius + barLength);
         const y2 = centerY + Math.sin(angle) * (innerRadius + barLength);
 
-        // Color: indigo gradient based on amplitude
         const lightness = 40 + value * 35;
         const alpha = 0.5 + value * 0.5;
-        ctx.strokeStyle = `hsla(240, 70%, ${lightness}%, ${alpha})`;
+        ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
         ctx.lineWidth = Math.max(1.5, (Math.PI * 2 * innerRadius) / barCount * 0.6);
         ctx.lineCap = 'round';
 
@@ -176,18 +215,20 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
       }
 
       // Inner circle glow
+      const glowInner = dynamicColors ? hexToRgba(dynamicColors.secondary, 0.08) : `${DEFAULT_GLOW} 0.08)`;
+      const glowOuter = dynamicColors ? hexToRgba(dynamicColors.secondary, 0) : `${DEFAULT_GLOW} 0)`;
       const gradient = ctx.createRadialGradient(
         centerX, centerY, innerRadius * 0.5,
         centerX, centerY, innerRadius
       );
-      gradient.addColorStop(0, 'rgba(99, 102, 241, 0.08)');
-      gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+      gradient.addColorStop(0, glowInner);
+      gradient.addColorStop(1, glowOuter);
       ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
       ctx.fill();
     },
-    []
+    [dynamicColors]
   );
 
   // Main render loop

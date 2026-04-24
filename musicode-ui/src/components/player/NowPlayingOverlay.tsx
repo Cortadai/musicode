@@ -117,7 +117,7 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
       {/* Visualizer as full-overlay background */}
       {showVisualizer && (
         <div className="absolute inset-0 z-0 opacity-30 pointer-events-none overflow-hidden">
-          <Visualizer visible={showVisualizer && open} mode={visualizerMode} onModeChange={handleSelectVisualizer} fullSize hideControls />
+          <Visualizer visible={showVisualizer && open} mode={visualizerMode} onModeChange={handleSelectVisualizer} fullSize hideControls dynamicColors={dynamicEnabled ? colors : null} />
         </div>
       )}
 
