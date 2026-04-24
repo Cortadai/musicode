@@ -78,11 +78,12 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     }
 
     private String resolveClientIp(HttpServletRequest request) {
-        // Behind Caddy/reverse proxy, the real IP is in X-Forwarded-For
         String forwarded = request.getHeader("X-Forwarded-For");
         if (forwarded != null && !forwarded.isBlank()) {
-            // Take the first IP (client), not intermediary proxies
-            return forwarded.split(",")[0].trim();
+            String clientIp = forwarded.split(",")[0].trim();
+            if (!clientIp.isEmpty()) {
+                return clientIp;
+            }
         }
         return request.getRemoteAddr();
     }

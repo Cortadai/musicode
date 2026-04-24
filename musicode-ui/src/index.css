@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+/* Custom scrollbar — dark theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent; /* zinc-700 thumb, transparent track */
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3f3f46; /* zinc-700 */
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b; /* zinc-600 */
+}
+
 /* PlayerBar slide-up animation on first appearance */
 @keyframes slide-up {
   from {
@@ -26,10 +50,102 @@
   opacity: 1;
 }
 
-/* Vinyl disc effect */
+/* === Vinyl Visualizer === */
+.vinyl-stage {
+  --vinyl-size: 16rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--vinyl-size) * 1.75);
+  height: var(--vinyl-size);
+  overflow: visible;
+}
+
+@media (min-width: 768px) {
+  .vinyl-stage { --vinyl-size: 20rem; }
+}
+
+@media (min-width: 1024px) {
+  .vinyl-stage { --vinyl-size: 24rem; }
+}
+
+.vinyl-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(0);
+  transition: transform 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.vinyl-group.vinyl-out {
+  transform: translateX(calc(var(--vinyl-size) * -0.06));
+}
+
+.vinyl-sleeve {
+  position: relative;
+  z-index: 2;
+  width: var(--vinyl-size);
+  height: var(--vinyl-size);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.6), 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.vinyl-disc-slide {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  transition: transform 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.vinyl-out .vinyl-disc-slide {
+  transform: translate(15%, -50%);
+}
+
 .vinyl-disc {
   position: relative;
-  background: radial-gradient(circle, #1a1a1a 20%, #0a0a0a 100%);
+  width: calc(var(--vinyl-size) * 0.88);
+  height: calc(var(--vinyl-size) * 0.88);
+  border-radius: 50%;
+  background: radial-gradient(circle, #222 20%, #111 50%, #0a0a0a 100%);
+  animation: vinyl-spin 2.5s linear infinite;
+  animation-play-state: paused;
+  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.vinyl-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36%;
+  height: 36%;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 1;
+  box-shadow: 0 0 0 3px rgba(40, 40, 40, 0.9);
+}
+
+.vinyl-center-hole {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0a0a0a;
+  z-index: 2;
+  box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+@keyframes vinyl-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* EQ vertical slider styling */
@@ -46,9 +162,31 @@
   background: #818cf8; /* indigo-400 */
   border-radius: 50%;
   cursor: pointer;
+  margin-left: -4px; /* center 12px thumb on 4px track */
 }
 
 .eq-slider:disabled::-webkit-slider-thumb {
+  background: #52525b; /* zinc-600 */
+  cursor: default;
+}
+
+.eq-slider::-moz-range-track {
+  width: 4px;
+  background: #3f3f46; /* zinc-700 */
+  border-radius: 2px;
+  border: none;
+}
+
+.eq-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #818cf8; /* indigo-400 */
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+
+.eq-slider:disabled::-moz-range-thumb {
   background: #52525b; /* zinc-600 */
   cursor: default;
 }
@@ -114,13 +252,48 @@
 }
 
 .vinyl-grooves {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
   background:
-    radial-gradient(circle, transparent 44%, rgba(255,255,255,0.04) 45%, transparent 46%),
-    radial-gradient(circle, transparent 52%, rgba(255,255,255,0.03) 53%, transparent 54%),
-    radial-gradient(circle, transparent 60%, rgba(255,255,255,0.04) 61%, transparent 62%),
-    radial-gradient(circle, transparent 68%, rgba(255,255,255,0.03) 69%, transparent 70%),
-    radial-gradient(circle, transparent 76%, rgba(255,255,255,0.04) 77%, transparent 78%),
-    radial-gradient(circle, transparent 84%, rgba(255,255,255,0.03) 85%, transparent 86%),
-    radial-gradient(circle, transparent 92%, rgba(255,255,255,0.04) 93%, transparent 94%);
+    radial-gradient(circle, transparent 35%, rgba(200,200,200,0.10) 35.8%, transparent 36.5%),
+    radial-gradient(circle, transparent 40%, rgba(180,180,180,0.07) 40.8%, transparent 41.5%),
+    radial-gradient(circle, transparent 45%, rgba(200,200,200,0.10) 45.8%, transparent 46.5%),
+    radial-gradient(circle, transparent 50%, rgba(180,180,180,0.07) 50.8%, transparent 51.5%),
+    radial-gradient(circle, transparent 55%, rgba(200,200,200,0.10) 55.8%, transparent 56.5%),
+    radial-gradient(circle, transparent 60%, rgba(180,180,180,0.07) 60.8%, transparent 61.5%),
+    radial-gradient(circle, transparent 65%, rgba(200,200,200,0.10) 65.8%, transparent 66.5%),
+    radial-gradient(circle, transparent 70%, rgba(180,180,180,0.07) 70.8%, transparent 71.5%),
+    radial-gradient(circle, transparent 75%, rgba(200,200,200,0.10) 75.8%, transparent 76.5%),
+    radial-gradient(circle, transparent 80%, rgba(180,180,180,0.07) 80.8%, transparent 81.5%),
+    radial-gradient(circle, transparent 85%, rgba(200,200,200,0.10) 85.8%, transparent 86.5%),
+    radial-gradient(circle, transparent 90%, rgba(180,180,180,0.07) 90.8%, transparent 91.5%);
   pointer-events: none;
+  z-index: 1;
+}
+
+.vinyl-disc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from 160deg,
+      transparent 0deg,
+      rgba(255, 255, 255, 0.06) 20deg,
+      rgba(255, 255, 255, 0.18) 45deg,
+      rgba(255, 255, 255, 0.06) 70deg,
+      transparent 90deg,
+      transparent 360deg
+    ),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      transparent 40%,
+      transparent 60%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+  pointer-events: none;
+  z-index: 3;
 }

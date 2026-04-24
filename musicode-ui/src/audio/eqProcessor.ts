@@ -98,7 +98,7 @@ function init(ctx: AudioContext): { input: AudioNode; output: AudioNode } {
     }
   }
 
-  console.log('[eqProcessor] EQ chain initialized: 5-band peaking, Q=' + Q_FACTOR,
+  console.debug('[eqProcessor] EQ chain initialized: 5-band peaking, Q=' + Q_FACTOR,
     enabled ? '(enabled, gains: ' + currentGains.join(',') + ')' : '(disabled)');
 
   return { input: filters[0], output: filters[BAND_COUNT - 1] };

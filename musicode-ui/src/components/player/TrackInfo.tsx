@@ -30,13 +30,14 @@ function TrackInfo({ title, artistName, albumId, hasCover, isPlaying, onArtworkC
           }}
         >
           <div
-            className="w-full h-full rounded-full overflow-hidden vinyl-disc"
+            className="w-full h-full rounded-full overflow-hidden relative"
             style={{
-              animation: 'spin 8s linear infinite',
+              background: 'radial-gradient(circle, #1a1a1a 20%, #0a0a0a 100%)',
+              boxShadow: '2px 0 15px rgba(0,0,0,0.5)',
+              animation: 'vinyl-spin 8s linear infinite',
               animationPlayState: isPlaying ? 'running' : 'paused',
             }}
           >
-            <div className="w-full h-full bg-zinc-950" />
             <div className="absolute inset-0 vinyl-grooves" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full overflow-hidden ring-1 ring-zinc-700">
               {hasCover && albumId ? (

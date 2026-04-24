@@ -60,6 +60,8 @@ musicode:
     login-rate-limit:
       max-attempts: 50        # Relaxed for dev/E2E — tighten in docker profile
       window-seconds: 60
+  scrobble:
+    retry-delay-ms: 1000
   encryption:
     # AES-GCM key for scrobble tokens at rest. Generate with: openssl rand -hex 32
     # Missing value fails fast at startup (TokenEncryptionService).

@@ -24,7 +24,10 @@ export default function PlayerBar() {
   } = usePlayer();
 
   const [showVisualizer, setShowVisualizer] = useState(false);
-  const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => loadPreferences().visualizerMode);
+  const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => {
+    const saved = loadPreferences().visualizerMode;
+    return saved === 'vinyl' ? 'bars' : saved;
+  });
   const [showNowPlaying, setShowNowPlaying] = useState(false);
 
   const handlePlayPause = useCallback(() => {

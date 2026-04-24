@@ -12,13 +12,15 @@ import { Music } from 'lucide-react';
  */
 export default function ActivityFeed() {
   const [events, setEvents] = useState<ActivityEvent[]>([]);
+  const [loadError, setLoadError] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   // Load initial recent events
   useEffect(() => {
     getRecentActivity()
-      .then(setEvents)
-      .catch(() => {}); // Silently fail — feed is optional
+      .then((data) => { setEvents(data); setLoadError(false); })
+      .catch(() => setLoadError(true));
   }, []);
 
   // SSE connection
@@ -35,7 +37,10 @@ export default function ActivityFeed() {
       }
     });
 
+    es.onopen = () => setReconnecting(false);
+
     es.onerror = () => {
+      setReconnecting(true);
       console.debug('[activity] SSE connection error — will auto-reconnect');
     };
 
@@ -57,13 +62,21 @@ export default function ActivityFeed() {
     return date.toLocaleDateString();
   }, []);
 
-  if (events.length === 0) {
-    return null; // Don't render anything if no activity
+  if (events.length === 0 && !loadError) {
+    return null;
   }
 
   return (
     <div className="px-3 pb-3">
-      <p className="text-xs text-zinc-600 uppercase tracking-wider px-3 mb-2">Activity</p>
+      <div className="flex items-center gap-2 px-3 mb-2">
+        <p className="text-xs text-zinc-600 uppercase tracking-wider">Activity</p>
+        {reconnecting && (
+          <span className="text-[10px] text-amber-500/70">reconnecting…</span>
+        )}
+      </div>
+      {loadError && events.length === 0 && (
+        <p className="text-xs text-zinc-600 px-3">Could not load activity</p>
+      )}
       <div className="space-y-1 max-h-40 overflow-y-auto">
         {events.slice(0, 5).map((event, i) => (
           <div key={`${event.timestamp}-${i}`} className="flex items-start gap-2 px-3 py-1.5 rounded text-xs">

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.util.function.Supplier;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ScrobbleService {
 
@@ -22,7 +21,18 @@ public class ScrobbleService {
     private final TrackRepository trackRepository;
 
     private static final int MAX_RETRIES = 3;
-    private long baseDelayMs = 1000;
+    private final long baseDelayMs;
+
+    public ScrobbleService(
+            ListenBrainzService listenBrainzService,
+            LastfmService lastfmService,
+            TrackRepository trackRepository,
+            @org.springframework.beans.factory.annotation.Value("${musicode.scrobble.retry-delay-ms:1000}") long baseDelayMs) {
+        this.listenBrainzService = listenBrainzService;
+        this.lastfmService = lastfmService;
+        this.trackRepository = trackRepository;
+        this.baseDelayMs = baseDelayMs;
+    }
 
     @Async
     public void scrobble(PlaybackEvent event) {

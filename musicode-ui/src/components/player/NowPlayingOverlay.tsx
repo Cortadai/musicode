@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Palette, BarChart3, AudioWaveform, Disc3 } from 'lucide-react';
+import { X, Palette, BarChart3, AudioWaveform, Disc3, Disc, ChevronDown } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useDynamicTheme } from '../../hooks/useDynamicTheme';
 import audioGraph from '../../audio/audioGraph';
@@ -11,6 +11,7 @@ import TransportControls from './TransportControls';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
 import Visualizer from './Visualizer';
+import VinylVisualizer from './VinylVisualizer';
 
 interface Props {
   open: boolean;
@@ -28,7 +29,7 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
   const { enabled: dynamicEnabled, toggle: toggleDynamic, colors } = useDynamicTheme();
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  const [showVisualizer, setShowVisualizer] = useState(false);
+  const [showVisualizer, setShowVisualizer] = useState(true);
   const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => loadPreferences().visualizerMode);
 
   // Artwork crossfade state
@@ -100,7 +101,9 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
   const hasCover = currentTrack.album?.hasCoverArt;
   const coverSrc = hasCover && albumId ? getCoverUrl(albumId) : null;
 
-  const bgStyle = dynamicEnabled && colors
+  const isVinylMode = showVisualizer && visualizerMode === 'vinyl';
+
+  const bgStyle = !isVinylMode && dynamicEnabled && colors
     ? { background: `radial-gradient(ellipse at center, ${colors.primary}18 0%, ${colors.background} 70%) no-repeat, #09090b` }
     : {};
 
@@ -114,8 +117,16 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
       className={`now-playing-overlay ${open ? 'now-playing-open' : 'now-playing-closed'}`}
       style={bgStyle}
     >
-      {/* Visualizer as full-overlay background */}
-      {showVisualizer && (
+      {/* Vinyl blurred cover background */}
+      {isVinylMode && coverSrc && (
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <img src={coverSrc} alt="" className="w-full h-full object-cover scale-125 blur-[50px] opacity-50" />
+          <div className="absolute inset-0 bg-black/30" />
+        </div>
+      )}
+
+      {/* Canvas visualizer as full-overlay background (non-vinyl modes) */}
+      {showVisualizer && !isVinylMode && (
         <div className="absolute inset-0 z-0 opacity-30 pointer-events-none overflow-hidden">
           <Visualizer visible={showVisualizer && open} mode={visualizerMode} onModeChange={handleSelectVisualizer} fullSize hideControls dynamicColors={dynamicEnabled ? colors : null} />
         </div>
@@ -123,10 +134,22 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
 
       {/* Top bar */}
       <div className="relative z-10 flex items-center justify-between px-6 pt-4 pb-2">
-        <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Now Playing</span>
+        <button
+          onClick={onClose}
+          className="flex items-center gap-2 text-zinc-400 hover:text-zinc-100 transition-colors group"
+        >
+          <ChevronDown className="w-5 h-5 transition-transform group-hover:translate-y-0.5" />
+          <span className="text-sm uppercase tracking-wider font-medium flex items-center gap-2">
+            Now Playing
+            {isPlaying && (
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+            )}
+          </span>
+        </button>
 
         <div className="flex items-center gap-1">
           {([
+            { mode: 'vinyl' as VisualizerMode, Icon: Disc, label: 'Vinyl visualizer' },
             { mode: 'bars' as VisualizerMode, Icon: BarChart3, label: 'Bars visualizer' },
             { mode: 'waveform' as VisualizerMode, Icon: AudioWaveform, label: 'Waveform visualizer' },
             { mode: 'circular' as VisualizerMode, Icon: Disc3, label: 'Circular visualizer' },
@@ -169,39 +192,41 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 gap-6 overflow-hidden">
-        {/* Artwork with crossfade */}
-        <div
-          className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-2xl overflow-hidden shadow-2xl"
-          style={dynamicEnabled && colors ? { boxShadow: `0 20px 60px ${colors.primary}30` } : {}}
-        >
-          {/* Previous cover (fading out) */}
-          {coverFading && prevCoverSrc && (
-            <img
-              src={prevCoverSrc}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover np-cover-exit"
-            />
-          )}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 gap-3 min-h-0 overflow-visible pb-6">
+        {/* Artwork — vinyl mode or standard crossfade */}
+        {isVinylMode ? (
+          <VinylVisualizer key={currentTrack.id} coverSrc={coverSrc} isPlaying={isPlaying} />
+        ) : (
+          <div
+            className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-2xl overflow-hidden shadow-2xl"
+            style={dynamicEnabled && colors ? { boxShadow: `0 20px 60px ${colors.primary}30` } : {}}
+          >
+            {coverFading && prevCoverSrc && (
+              <img
+                src={prevCoverSrc}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover np-cover-exit"
+              />
+            )}
 
-          {/* Current cover (fading in) */}
-          {coverSrc ? (
-            <img
-              src={coverSrc}
-              alt={`${currentTrack.album?.title} cover`}
-              className={`w-full h-full object-cover ${coverFading ? 'np-cover-enter' : ''}`}
-            />
-          ) : (
-            <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
-              <span className="text-6xl text-zinc-600">&#9835;</span>
-            </div>
-          )}
-        </div>
+            {coverSrc ? (
+              <img
+                src={coverSrc}
+                alt={`${currentTrack.album?.title} cover`}
+                className={`w-full h-full object-cover ${coverFading ? 'np-cover-enter' : ''}`}
+              />
+            ) : (
+              <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                <span className="text-6xl text-zinc-600">&#9835;</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Track info */}
         <div className="text-center max-w-md">
           <h2 className="text-xl font-semibold text-zinc-100 truncate">{currentTrack.title}</h2>
-          <p className="text-sm text-zinc-400 mt-1 truncate">
+          <p className="text-sm text-zinc-400 mt-0.5 truncate">
             {currentTrack.artist?.name ?? 'Unknown Artist'}
             {currentTrack.album?.title ? ` \u2014 ${currentTrack.album.title}` : ''}
           </p>
@@ -236,10 +261,10 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
 
         {/* Up Next */}
         {nextTrack && (
-          <div className="text-center mb-8">
+          <div className="text-center mt-1">
             <span className="text-[11px] text-zinc-600 uppercase tracking-wider">Up Next</span>
-            <p className="text-sm text-zinc-400 truncate max-w-xs">
-              {nextTrack.title} \u2014 {nextTrack.artist?.name ?? 'Unknown'}
+            <p className="text-sm text-zinc-400 truncate max-w-xs mx-auto">
+              {nextTrack.title} {'\u2014'} {nextTrack.artist?.name ?? 'Unknown'}
             </p>
           </div>
         )}

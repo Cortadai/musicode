@@ -83,7 +83,7 @@ public class MetadataService {
             return metadata;
 
         } catch (Exception e) {
-            log.error("Failed to read metadata from {}: {}", filePath, e.getMessage());
+            log.error("Failed to read metadata from {} [{}]: {}", filePath, e.getClass().getSimpleName(), e.getMessage());
             return null;
         }
     }

@@ -69,8 +69,14 @@ public class LastfmService {
 
             log.warn("[lastfm] Auth failed for '{}': {}", username, response.getBody());
             return null;
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            log.warn("[lastfm] Auth HTTP error for '{}': {} {}", username, e.getStatusCode(), e.getMessage());
+            return null;
+        } catch (ResourceAccessException e) {
+            log.warn("[lastfm] Auth timeout for '{}': {}", username, e.getMessage());
+            return null;
         } catch (Exception e) {
-            log.warn("[lastfm] Auth error for '{}': {}", username, e.getMessage());
+            log.error("[lastfm] Auth unexpected error for '{}': [{}] {}", username, e.getClass().getSimpleName(), e.getMessage(), e);
             return null;
         }
     }

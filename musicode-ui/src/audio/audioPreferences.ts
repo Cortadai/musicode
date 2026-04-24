@@ -11,7 +11,7 @@ import type { RepeatMode } from '../context/PlayerContext';
 
 const STORAGE_KEY = 'musicode-prefs';
 
-export type VisualizerMode = 'bars' | 'waveform' | 'circular';
+export type VisualizerMode = 'bars' | 'waveform' | 'circular' | 'vinyl';
 
 export interface AudioPreferences {
   volume: number;
@@ -33,7 +33,7 @@ const DEFAULTS: AudioPreferences = {
   eqEnabled: false,
   eqBands: [0, 0, 0, 0, 0],
   eqPreset: 'flat',
-  visualizerMode: 'bars',
+  visualizerMode: 'vinyl',
   dynamicTheme: false,
 };
 
@@ -79,7 +79,7 @@ export function loadPreferences(): AudioPreferences {
       typeof parsed.eqPreset === 'string' ? parsed.eqPreset : DEFAULTS.eqPreset;
 
     const visualizerMode: VisualizerMode =
-      ['bars', 'waveform', 'circular'].includes(parsed.visualizerMode)
+      ['bars', 'waveform', 'circular', 'vinyl'].includes(parsed.visualizerMode)
         ? (parsed.visualizerMode as VisualizerMode)
         : DEFAULTS.visualizerMode;
 

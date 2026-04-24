@@ -8,7 +8,6 @@ import com.musicode.model.entity.User;
 import com.musicode.repository.TrackRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -39,8 +38,7 @@ class ScrobbleServiceTest {
         lastfm = mock(LastfmService.class);
         listenBrainz = mock(ListenBrainzService.class);
         trackRepository = mock(TrackRepository.class);
-        service = new ScrobbleService(listenBrainz, lastfm, trackRepository);
-        ReflectionTestUtils.setField(service, "baseDelayMs", 1L);
+        service = new ScrobbleService(listenBrainz, lastfm, trackRepository, 1L);
 
         track = Track.builder().id(1L).title("Karma Police").build();
         user = User.builder().id(7L).username("alice").build();

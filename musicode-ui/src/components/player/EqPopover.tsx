@@ -1,7 +1,79 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal } from 'lucide-react';
 import eqProcessor, { EQ_PRESETS, GAIN_MIN, GAIN_MAX } from '../../audio/eqProcessor';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
+
+function EqPresetDropdown({ preset, onSelect }: { preset: string; onSelect: (name: string) => void }) {
+  const [listOpen, setListOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const options = [
+    ...EQ_PRESETS.map((p) => ({ value: p.name, label: p.label })),
+    ...(preset === 'custom' ? [{ value: 'custom', label: 'Custom' }] : []),
+  ];
+
+  const currentLabel = options.find((o) => o.value === preset)?.label ?? preset;
+
+  useEffect(() => {
+    if (!listOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setListOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [listOpen]);
+
+  useEffect(() => {
+    if (!listOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setListOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [listOpen]);
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        onClick={() => setListOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={listOpen}
+        aria-label="EQ preset"
+        className="flex items-center justify-between gap-1 text-[11px] bg-zinc-700 text-zinc-300 border border-zinc-600 rounded px-1.5 py-0.5 outline-none
+          hover:border-zinc-500 focus-visible:border-indigo-500 focus-visible:ring-1 focus-visible:ring-indigo-400 w-[100px]"
+      >
+        {currentLabel}
+        <ChevronDown className="w-3 h-3" />
+      </button>
+      {listOpen && (
+        <ul
+          role="listbox"
+          aria-label="EQ presets"
+          className="absolute right-0 top-full mt-1 bg-zinc-800 border border-zinc-700 rounded shadow-xl z-50 py-0.5 w-[100px]"
+        >
+          {options.map((o) => (
+            <li
+              key={o.value}
+              role="option"
+              aria-selected={o.value === preset}
+              onClick={() => { onSelect(o.value); setListOpen(false); }}
+              className={`text-[11px] px-2 py-1 cursor-pointer transition-colors
+                ${o.value === preset
+                  ? 'bg-indigo-500 text-white'
+                  : 'text-zinc-300 hover:bg-indigo-500/20 hover:text-white'}`}
+            >
+              {o.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export default function EqPopover() {
   const [open, setOpen] = useState(false);
@@ -113,19 +185,10 @@ export default function EqPopover() {
                 />
               </button>
             </div>
-            <select
-              value={preset}
-              onChange={(e) => handlePresetChange(e.target.value)}
-              aria-label="EQ preset"
-              className="text-[11px] bg-zinc-700 text-zinc-300 border border-zinc-600 rounded px-1.5 py-0.5 outline-none focus:border-indigo-500"
-            >
-              {EQ_PRESETS.map((p) => (
-                <option key={p.name} value={p.name}>{p.label}</option>
-              ))}
-              {preset === 'custom' && (
-                <option value="custom">Custom</option>
-              )}
-            </select>
+            <EqPresetDropdown
+              preset={preset}
+              onSelect={handlePresetChange}
+            />
           </div>
 
           {/* 5-band vertical sliders */}

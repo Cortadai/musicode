@@ -172,7 +172,7 @@ function init(): void {
   masterGain.gain.value = pendingVolume;
 
   initialized = true;
-  console.log('[audioGraph] Graph initialized: dual-gain, active=A (volume:', pendingVolume + ')');
+  console.debug('[audioGraph] Graph initialized: dual-gain, active=A (volume:', pendingVolume + ')');
 }
 
 /**
