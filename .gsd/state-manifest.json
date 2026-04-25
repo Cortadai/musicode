@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-04-25T15:47:06.282Z",
+  "exported_at": "2026-04-25T17:08:28.510Z",
   "milestones": [
     {
       "id": "M001",
@@ -469,10 +469,10 @@
     {
       "id": "M014",
       "title": "Library Health Dashboard",
-      "status": "active",
+      "status": "complete",
       "depends_on": [],
       "created_at": "2026-04-25T14:38:41.673Z",
-      "completed_at": null,
+      "completed_at": "2026-04-25T17:08:28.474Z",
       "vision": "Panel que analiza la librería musical y muestra problemas de metadata (tracks sin artista, álbumes sin carátula, etc.) para que el usuario sepa qué corregir en herramientas externas como MusicBrainz Picard.",
       "success_criteria": [
         "GET /api/library/health/summary devuelve conteos por tipo de issue",
@@ -568,6 +568,57 @@
       ],
       "requirement_coverage": "Not provided.",
       "boundary_map_markdown": "Not provided."
+    },
+    {
+      "id": "M016",
+      "title": "Waveform Progress Bar",
+      "status": "complete",
+      "depends_on": [],
+      "created_at": "2026-04-25T16:04:58.842Z",
+      "completed_at": "2026-04-25T16:55:54.205Z",
+      "vision": "Replace the flat progress bar with a SoundCloud-style waveform showing amplitude structure of each track, enabling visual seeking through loud/quiet sections.",
+      "success_criteria": [
+        "User sees a waveform visualization in the progress bar area for any played track",
+        "Played portion of waveform is visually distinct from unplayed portion",
+        "User can click/drag anywhere on the waveform to seek",
+        "Waveform generates lazily on first play and caches for instant display on subsequent plays",
+        "Flat progress bar shown as fallback while waveform loads or if ffmpeg unavailable"
+      ],
+      "key_risks": [
+        {
+          "risk": "ffmpeg ProcessBuilder reliability across OS",
+          "whyItMatters": "ffmpeg must work on Windows dev (scoop install) and Docker Linux production — path resolution and process lifecycle differ"
+        },
+        {
+          "risk": "Canvas rendering performance during playback",
+          "whyItMatters": "Waveform redraws at ~60fps to update played/unplayed fill — must not cause jank on the audio thread"
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "ffmpeg ProcessBuilder reliability",
+          "retireIn": "S01",
+          "whatWillBeProven": "Peak extraction runs correctly on Windows and produces valid JSON cache files"
+        },
+        {
+          "riskOrUnknown": "Canvas rendering performance",
+          "retireIn": "S02",
+          "whatWillBeProven": "Waveform redraws smoothly during playback with no visible stutter"
+        }
+      ],
+      "verification_contract": "WaveformService unit tests, WaveformController integration tests, lrcParser-style unit tests for peak normalization",
+      "verification_integration": "Real ffmpeg execution against test audio files, end-to-end waveform fetch from API",
+      "verification_operational": "Waveform cache directory created on startup, graceful fallback when ffmpeg not found",
+      "verification_uat": "Visual verification: waveform displays in PlayerBar and NowPlayingOverlay, seek works, played/unplayed colors distinct",
+      "definition_of_done": [
+        "All slice deliverables complete",
+        "Waveform displays for real tracks in both PlayerBar and NowPlayingOverlay",
+        "Seek via waveform click/drag works correctly",
+        "Flat fallback shown while loading and when ffmpeg unavailable",
+        "All tests pass including new waveform tests"
+      ],
+      "requirement_coverage": "Not provided.",
+      "boundary_map_markdown": "### S01 → S02\n\nProduces:\n- `GET /api/waveforms/{trackId}` — returns `{ peaks: number[] }` (~200 normalized 0.0-1.0 floats)\n- Waveform JSON cache at `./data/waveforms/{trackId}.json`\n\nConsumes:\n- Track entity with file path (existing)\n- ffmpeg binary on PATH or configured via `musicode.ffmpeg-path`"
     }
   ],
   "slices": [
@@ -1602,15 +1653,15 @@
     {
       "milestone_id": "M014",
       "id": "S01",
-      "title": "Backend: Health Service + API endpoints",
-      "status": "pending",
+      "title": "S01",
+      "status": "complete",
       "risk": "low",
       "depends": [],
       "demo": "curl a /api/library/health/summary y /issues devuelve datos correctos",
       "created_at": "2026-04-25T14:39:20.515Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
+      "completed_at": "2026-04-25T17:07:34.897Z",
+      "full_summary_md": "---\nid: S01\nparent: M014\nmilestone: M014\nprovides:\n  - [\"health-api-endpoints\"]\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - [\"musicode-server/src/main/java/com/musicode/service/LibraryHealthService.java\", \"musicode-server/src/main/java/com/musicode/controller/LibraryHealthController.java\", \"musicode-server/src/main/java/com/musicode/model/dto/HealthSummaryDto.java\"]\nkey_decisions:\n  - (none)\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-04-25T17:07:34.897Z\nblocker_discovered: false\n---\n\n# S01: Backend: Health Service + API endpoints\n\n**LibraryHealthService with 8 health checks, paginated REST endpoints, full test coverage**\n\n## What Happened\n\nImplemented the complete backend for library health analysis. LibraryHealthService runs 8 checks against the music library: missing title, missing artist, missing album, missing track number, missing year, missing genre, albums without cover art, and albums with inconsistent artists. Each check returns counts and paginated detail lists. Two REST endpoints expose the data: /api/library/health/summary for aggregated counts and /api/library/health/issues?type=X for filtered paginated results. Custom JPQL queries in TrackRepository and AlbumRepository handle the complex checks efficiently. Full integration test coverage validates all checks with positive/negative cases and edge cases.\n\n## Verification\n\nmvn -B verify: 272 tests, 0 failures. Manual curl to /api/library/health/summary returns correct counts. Paginated issues endpoint returns expected results with proper page metadata.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S01: Backend: Health Service + API endpoints — UAT\n\n**Milestone:** M014\n**Written:** 2026-04-25T17:07:34.897Z\n\n## UAT: Backend Health Service\\n\\n- [x] GET /api/library/health/summary returns JSON with counts per issue type\\n- [x] GET /api/library/health/issues?type=MISSING_ARTIST&page=0&size=20 returns paginated results\\n- [x] All 8 health check types implemented and returning correct data\\n- [x] Endpoints require authentication (401 without token)\\n- [x] Integration tests cover all checks with edge cases\n",
       "goal": "LibraryHealthService con todos los health checks, endpoints REST paginados, tests de integración",
       "success_criteria": "Todos los health checks implementados, endpoints devuelven JSON correcto con paginación, tests pasan",
       "proof_level": "integration-tests + manual curl",
@@ -1622,22 +1673,20 @@
     {
       "milestone_id": "M014",
       "id": "S02",
-      "title": "Frontend: Health dashboard UI",
-      "status": "pending",
+      "title": "S02",
+      "status": "complete",
       "risk": "low",
-      "depends": [
-        "S01"
-      ],
+      "depends": [],
       "demo": "Navegar a /library/health, ver cards de resumen, click para ver detalles con paginación",
       "created_at": "2026-04-25T14:39:20.516Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
-      "goal": "Página con cards de resumen + tabla filtrable paginada + mensaje orientativo Picard",
-      "success_criteria": "Cards muestran conteos correctos, tabla filtra por tipo, paginación funciona, mensaje Picard visible",
-      "proof_level": "visual-verification + E2E smoke",
-      "integration_closure": "Feature completa end-to-end",
-      "observability_impact": "Ninguno adicional",
+      "completed_at": "2026-04-25T17:08:02.115Z",
+      "full_summary_md": "---\nid: S02\nparent: M014\nmilestone: M014\nprovides:\n  - (none)\nrequires:\n  - slice: S01\n    provides: health-api-endpoints\naffects:\n  []\nkey_files:\n  - [\"musicode-ui/src/pages/LibraryHealthPage.tsx\", \"musicode-ui/src/api/libraryHealth.ts\"]\nkey_decisions:\n  - (none)\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-04-25T17:08:02.115Z\nblocker_discovered: false\n---\n\n# S02: Frontend: Health dashboard UI\n\n**LibraryHealthPage with summary cards, filterable issue table, and MusicBrainz Picard guidance**\n\n## What Happened\n\nBuilt the frontend health dashboard as a React page at /library/health. Summary cards display color-coded counts per issue type. Clicking a card filters the paginated issues table. Each row shows the affected track or album with its file path. An informational banner guides users to MusicBrainz Picard for fixing metadata. API client wraps the backend health endpoints with proper error handling.\n\n## Verification\n\nVisual verification in browser: cards render with correct counts, filtering works, pagination navigates, Picard guidance visible. TypeScript compilation and Vite build pass.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S02: Frontend: Health dashboard UI — UAT\n\n**Milestone:** M014\n**Written:** 2026-04-25T17:08:02.115Z\n\n## UAT: Frontend Health Dashboard\\n\\n- [x] /library/health page accessible from sidebar navigation\\n- [x] Summary cards show counts per issue type with color coding\\n- [x] Clicking a card filters the issues table to that type\\n- [x] Issues table shows track/album name and file path\\n- [x] Server-side pagination works correctly\\n- [x] MusicBrainz Picard guidance banner is visible\\n- [x] Page handles empty library (no issues) gracefully\n",
+      "goal": "Frontend health dashboard page with summary cards, filterable issue table, and MusicBrainz Picard guidance",
+      "success_criteria": "Cards show correct counts, table filters by type, pagination works, Picard message visible",
+      "proof_level": "visual-verification",
+      "integration_closure": "Feature complete end-to-end",
+      "observability_impact": "Not provided.",
       "sequence": 2,
       "replan_triggered_at": null
     },
@@ -1678,6 +1727,46 @@
       "proof_level": "Not provided.",
       "integration_closure": "Not provided.",
       "observability_impact": "Not provided.",
+      "sequence": 2,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M016",
+      "id": "S01",
+      "title": "S01",
+      "status": "complete",
+      "risk": "medium",
+      "depends": [],
+      "demo": "After this: `curl /api/waveforms/{trackId}` returns ~200 peak values extracted from a real audio file via ffmpeg",
+      "created_at": "2026-04-25T16:05:29.574Z",
+      "completed_at": "2026-04-25T16:55:16.949Z",
+      "full_summary_md": "---\nid: S01\nparent: M016\nmilestone: M016\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - [\"musicode-server/src/main/java/com/musicode/service/WaveformService.java\", \"musicode-server/src/main/java/com/musicode/controller/WaveformController.java\", \"musicode-server/src/main/java/com/musicode/model/dto/WaveformResponse.java\"]\nkey_decisions:\n  - [\"redirectErrorStream(true) + -v error to prevent ffmpeg deadlock\", \"200 peaks default — good detail/payload balance\", \"JSON file cache, no DB dependency\"]\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-04-25T16:55:16.950Z\nblocker_discovered: false\n---\n\n# S01: Backend — ffmpeg peak extraction + cache + endpoint\n\n**REST endpoint extracts audio peaks via ffmpeg, caches as JSON, serves ~200 normalized values per track**\n\n## What Happened\n\nBuilt the full backend pipeline: WaveformService runs ffmpeg ProcessBuilder to extract raw PCM, downsamples to 200 peaks, caches as JSON files. WaveformController exposes GET /api/waveforms/{trackId}. Fixed a critical ffmpeg stderr deadlock with redirectErrorStream. 10 tests (unit + controller + integration) all pass. Docker image updated with ffmpeg runtime dependency.\n\n## Verification\n\nmvn test -Dtest=WaveformControllerTest,WaveformServiceTest — 10 tests, 0 failures\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S01: Backend — ffmpeg peak extraction + cache + endpoint — UAT\n\n**Milestone:** M016\n**Written:** 2026-04-25T16:55:16.950Z\n\n## UAT: S01 — Backend waveform endpoint\\n\\n### Test 1: Waveform generation for new track\\n- Play a track that has never been played before\\n- GET /api/waveforms/{trackId} should return 200 with peaks array (~200 values)\\n- Subsequent requests for same track should be faster (cached)\\n\\n### Test 2: Missing audio file\\n- Request waveform for a track with missing file\\n- Should return empty peaks array, not 500\\n\\n### Test 3: Concurrent requests\\n- Request same track waveform from two tabs simultaneously\\n- Both should succeed without corruption\n",
+      "goal": "Extract audio peaks via ffmpeg ProcessBuilder, cache as JSON, expose via REST endpoint",
+      "success_criteria": "Waveform endpoint returns valid peak array for any track with an audio file",
+      "proof_level": "integration",
+      "integration_closure": "Endpoint wired into SecurityConfig, ffmpeg runs against real files",
+      "observability_impact": "Logs ffmpeg execution time and cache hits/misses per track",
+      "sequence": 1,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M016",
+      "id": "S02",
+      "title": "S02",
+      "status": "complete",
+      "risk": "medium",
+      "depends": [],
+      "demo": "After this: user sees waveform in progress bar area, can click to seek, played portion highlighted",
+      "created_at": "2026-04-25T16:05:29.574Z",
+      "completed_at": "2026-04-25T16:55:26.236Z",
+      "full_summary_md": "---\nid: S02\nparent: M016\nmilestone: M016\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - [\"musicode-ui/src/components/player/WaveformBar.tsx\", \"musicode-ui/src/hooks/useWaveform.ts\", \"musicode-ui/src/api/waveforms.ts\", \"musicode-ui/src/components/player/ProgressBar.tsx\", \"musicode-ui/src/components/player/PlayerBar.tsx\"]\nkey_decisions:\n  - [\"120s timeout for waveform API — first ffmpeg generation can be slow\", \"Toggle button with localStorage preference persistence\", \"Canvas rendering for performance\"]\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-04-25T16:55:26.236Z\nblocker_discovered: false\n---\n\n# S02: Frontend — Canvas waveform + seek integration\n\n**Canvas-based WaveformBar renders peaks with progress highlighting, click-to-seek, and toggle to flat bar**\n\n## What Happened\n\nBuilt WaveformBar React component using HTML5 Canvas rendering ~200 bars. Integrated into ProgressBar with automatic fallback to flat bar when peaks unavailable or waveform disabled. Added toggle button in PlayerBar controls (Activity icon, indigo/gray). useWaveform hook fetches and caches peaks with 120s timeout for first-generation tolerance. Preference persists in localStorage. Works in both PlayerBar and NowPlayingOverlay. User verified via screenshot.\n\n## Verification\n\nUser verified via screenshot — waveform rendering, seek, toggle, and both player contexts working correctly\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S02: Frontend — Canvas waveform + seek integration — UAT\n\n**Milestone:** M016\n**Written:** 2026-04-25T16:55:26.236Z\n\n## UAT: S02 — Frontend waveform display\\n\\n### Test 1: Waveform renders on playback\\n- Play any track\\n- Waveform bars should appear in player bar (white = played, gray = unplayed)\\n\\n### Test 2: Click to seek\\n- Click anywhere on the waveform\\n- Playback should jump to that position\\n\\n### Test 3: Toggle to flat bar\\n- Click the waveform toggle icon (Activity icon)\\n- Should switch to classic flat progress bar\\n- Click again to return to waveform\\n- Preference survives page reload\\n\\n### Test 4: NowPlayingOverlay\\n- Open fullscreen overlay\\n- Waveform should display and seek should work there too\n",
+      "goal": "Canvas-based waveform component that fetches peaks from API, renders bars, handles seek interaction, integrates into PlayerBar and NowPlayingOverlay",
+      "success_criteria": "Waveform visible in both player locations, seek works, fallback shown during loading",
+      "proof_level": "final-assembly",
+      "integration_closure": "WaveformBar replaces range input in ProgressBar, wired into both PlayerBar and NowPlayingOverlay",
+      "observability_impact": "None — frontend rendering only",
       "sequence": 2,
       "replan_triggered_at": null
     }
@@ -6897,19 +6986,23 @@
       "milestone_id": "M014",
       "slice_id": "S01",
       "id": "T01",
-      "title": "Health check DTOs y LibraryHealthService",
-      "status": "pending",
-      "one_liner": "",
-      "narrative": "",
-      "verification_result": "",
+      "title": "Created HealthSummary/HealthIssue DTOs and LibraryHealthService with all health checks",
+      "status": "complete",
+      "one_liner": "Created HealthSummary/HealthIssue DTOs and LibraryHealthService with all health checks",
+      "narrative": "Implemented DTOs (HealthSummary with per-issue-type counts, HealthIssue with track/album details, IssueType enum) and LibraryHealthService with checks for: missing title, missing artist, missing album, missing track number, missing year, missing genre, albums without cover art, albums with inconsistent artists.",
+      "verification_result": "Unit tests pass for all health checks. mvn -B verify: 272 tests, 0 failures.",
       "duration": "",
-      "completed_at": null,
+      "completed_at": "2026-04-25T17:07:03.289Z",
       "blocker_discovered": false,
-      "deviations": "",
-      "known_issues": "",
-      "key_files": [],
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/model/dto/HealthSummaryDto.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/HealthIssueDto.java",
+        "musicode-server/src/main/java/com/musicode/service/LibraryHealthService.java"
+      ],
       "key_decisions": [],
-      "full_summary_md": "",
+      "full_summary_md": "---\nid: T01\nparent: S01\nmilestone: M014\nkey_files:\n  - musicode-server/src/main/java/com/musicode/model/dto/HealthSummaryDto.java\n  - musicode-server/src/main/java/com/musicode/model/dto/HealthIssueDto.java\n  - musicode-server/src/main/java/com/musicode/service/LibraryHealthService.java\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T17:07:03.287Z\nblocker_discovered: false\n---\n\n# T01: Created HealthSummary/HealthIssue DTOs and LibraryHealthService with all health checks\n\n**Created HealthSummary/HealthIssue DTOs and LibraryHealthService with all health checks**\n\n## What Happened\n\nImplemented DTOs (HealthSummary with per-issue-type counts, HealthIssue with track/album details, IssueType enum) and LibraryHealthService with checks for: missing title, missing artist, missing album, missing track number, missing year, missing genre, albums without cover art, albums with inconsistent artists.\n\n## Verification\n\nUnit tests pass for all health checks. mvn -B verify: 272 tests, 0 failures.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn -B verify` | 0 | pass | 28000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/model/dto/HealthSummaryDto.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/HealthIssueDto.java`\n- `musicode-server/src/main/java/com/musicode/service/LibraryHealthService.java`\n",
       "description": "Crear DTOs (HealthSummary, HealthIssue, IssueType enum) y LibraryHealthService con todos los checks: track sin título útil, sin artista, sin álbum, sin track number, sin año, sin género, álbum sin cover art (usar hasCoverArt flag), álbum con artistas inconsistentes entre sus tracks. Cada check es un método que devuelve conteo y lista paginada.",
       "estimate": "2h",
       "files": [
@@ -6940,19 +7033,22 @@
       "milestone_id": "M014",
       "slice_id": "S01",
       "id": "T02",
-      "title": "Repository queries custom para health checks",
-      "status": "pending",
-      "one_liner": "",
-      "narrative": "",
-      "verification_result": "",
+      "title": "Added custom JPQL queries for health checks to TrackRepository and AlbumRepository",
+      "status": "complete",
+      "one_liner": "Added custom JPQL queries for health checks to TrackRepository and AlbumRepository",
+      "narrative": "Added paginated JPQL queries for tracks with filename-like titles, albums without cover art flag, and albums with mixed artists across tracks. All queries use Pageable for server-side pagination.",
+      "verification_result": "Integration tests with H2 validate query results. mvn -B verify: 272 tests, 0 failures.",
       "duration": "",
-      "completed_at": null,
+      "completed_at": "2026-04-25T17:07:08.507Z",
       "blocker_discovered": false,
-      "deviations": "",
-      "known_issues": "",
-      "key_files": [],
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/repository/TrackRepository.java",
+        "musicode-server/src/main/java/com/musicode/repository/AlbumRepository.java"
+      ],
       "key_decisions": [],
-      "full_summary_md": "",
+      "full_summary_md": "---\nid: T02\nparent: S01\nmilestone: M014\nkey_files:\n  - musicode-server/src/main/java/com/musicode/repository/TrackRepository.java\n  - musicode-server/src/main/java/com/musicode/repository/AlbumRepository.java\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T17:07:08.507Z\nblocker_discovered: false\n---\n\n# T02: Added custom JPQL queries for health checks to TrackRepository and AlbumRepository\n\n**Added custom JPQL queries for health checks to TrackRepository and AlbumRepository**\n\n## What Happened\n\nAdded paginated JPQL queries for tracks with filename-like titles, albums without cover art flag, and albums with mixed artists across tracks. All queries use Pageable for server-side pagination.\n\n## Verification\n\nIntegration tests with H2 validate query results. mvn -B verify: 272 tests, 0 failures.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn -B verify` | 0 | pass | 28000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/repository/TrackRepository.java`\n- `musicode-server/src/main/java/com/musicode/repository/AlbumRepository.java`\n",
       "description": "Añadir queries JPQL/native a TrackRepository y AlbumRepository para los checks que no se resuelven con métodos derivados: tracks con título igual al nombre del archivo, álbumes sin cover, álbumes con artistas mixtos entre tracks. Queries paginadas con Pageable.",
       "estimate": "1h",
       "files": [
@@ -6978,19 +7074,21 @@
       "milestone_id": "M014",
       "slice_id": "S01",
       "id": "T03",
-      "title": "REST endpoints y controller",
-      "status": "pending",
-      "one_liner": "",
-      "narrative": "",
-      "verification_result": "",
+      "title": "Created LibraryHealthController with summary and paginated issues endpoints",
+      "status": "complete",
+      "one_liner": "Created LibraryHealthController with summary and paginated issues endpoints",
+      "narrative": "Implemented GET /api/library/health/summary and GET /api/library/health/issues?type=X&page=0&size=20. Both endpoints require authentication. Controller delegates to LibraryHealthService.",
+      "verification_result": "MockMvc integration tests validate JSON responses and pagination. mvn -B verify passes.",
       "duration": "",
-      "completed_at": null,
+      "completed_at": "2026-04-25T17:07:15.717Z",
       "blocker_discovered": false,
-      "deviations": "",
-      "known_issues": "",
-      "key_files": [],
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/controller/LibraryHealthController.java"
+      ],
       "key_decisions": [],
-      "full_summary_md": "",
+      "full_summary_md": "---\nid: T03\nparent: S01\nmilestone: M014\nkey_files:\n  - musicode-server/src/main/java/com/musicode/controller/LibraryHealthController.java\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T17:07:15.716Z\nblocker_discovered: false\n---\n\n# T03: Created LibraryHealthController with summary and paginated issues endpoints\n\n**Created LibraryHealthController with summary and paginated issues endpoints**\n\n## What Happened\n\nImplemented GET /api/library/health/summary and GET /api/library/health/issues?type=X&page=0&size=20. Both endpoints require authentication. Controller delegates to LibraryHealthService.\n\n## Verification\n\nMockMvc integration tests validate JSON responses and pagination. mvn -B verify passes.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn -B verify` | 0 | pass | 28000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/controller/LibraryHealthController.java`\n",
       "description": "Crear LibraryHealthController con GET /api/library/health/summary (devuelve HealthSummary) y GET /api/library/health/issues?type=X&page=0&size=20 (devuelve Page<HealthIssue>). Protegido con autenticación.",
       "estimate": "45min",
       "files": [
@@ -7013,19 +7111,22 @@
       "milestone_id": "M014",
       "slice_id": "S01",
       "id": "T04",
-      "title": "Tests de integración completos",
-      "status": "pending",
-      "one_liner": "",
-      "narrative": "",
-      "verification_result": "",
+      "title": "Full integration tests for LibraryHealthService and LibraryHealthController",
+      "status": "complete",
+      "one_liner": "Full integration tests for LibraryHealthService and LibraryHealthController",
+      "narrative": "Created @SpringBootTest tests inserting a test library with known issues and validating summary counts and issues endpoint results. Covers edge cases: empty library, library with no issues.",
+      "verification_result": "mvn -B verify: 272 tests, 0 failures, 0 errors.",
       "duration": "",
-      "completed_at": null,
+      "completed_at": "2026-04-25T17:07:20.942Z",
       "blocker_discovered": false,
-      "deviations": "",
-      "known_issues": "",
-      "key_files": [],
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/test/java/com/musicode/service/LibraryHealthServiceTest.java",
+        "musicode-server/src/test/java/com/musicode/controller/LibraryHealthControllerTest.java"
+      ],
       "key_decisions": [],
-      "full_summary_md": "",
+      "full_summary_md": "---\nid: T04\nparent: S01\nmilestone: M014\nkey_files:\n  - musicode-server/src/test/java/com/musicode/service/LibraryHealthServiceTest.java\n  - musicode-server/src/test/java/com/musicode/controller/LibraryHealthControllerTest.java\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T17:07:20.942Z\nblocker_discovered: false\n---\n\n# T04: Full integration tests for LibraryHealthService and LibraryHealthController\n\n**Full integration tests for LibraryHealthService and LibraryHealthController**\n\n## What Happened\n\nCreated @SpringBootTest tests inserting a test library with known issues and validating summary counts and issues endpoint results. Covers edge cases: empty library, library with no issues.\n\n## Verification\n\nmvn -B verify: 272 tests, 0 failures, 0 errors.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn -B verify` | 0 | pass | 28000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/test/java/com/musicode/service/LibraryHealthServiceTest.java`\n- `musicode-server/src/test/java/com/musicode/controller/LibraryHealthControllerTest.java`\n",
       "description": "Tests @SpringBootTest que insertan una librería de prueba con issues conocidos (tracks sin artista, álbumes sin cover, etc.) y validan que summary devuelve conteos correctos y issues devuelve los registros esperados. Cubrir edge cases: librería vacía, librería sin issues.",
       "estimate": "1h",
       "files": [
@@ -7041,6 +7142,43 @@
       "expected_output": [
         "LibraryHealthServiceTest con tests para cada check",
         "LibraryHealthControllerTest con MockMvc tests para endpoints"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M014",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "LibraryHealthPage with summary cards, filterable paginated issue table, and Picard guidance",
+      "status": "complete",
+      "one_liner": "LibraryHealthPage with summary cards, filterable paginated issue table, and Picard guidance",
+      "narrative": "Built LibraryHealthPage.tsx accessible at /library/health from the sidebar. Page displays summary cards showing counts per issue type (color-coded by severity). Clicking a card filters the issues table below. Table shows track/album name, file path, and issue details with server-side pagination. Includes an informational banner about MusicBrainz Picard for fixing metadata issues. API client in libraryHealth.ts wraps the backend endpoints.",
+      "verification_result": "Visual verification in browser: cards show correct counts matching backend data, clicking card filters table, pagination navigates correctly, Picard message visible. npm run build passes.",
+      "duration": "",
+      "completed_at": "2026-04-25T17:07:53.630Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/pages/LibraryHealthPage.tsx",
+        "musicode-ui/src/api/libraryHealth.ts"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T01\nparent: S02\nmilestone: M014\nkey_files:\n  - musicode-ui/src/pages/LibraryHealthPage.tsx\n  - musicode-ui/src/api/libraryHealth.ts\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T17:07:53.630Z\nblocker_discovered: false\n---\n\n# T01: LibraryHealthPage with summary cards, filterable paginated issue table, and Picard guidance\n\n**LibraryHealthPage with summary cards, filterable paginated issue table, and Picard guidance**\n\n## What Happened\n\nBuilt LibraryHealthPage.tsx accessible at /library/health from the sidebar. Page displays summary cards showing counts per issue type (color-coded by severity). Clicking a card filters the issues table below. Table shows track/album name, file path, and issue details with server-side pagination. Includes an informational banner about MusicBrainz Picard for fixing metadata issues. API client in libraryHealth.ts wraps the backend endpoints.\n\n## Verification\n\nVisual verification in browser: cards show correct counts matching backend data, clicking card filters table, pagination navigates correctly, Picard message visible. npm run build passes.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/pages/LibraryHealthPage.tsx`\n- `musicode-ui/src/api/libraryHealth.ts`\n",
+      "description": "React page at /library/health showing summary cards per issue type with counts, clickable to filter a paginated table of affected tracks/albums. Includes MusicBrainz Picard guidance message.",
+      "estimate": "2h",
+      "files": [
+        "musicode-ui/src/pages/LibraryHealthPage.tsx",
+        "musicode-ui/src/api/libraryHealth.ts"
+      ],
+      "verify": "Visual verification in browser: cards show counts, click filters table, pagination works",
+      "inputs": [
+        "health-api-endpoints"
+      ],
+      "expected_output": [
+        "LibraryHealthPage accessible from sidebar"
       ],
       "observability_impact": "",
       "full_plan_md": "",
@@ -7281,6 +7419,249 @@
       ],
       "expected_output": [
         "Updated NowPlayingOverlay with lyrics integration"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M016",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "WaveformService extracts peaks via ffmpeg ProcessBuilder with JSON file cache",
+      "status": "complete",
+      "one_liner": "WaveformService extracts peaks via ffmpeg ProcessBuilder with JSON file cache",
+      "narrative": "Created WaveformService that runs ffmpeg via ProcessBuilder to extract raw PCM samples from audio files, downsamples to 200 normalized peaks (0.0-1.0), and caches results as JSON in data/waveforms/{trackId}.json. Uses @Value-injected paths for ffmpeg binary and waveforms directory. Handles cache hits, missing files, and ffmpeg errors gracefully. Fixed a critical deadlock bug where ffmpeg stderr buffer filled up and blocked the process — resolved by using redirectErrorStream(true) and -v error flag.",
+      "verification_result": "mvn test -Dtest=WaveformServiceTest — 7 tests pass",
+      "duration": "",
+      "completed_at": "2026-04-25T16:54:33.042Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/service/WaveformService.java",
+        "musicode-server/src/main/resources/application.yml"
+      ],
+      "key_decisions": [
+        "Used redirectErrorStream(true) + -v error to prevent ffmpeg stderr deadlock",
+        "200 peaks as default resolution — good balance of detail vs payload size",
+        "JSON file cache per trackId — simple, no DB dependency"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S01\nmilestone: M016\nkey_files:\n  - musicode-server/src/main/java/com/musicode/service/WaveformService.java\n  - musicode-server/src/main/resources/application.yml\nkey_decisions:\n  - Used redirectErrorStream(true) + -v error to prevent ffmpeg stderr deadlock\n  - 200 peaks as default resolution — good balance of detail vs payload size\n  - JSON file cache per trackId — simple, no DB dependency\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T16:54:33.041Z\nblocker_discovered: false\n---\n\n# T01: WaveformService extracts peaks via ffmpeg ProcessBuilder with JSON file cache\n\n**WaveformService extracts peaks via ffmpeg ProcessBuilder with JSON file cache**\n\n## What Happened\n\nCreated WaveformService that runs ffmpeg via ProcessBuilder to extract raw PCM samples from audio files, downsamples to 200 normalized peaks (0.0-1.0), and caches results as JSON in data/waveforms/{trackId}.json. Uses @Value-injected paths for ffmpeg binary and waveforms directory. Handles cache hits, missing files, and ffmpeg errors gracefully. Fixed a critical deadlock bug where ffmpeg stderr buffer filled up and blocked the process — resolved by using redirectErrorStream(true) and -v error flag.\n\n## Verification\n\nmvn test -Dtest=WaveformServiceTest — 7 tests pass\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn test -Dtest=WaveformServiceTest` | 0 | pass | 7000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/service/WaveformService.java`\n- `musicode-server/src/main/resources/application.yml`\n",
+      "description": "Create WaveformService that runs ffmpeg via ProcessBuilder to extract raw PCM samples, downsamples to ~200 peaks (0.0-1.0), and caches as JSON in data/waveforms/{trackId}.json. Config: musicode.waveforms-dir (default ./data/waveforms), musicode.ffmpeg-path (default ffmpeg). Handles: cache hit (return cached), cache miss (generate + cache), ffmpeg not found (log warning, return empty). @Value-injected paths for testability.",
+      "estimate": "2h",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/service/WaveformService.java",
+        "musicode-server/src/main/resources/application.yml"
+      ],
+      "verify": "mvn test -pl musicode-server -Dtest=WaveformServiceTest",
+      "inputs": [
+        "musicode-server/src/main/java/com/musicode/model/entity/Track.java",
+        "musicode-server/src/main/resources/application.yml"
+      ],
+      "expected_output": [
+        "musicode-server/src/main/java/com/musicode/service/WaveformService.java",
+        "musicode-server/src/test/java/com/musicode/service/WaveformServiceTest.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M016",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "WaveformController + DTO + SecurityConfig wiring + Docker ffmpeg",
+      "status": "complete",
+      "one_liner": "WaveformController + DTO + SecurityConfig wiring + Docker ffmpeg",
+      "narrative": "Created WaveformController with GET /api/waveforms/{trackId} returning WaveformResponse DTO (peaks array + trackId). Wired endpoint into SecurityConfig as authenticated. Added ffmpeg to Dockerfile runtime stage for Docker deployments.",
+      "verification_result": "mvn test -Dtest=WaveformControllerTest — 3 tests pass",
+      "duration": "",
+      "completed_at": "2026-04-25T16:54:40.394Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/controller/WaveformController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/WaveformResponse.java",
+        "musicode-server/Dockerfile"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T02\nparent: S01\nmilestone: M016\nkey_files:\n  - musicode-server/src/main/java/com/musicode/controller/WaveformController.java\n  - musicode-server/src/main/java/com/musicode/model/dto/WaveformResponse.java\n  - musicode-server/Dockerfile\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T16:54:40.394Z\nblocker_discovered: false\n---\n\n# T02: WaveformController + DTO + SecurityConfig wiring + Docker ffmpeg\n\n**WaveformController + DTO + SecurityConfig wiring + Docker ffmpeg**\n\n## What Happened\n\nCreated WaveformController with GET /api/waveforms/{trackId} returning WaveformResponse DTO (peaks array + trackId). Wired endpoint into SecurityConfig as authenticated. Added ffmpeg to Dockerfile runtime stage for Docker deployments.\n\n## Verification\n\nmvn test -Dtest=WaveformControllerTest — 3 tests pass\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn test -Dtest=WaveformControllerTest` | 0 | pass | 8000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/controller/WaveformController.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/WaveformResponse.java`\n- `musicode-server/Dockerfile`\n",
+      "description": "Create WaveformController with GET /api/waveforms/{trackId} that returns WaveformResponse (peaks array). Wire into SecurityConfig (authenticated). Add ffmpeg to Dockerfile runtime stage. Create WaveformResponse DTO.",
+      "estimate": "1h",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/controller/WaveformController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/WaveformResponse.java",
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java",
+        "musicode-server/Dockerfile"
+      ],
+      "verify": "mvn test -pl musicode-server -Dtest=WaveformControllerTest",
+      "inputs": [
+        "musicode-server/src/main/java/com/musicode/service/WaveformService.java",
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java"
+      ],
+      "expected_output": [
+        "musicode-server/src/main/java/com/musicode/controller/WaveformController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/WaveformResponse.java",
+        "musicode-server/src/test/java/com/musicode/controller/WaveformControllerTest.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M016",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "Integration test with real ffmpeg execution against generated WAV fixture",
+      "status": "complete",
+      "one_liner": "Integration test with real ffmpeg execution against generated WAV fixture",
+      "narrative": "Created WaveformServiceIntegrationTest that generates a short WAV file programmatically and runs the full pipeline: ffmpeg extraction, peak normalization, JSON caching. Skips gracefully if ffmpeg is not on PATH (CI-friendly with @DisabledIf).",
+      "verification_result": "mvn test -Dtest=WaveformServiceIntegrationTest — passes when ffmpeg available, skips cleanly otherwise",
+      "duration": "",
+      "completed_at": "2026-04-25T16:54:44.677Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/test/java/com/musicode/service/WaveformServiceIntegrationTest.java"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T03\nparent: S01\nmilestone: M016\nkey_files:\n  - musicode-server/src/test/java/com/musicode/service/WaveformServiceIntegrationTest.java\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T16:54:44.677Z\nblocker_discovered: false\n---\n\n# T03: Integration test with real ffmpeg execution against generated WAV fixture\n\n**Integration test with real ffmpeg execution against generated WAV fixture**\n\n## What Happened\n\nCreated WaveformServiceIntegrationTest that generates a short WAV file programmatically and runs the full pipeline: ffmpeg extraction, peak normalization, JSON caching. Skips gracefully if ffmpeg is not on PATH (CI-friendly with @DisabledIf).\n\n## Verification\n\nmvn test -Dtest=WaveformServiceIntegrationTest — passes when ffmpeg available, skips cleanly otherwise\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn test -Dtest=WaveformServiceIntegrationTest` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/test/java/com/musicode/service/WaveformServiceIntegrationTest.java`\n",
+      "description": "Write integration test that runs ffmpeg against a small test audio file (generate a short WAV via code or include a tiny fixture). Verify the full pipeline: ffmpeg runs, peaks extracted, JSON cached, endpoint returns valid data. Skip gracefully if ffmpeg not on PATH (CI-friendly).",
+      "estimate": "1h",
+      "files": [
+        "musicode-server/src/test/java/com/musicode/service/WaveformServiceIntegrationTest.java"
+      ],
+      "verify": "mvn test -pl musicode-server -Dtest=WaveformServiceIntegrationTest",
+      "inputs": [
+        "musicode-server/src/main/java/com/musicode/service/WaveformService.java"
+      ],
+      "expected_output": [
+        "musicode-server/src/test/java/com/musicode/service/WaveformServiceIntegrationTest.java"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M016",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "WaveformBar canvas component + useWaveform API hook with caching",
+      "status": "complete",
+      "one_liner": "WaveformBar canvas component + useWaveform API hook with caching",
+      "narrative": "Created WaveformBar React component using HTML5 Canvas that renders ~200 bars with played portion in white and unplayed in gray. Supports click-to-seek. Created useWaveform hook that fetches peaks from /api/waveforms/{trackId} with 120s timeout (first generation is slow) and caches in React state. Created waveforms.ts API module.",
+      "verification_result": "npx tsc --noEmit passes, visual verification in browser",
+      "duration": "",
+      "completed_at": "2026-04-25T16:54:54.674Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/player/WaveformBar.tsx",
+        "musicode-ui/src/hooks/useWaveform.ts",
+        "musicode-ui/src/api/waveforms.ts"
+      ],
+      "key_decisions": [
+        "120s axios timeout for waveform endpoint — first generation via ffmpeg can take 10-30s for large files",
+        "Canvas-based rendering for performance with 200 bars"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S02\nmilestone: M016\nkey_files:\n  - musicode-ui/src/components/player/WaveformBar.tsx\n  - musicode-ui/src/hooks/useWaveform.ts\n  - musicode-ui/src/api/waveforms.ts\nkey_decisions:\n  - 120s axios timeout for waveform endpoint — first generation via ffmpeg can take 10-30s for large files\n  - Canvas-based rendering for performance with 200 bars\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T16:54:54.674Z\nblocker_discovered: false\n---\n\n# T01: WaveformBar canvas component + useWaveform API hook with caching\n\n**WaveformBar canvas component + useWaveform API hook with caching**\n\n## What Happened\n\nCreated WaveformBar React component using HTML5 Canvas that renders ~200 bars with played portion in white and unplayed in gray. Supports click-to-seek. Created useWaveform hook that fetches peaks from /api/waveforms/{trackId} with 120s timeout (first generation is slow) and caches in React state. Created waveforms.ts API module.\n\n## Verification\n\nnpx tsc --noEmit passes, visual verification in browser\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npx tsc --noEmit` | 0 | pass | 3000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/player/WaveformBar.tsx`\n- `musicode-ui/src/hooks/useWaveform.ts`\n- `musicode-ui/src/api/waveforms.ts`\n",
+      "description": "Create WaveformBar React component using HTML5 Canvas. Renders ~200 bars: played portion in accent color, unplayed in muted color. Supports click-to-seek and drag-to-seek. Create useWaveform hook that fetches GET /api/waveforms/{trackId} and caches in state. Returns peaks array + loading state.",
+      "estimate": "2h",
+      "files": [
+        "musicode-frontend/src/components/WaveformBar.tsx",
+        "musicode-frontend/src/api/waveforms.ts",
+        "musicode-frontend/src/hooks/useWaveform.ts"
+      ],
+      "verify": "npx tsc --noEmit",
+      "inputs": [
+        "musicode-frontend/src/api/lyrics.ts"
+      ],
+      "expected_output": [
+        "musicode-frontend/src/components/WaveformBar.tsx",
+        "musicode-frontend/src/api/waveforms.ts",
+        "musicode-frontend/src/hooks/useWaveform.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M016",
+      "slice_id": "S02",
+      "id": "T02",
+      "title": "ProgressBar integration — WaveformBar replaces range input with flat bar fallback",
+      "status": "complete",
+      "one_liner": "ProgressBar integration — WaveformBar replaces range input with flat bar fallback",
+      "narrative": "Integrated WaveformBar into ProgressBar component. When peaks are available, renders the waveform; otherwise falls back to the classic flat progress bar. Added waveformEnabled preference to audioPreferences with localStorage persistence. Time display continues to work in both modes.",
+      "verification_result": "Visual verification in browser — both waveform and flat bar modes work correctly",
+      "duration": "",
+      "completed_at": "2026-04-25T16:54:59.380Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/player/ProgressBar.tsx",
+        "musicode-ui/src/audio/audioPreferences.ts"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T02\nparent: S02\nmilestone: M016\nkey_files:\n  - musicode-ui/src/components/player/ProgressBar.tsx\n  - musicode-ui/src/audio/audioPreferences.ts\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T16:54:59.380Z\nblocker_discovered: false\n---\n\n# T02: ProgressBar integration — WaveformBar replaces range input with flat bar fallback\n\n**ProgressBar integration — WaveformBar replaces range input with flat bar fallback**\n\n## What Happened\n\nIntegrated WaveformBar into ProgressBar component. When peaks are available, renders the waveform; otherwise falls back to the classic flat progress bar. Added waveformEnabled preference to audioPreferences with localStorage persistence. Time display continues to work in both modes.\n\n## Verification\n\nVisual verification in browser — both waveform and flat bar modes work correctly\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npx tsc --noEmit` | 0 | pass | 3000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/player/ProgressBar.tsx`\n- `musicode-ui/src/audio/audioPreferences.ts`\n",
+      "description": "Replace the existing range input in ProgressBar with WaveformBar when peaks are available. Show current flat progress bar as fallback while waveform loads or if no peaks returned. Pass currentTime, duration, and onSeek props through. Ensure time display still works.",
+      "estimate": "1.5h",
+      "files": [
+        "musicode-frontend/src/components/ProgressBar.tsx",
+        "musicode-frontend/src/components/PlayerBar.tsx"
+      ],
+      "verify": "npx tsc --noEmit",
+      "inputs": [
+        "musicode-frontend/src/components/WaveformBar.tsx",
+        "musicode-frontend/src/components/ProgressBar.tsx"
+      ],
+      "expected_output": [
+        "musicode-frontend/src/components/ProgressBar.tsx"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M016",
+      "slice_id": "S02",
+      "id": "T03",
+      "title": "NowPlayingOverlay + PlayerBar integration with toggle button",
+      "status": "complete",
+      "one_liner": "NowPlayingOverlay + PlayerBar integration with toggle button",
+      "narrative": "Waveform displays correctly in both PlayerBar and NowPlayingOverlay. Added a toggle button (Activity icon from lucide-react) in PlayerBar controls to switch between waveform and flat bar. Indigo when waveform active, gray when flat bar. Preference persists in localStorage via audioPreferences. User confirmed working with screenshot.",
+      "verification_result": "User-verified via screenshot — waveform rendering, seek, and toggle all working",
+      "duration": "",
+      "completed_at": "2026-04-25T16:55:04.206Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/player/NowPlayingOverlay.tsx",
+        "musicode-ui/src/components/player/PlayerBar.tsx"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T03\nparent: S02\nmilestone: M016\nkey_files:\n  - musicode-ui/src/components/player/NowPlayingOverlay.tsx\n  - musicode-ui/src/components/player/PlayerBar.tsx\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T16:55:04.205Z\nblocker_discovered: false\n---\n\n# T03: NowPlayingOverlay + PlayerBar integration with toggle button\n\n**NowPlayingOverlay + PlayerBar integration with toggle button**\n\n## What Happened\n\nWaveform displays correctly in both PlayerBar and NowPlayingOverlay. Added a toggle button (Activity icon from lucide-react) in PlayerBar controls to switch between waveform and flat bar. Indigo when waveform active, gray when flat bar. Preference persists in localStorage via audioPreferences. User confirmed working with screenshot.\n\n## Verification\n\nUser-verified via screenshot — waveform rendering, seek, and toggle all working\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `User screenshot verification` | 0 | pass | 0ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/player/NowPlayingOverlay.tsx`\n- `musicode-ui/src/components/player/PlayerBar.tsx`\n",
+      "description": "Ensure waveform displays correctly in both PlayerBar (bottom bar) and NowPlayingOverlay (fullscreen). Handle sizing differences: PlayerBar is narrow/wide, Overlay may have different dimensions. Verify seek works in both contexts. Visual polish: bar width, spacing, colors consistent with existing theme.",
+      "estimate": "1h",
+      "files": [
+        "musicode-frontend/src/components/NowPlayingOverlay.tsx",
+        "musicode-frontend/src/components/PlayerBar.tsx"
+      ],
+      "verify": "npx tsc --noEmit && echo 'Visual verification required in browser'",
+      "inputs": [
+        "musicode-frontend/src/components/WaveformBar.tsx",
+        "musicode-frontend/src/components/NowPlayingOverlay.tsx",
+        "musicode-frontend/src/components/PlayerBar.tsx"
+      ],
+      "expected_output": [
+        "musicode-frontend/src/components/NowPlayingOverlay.tsx",
+        "musicode-frontend/src/components/PlayerBar.tsx"
       ],
       "observability_impact": "",
       "full_plan_md": "",
@@ -9007,6 +9388,127 @@
       "verdict": "pass",
       "duration_ms": 45000,
       "created_at": "2026-04-25T15:45:39.942Z"
+    },
+    {
+      "id": 119,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M016",
+      "command": "mvn test -Dtest=WaveformServiceTest",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 7000,
+      "created_at": "2026-04-25T16:54:33.042Z"
+    },
+    {
+      "id": 120,
+      "task_id": "T02",
+      "slice_id": "S01",
+      "milestone_id": "M016",
+      "command": "mvn test -Dtest=WaveformControllerTest",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 8000,
+      "created_at": "2026-04-25T16:54:40.394Z"
+    },
+    {
+      "id": 121,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M016",
+      "command": "mvn test -Dtest=WaveformServiceIntegrationTest",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-04-25T16:54:44.677Z"
+    },
+    {
+      "id": 122,
+      "task_id": "T01",
+      "slice_id": "S02",
+      "milestone_id": "M016",
+      "command": "npx tsc --noEmit",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 3000,
+      "created_at": "2026-04-25T16:54:54.674Z"
+    },
+    {
+      "id": 123,
+      "task_id": "T02",
+      "slice_id": "S02",
+      "milestone_id": "M016",
+      "command": "npx tsc --noEmit",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 3000,
+      "created_at": "2026-04-25T16:54:59.380Z"
+    },
+    {
+      "id": 124,
+      "task_id": "T03",
+      "slice_id": "S02",
+      "milestone_id": "M016",
+      "command": "User screenshot verification",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 0,
+      "created_at": "2026-04-25T16:55:04.206Z"
+    },
+    {
+      "id": 125,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M014",
+      "command": "mvn -B verify",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 28000,
+      "created_at": "2026-04-25T17:07:03.289Z"
+    },
+    {
+      "id": 126,
+      "task_id": "T02",
+      "slice_id": "S01",
+      "milestone_id": "M014",
+      "command": "mvn -B verify",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 28000,
+      "created_at": "2026-04-25T17:07:08.507Z"
+    },
+    {
+      "id": 127,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M014",
+      "command": "mvn -B verify",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 28000,
+      "created_at": "2026-04-25T17:07:15.717Z"
+    },
+    {
+      "id": 128,
+      "task_id": "T04",
+      "slice_id": "S01",
+      "milestone_id": "M014",
+      "command": "mvn -B verify",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 28000,
+      "created_at": "2026-04-25T17:07:20.942Z"
+    },
+    {
+      "id": 129,
+      "task_id": "T01",
+      "slice_id": "S02",
+      "milestone_id": "M014",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-04-25T17:07:53.630Z"
     }
   ]
 }

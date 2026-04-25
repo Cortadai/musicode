@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-04-25T15:49:40Z | Files: 255 | Described: 0/255
-<!-- gsd:codebase-meta {"generatedAt":"2026-04-25T15:49:40Z","fingerprint":"9fdbd13b408d4489682fd01a2c921b34cb4595b8","fileCount":255,"truncated":false} -->
+Generated: 2026-04-25T17:03:09Z | Files: 264 | Described: 0/264
+<!-- gsd:codebase-meta {"generatedAt":"2026-04-25T17:03:09Z","fingerprint":"b5a51535bfbeac409513a51da5da73e9e1858d6f","fileCount":264,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -55,6 +55,7 @@ Generated: 2026-04-25T15:49:40Z | Files: 255 | Described: 0/255
 - `musicode-server/src/main/java/com/musicode/controller/StreamController.java`
 - `musicode-server/src/main/java/com/musicode/controller/TrackController.java`
 - `musicode-server/src/main/java/com/musicode/controller/UserController.java`
+- `musicode-server/src/main/java/com/musicode/controller/WaveformController.java`
 
 ### musicode-server/src/main/java/com/musicode/exception/
 - `musicode-server/src/main/java/com/musicode/exception/BadRequestException.java`
@@ -69,7 +70,7 @@ Generated: 2026-04-25T15:49:40Z | Files: 255 | Described: 0/255
 - `musicode-server/src/main/java/com/musicode/filter/RequestIdFilter.java`
 
 ### musicode-server/src/main/java/com/musicode/model/dto/
-- *(21 files: 21 .java)*
+- *(22 files: 22 .java)*
 
 ### musicode-server/src/main/java/com/musicode/model/entity/
 - `musicode-server/src/main/java/com/musicode/model/entity/Album.java`
@@ -108,6 +109,7 @@ Generated: 2026-04-25T15:49:40Z | Files: 255 | Described: 0/255
 - `musicode-server/src/main/java/com/musicode/service/ScrobbleService.java`
 - `musicode-server/src/main/java/com/musicode/service/StatsService.java`
 - `musicode-server/src/main/java/com/musicode/service/TokenEncryptionService.java`
+- `musicode-server/src/main/java/com/musicode/service/WaveformService.java`
 
 ### musicode-server/src/main/java/com/musicode/util/
 - `musicode-server/src/main/java/com/musicode/util/CookieUtil.java`
@@ -145,6 +147,7 @@ Generated: 2026-04-25T15:49:40Z | Files: 255 | Described: 0/255
 - `musicode-server/src/test/java/com/musicode/controller/StatsControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/TrackControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/UserControllerTest.java`
+- `musicode-server/src/test/java/com/musicode/controller/WaveformControllerTest.java`
 
 ### musicode-server/src/test/java/com/musicode/filter/
 - `musicode-server/src/test/java/com/musicode/filter/LoginRateLimitFilterTest.java`
@@ -170,6 +173,8 @@ Generated: 2026-04-25T15:49:40Z | Files: 255 | Described: 0/255
 - `musicode-server/src/test/java/com/musicode/service/ScrobbleServiceTest.java`
 - `musicode-server/src/test/java/com/musicode/service/StatsServiceTest.java`
 - `musicode-server/src/test/java/com/musicode/service/TokenEncryptionServiceTest.java`
+- `musicode-server/src/test/java/com/musicode/service/WaveformServiceIntegrationTest.java`
+- `musicode-server/src/test/java/com/musicode/service/WaveformServiceTest.java`
 
 ### musicode-server/src/test/java/com/musicode/util/
 - `musicode-server/src/test/java/com/musicode/util/EncryptedStringConverterTest.java`
@@ -235,6 +240,7 @@ Generated: 2026-04-25T15:49:40Z | Files: 255 | Described: 0/255
 - `musicode-ui/src/api/search.ts`
 - `musicode-ui/src/api/stats.ts`
 - `musicode-ui/src/api/tracks.ts`
+- `musicode-ui/src/api/waveforms.ts`
 
 ### musicode-ui/src/audio/
 - `musicode-ui/src/audio/audioGraph.ts`
@@ -283,6 +289,7 @@ Generated: 2026-04-25T15:49:40Z | Files: 255 | Described: 0/255
 - `musicode-ui/src/components/player/Visualizer.tsx`
 - `musicode-ui/src/components/player/VolumeControl.test.tsx`
 - `musicode-ui/src/components/player/VolumeControl.tsx`
+- `musicode-ui/src/components/player/WaveformBar.tsx`
 
 ### musicode-ui/src/context/
 - `musicode-ui/src/context/AuthContext.test.ts`
@@ -296,6 +303,7 @@ Generated: 2026-04-25T15:49:40Z | Files: 255 | Described: 0/255
 - `musicode-ui/src/hooks/useMediaSession.ts`
 - `musicode-ui/src/hooks/usePlayer.ts`
 - `musicode-ui/src/hooks/useScrobble.ts`
+- `musicode-ui/src/hooks/useWaveform.ts`
 
 ### musicode-ui/src/pages/
 - `musicode-ui/src/pages/AlbumDetailPage.tsx`
