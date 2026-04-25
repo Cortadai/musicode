@@ -4,9 +4,11 @@ import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import PlayerBar from '../player/PlayerBar';
 import { usePlayer } from '../../hooks/usePlayer';
+import { useSidebarCollapse } from '../../hooks/useSidebarCollapse';
 
 export default function AppShell() {
   const { isPlaying, currentTrack, pause, resume, next, prev, setVolume, volume } = usePlayer();
+  const { collapsed, toggle } = useSidebarCollapse();
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -43,7 +45,7 @@ export default function AppShell() {
 
   return (
     <div className="h-screen flex overflow-hidden bg-zinc-950 text-zinc-100">
-      <Sidebar />
+      <Sidebar collapsed={collapsed} onToggle={toggle} />
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar />
         <main className="flex-1 overflow-y-auto p-6">

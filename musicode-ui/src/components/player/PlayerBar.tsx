@@ -72,7 +72,7 @@ export default function PlayerBar() {
           onArtworkClick={() => setShowNowPlaying(true)}
         />
 
-        <div className="flex-1 flex flex-col items-center gap-1 max-w-2xl mx-auto">
+        <div className="flex-1 flex flex-col items-center gap-1 min-w-0 md:max-w-2xl md:mx-auto">
           <TransportControls
             isPlaying={isPlaying}
             shuffle={shuffle}
@@ -88,23 +88,25 @@ export default function PlayerBar() {
           <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} trackId={currentTrack.id} waveformEnabled={waveformEnabled} />
         </div>
 
-        <div className="flex items-center gap-2 w-48 shrink-0 justify-end">
+        <div className="flex items-center gap-2 w-auto md:w-48 shrink-0 md:shrink justify-end">
           <ScrobbleIndicator status={scrobbleStatus} />
           <button
             onClick={handleToggleWaveform}
             aria-label={waveformEnabled ? 'Switch to flat progress bar' : 'Switch to waveform'}
             aria-pressed={waveformEnabled}
-            className={`flex items-center justify-center transition-colors ${waveformEnabled ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`hidden md:flex items-center justify-center transition-colors ${waveformEnabled ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
           >
             <Activity className="w-4 h-4" />
           </button>
-          <CrossfadePopover getCrossfadeDuration={getCrossfadeDuration} setCrossfadeDuration={setCrossfadeDuration} />
-          <EqPopover />
+          <span className="hidden md:contents">
+            <CrossfadePopover getCrossfadeDuration={getCrossfadeDuration} setCrossfadeDuration={setCrossfadeDuration} />
+            <EqPopover />
+          </span>
           <button
             onClick={handleToggleVisualizer}
             aria-label={showVisualizer ? 'Hide visualizer' : 'Show visualizer'}
             aria-pressed={showVisualizer}
-            className={`flex items-center justify-center transition-colors ${showVisualizer ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`hidden md:flex items-center justify-center transition-colors ${showVisualizer ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
           >
             <BarChart3 className="w-4 h-4" />
           </button>

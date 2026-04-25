@@ -31,7 +31,7 @@ function TransportControls({
         onClick={onToggleShuffle}
         aria-label="Shuffle"
         aria-pressed={shuffle}
-        className={`transition-colors ${shuffle ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+        className={`hidden md:flex transition-colors ${shuffle ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
       >
         <Shuffle className="w-4 h-4" />
       </button>
@@ -62,7 +62,7 @@ function TransportControls({
         onClick={onToggleRepeat}
         aria-label={`Repeat: ${repeatMode}`}
         aria-pressed={repeatMode !== 'off'}
-        className={`transition-colors ${repeatMode !== 'off' ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+        className={`hidden md:flex transition-colors ${repeatMode !== 'off' ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
       >
         <RepeatIcon className="w-4 h-4" />
       </button>

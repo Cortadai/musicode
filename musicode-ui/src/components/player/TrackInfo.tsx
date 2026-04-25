@@ -14,8 +14,8 @@ interface Props {
 
 function TrackInfo({ title, artistName, albumId, hasCover, isPlaying, onArtworkClick }: Props) {
   return (
-    <div className="flex items-center gap-3 w-60 shrink-0">
-      <div className="relative shrink-0" style={{ width: 84, height: 56 }}>
+    <div className="flex items-center gap-3 w-auto md:w-60 min-w-[80px] md:min-w-[140px] shrink">
+      <div className="relative shrink-0 hidden md:block" style={{ width: 84, height: 56 }}>
         {/* Vinyl disc — behind the sleeve */}
         <div
           aria-hidden="true"
