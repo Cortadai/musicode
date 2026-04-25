@@ -1,7 +1,7 @@
 import { usePlayer } from '../../hooks/usePlayer';
 import audioGraph from '../../audio/audioGraph';
 import { useCallback, useState } from 'react';
-import { BarChart3, Activity } from 'lucide-react';
+import { BarChart3, Activity, Disc } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import type { VisualizerMode } from '../../audio/audioPreferences';
 import TrackInfo from './TrackInfo';
@@ -12,6 +12,7 @@ import CrossfadePopover from './CrossfadePopover';
 import EqPopover from './EqPopover';
 import Visualizer from './Visualizer';
 import NowPlayingOverlay from './NowPlayingOverlay';
+import RetroMode from './RetroMode';
 import ScrobbleIndicator from './ScrobbleIndicator';
 
 export default function PlayerBar() {
@@ -29,6 +30,7 @@ export default function PlayerBar() {
     return saved === 'vinyl' ? 'bars' : saved;
   });
   const [showNowPlaying, setShowNowPlaying] = useState(false);
+  const [showRetroMode, setShowRetroMode] = useState(false);
   const [waveformEnabled, setWaveformEnabled] = useState(() => loadPreferences().waveformEnabled);
 
   const handleToggleWaveform = useCallback(() => {
@@ -110,10 +112,18 @@ export default function PlayerBar() {
           >
             <BarChart3 className="w-4 h-4" />
           </button>
+          <button
+            onClick={() => setShowRetroMode(true)}
+            aria-label="Retro cassette mode"
+            className="hidden md:flex items-center justify-center transition-colors text-zinc-500 hover:text-amber-400"
+          >
+            <Disc className="w-4 h-4" />
+          </button>
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
         </div>
       </div>
       <NowPlayingOverlay open={showNowPlaying} onClose={() => setShowNowPlaying(false)} />
+      <RetroMode open={showRetroMode} onClose={() => setShowRetroMode(false)} />
     </div>
   );
 }

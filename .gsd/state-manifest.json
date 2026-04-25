@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-04-25T19:30:19.508Z",
+  "exported_at": "2026-04-25T19:55:42.393Z",
   "milestones": [
     {
       "id": "M001",
@@ -681,6 +681,78 @@
       ],
       "requirement_coverage": "Not provided.",
       "boundary_map_markdown": "Not provided."
+    },
+    {
+      "id": "M018",
+      "title": "Cassette Deck — Retro Mode",
+      "status": "planned",
+      "depends_on": [],
+      "created_at": "2026-04-25T19:51:16.198Z",
+      "completed_at": null,
+      "vision": "A standalone full-screen cassette deck experience that replaces the standard player UI when activated. Physical tape physics (reel rotation, tape path, angular velocity), analog VU meters driven by the existing AnalyserNode, a detailed deck housing with odometer and transport LEDs, synthwave atmosphere (neon glow, scanlines, dynamic album colors), and an optional tape audio filter (lo-fi EQ, wow & flutter, hiss). This is the crown jewel of Musicode — the feature the entire project was built to reach.",
+      "success_criteria": [
+        "Cassette deck renders full-screen as an isolated experience, activated via a dedicated button in the PlayerBar",
+        "Two reels rotate with physically accurate angular velocity — left empties, right fills, radius changes with progress, constant linear tape speed",
+        "Tape path visible between reels through guide rollers and head gap",
+        "Cassette label displays track title, artist, album with dynamic colors extracted from cover art",
+        "Dual analog VU meters (L/R) driven by AnalyserNode with realistic needle inertia (fast attack, slow decay)",
+        "Mechanical 4-digit odometer rolls with playback time",
+        "Deck housing with transport button indicators (PLAY/STOP/FF/REW LEDs)",
+        "Synthwave atmosphere: neon underglow, CRT scanlines, warm color palette, album-tinted accents",
+        "Optional tape audio filter: low-pass rolloff (~8-10kHz), wow & flutter via LFO pitch modulation, tape hiss",
+        "Play/pause/seek states reflected in reel animation (spin, decelerate with wobble, fast-forward acceleration)",
+        "Track change updates label and colors with crossfade transition",
+        "Exit returns to normal NowPlayingOverlay without state loss"
+      ],
+      "key_risks": [
+        {
+          "risk": "Canvas 2D performance with complex scene (reels + tape + housing + VU meters + effects)",
+          "whyItMatters": "60fps budget is ~16ms per frame. Complex path drawing, gradients, and shadow effects can blow this on mid-range GPUs. May need to optimize draw calls or simplify certain elements."
+        },
+        {
+          "risk": "VU meter responsiveness and visual fidelity",
+          "whyItMatters": "The VU meters are the primary 'wow factor' — if they feel laggy, disconnected from the music, or visually cheap, the whole experience falls flat. Need careful smoothing and attack/decay tuning."
+        },
+        {
+          "risk": "Tape audio filter introduces audible artifacts",
+          "whyItMatters": "Web Audio API parameter changes can cause clicks/pops. Wow & flutter LFO needs careful range to sound vintage without sounding broken. Must be seamless to toggle on/off mid-playback."
+        },
+        {
+          "risk": "Canvas rendering complexity — diminishing returns on visual detail",
+          "whyItMatters": "It's tempting to add every detail (screws, chrome reflections, wear marks). Need to find the sweet spot where it looks gorgeous without becoming an unmaintainable rendering pipeline."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "Canvas 2D performance with full scene",
+          "retireIn": "S01",
+          "whatWillBeProven": "Render cassette body + two animated reels + tape path at 60fps. If frame time exceeds 12ms, simplify before adding more elements."
+        },
+        {
+          "riskOrUnknown": "VU meter responsiveness",
+          "retireIn": "S02",
+          "whatWillBeProven": "Dual needle VU meters driven by AnalyserNode feel connected to the music with no perceptible lag. Attack < 50ms, decay ~300ms."
+        },
+        {
+          "riskOrUnknown": "Audio filter artifacts",
+          "retireIn": "S04",
+          "whatWillBeProven": "Tape filter toggles on/off without clicks. Wow & flutter sounds vintage, not broken. Hiss at correct level."
+        }
+      ],
+      "verification_contract": "Canvas at 60fps. VU meters driven by real AnalyserNode data. Tape physics mathematically correct. Audio filter chain clean.",
+      "verification_integration": "Existing player, visualizers, and NowPlayingOverlay unaffected. usePlayer and useAnalyser hooks shared without conflicts.",
+      "verification_operational": "No memory leaks on repeated enter/exit. Canvas animation stops when not visible. Audio filter chain fully disconnected on exit.",
+      "verification_uat": "Visual: cassette deck renders correctly, reels spin, VU meters bounce, atmosphere is synthwave. Audio: tape filter sounds vintage. UX: enter/exit without state loss.",
+      "definition_of_done": [
+        "All canvas rendering at 60fps on mid-range hardware",
+        "VU meters react to actual audio signal in real-time",
+        "Tape physics mathematically correct (constant linear velocity, radius from tape volume)",
+        "Audio filter chain toggleable without glitches or clicks",
+        "No regressions in existing visualizer modes or player functionality",
+        "Works at all supported viewport sizes (desktop only, mobile out of scope)"
+      ],
+      "requirement_coverage": "Not provided.",
+      "boundary_map_markdown": "### In Scope\\n- Full-screen cassette deck as isolated experience\\n- Canvas 2D rendering for cassette, reels, tape, deck housing\\n- VU meters with AnalyserNode integration\\n- Mechanical odometer\\n- Transport state LEDs\\n- Neon glow, scanlines, dynamic album colors\\n- Tape audio filter (lo-pass, wow/flutter, hiss)\\n- Dedicated activation button in PlayerBar\\n- Desktop viewports only\\n\\n### Out of Scope\\n- Mobile/touch support\\n- Integration with existing visualizer toggle cycle\\n- Recording functionality (REC button is decorative)\\n- Multiple cassette skin themes\\n- Cassette flip (Side A/B) mechanics"
     }
   ],
   "slices": [
@@ -1892,6 +1964,92 @@
       "integration_closure": "NowPlayingOverlay, LyricsPanel, CrossfadePopover, EqPopover, TopBar",
       "observability_impact": "Ninguno",
       "sequence": 3,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M018",
+      "id": "S01",
+      "title": "Cassette Canvas — Body, Reels & Tape Physics",
+      "status": "pending",
+      "risk": "high",
+      "depends": [],
+      "demo": "Full-screen canvas showing a detailed cassette with two reels spinning at physically accurate speeds, tape path moving between them, and label displaying current track info with album colors",
+      "created_at": "2026-04-25T19:52:18.382Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Build the cassette canvas foundation: full-screen RetroMode shell, cassette body rendering (carcasa, window, label, screws), reel physics with accurate tape winding, and tape path animation synchronized to player state.",
+      "success_criteria": "1. A dedicated RetroMode button in PlayerBar opens a full-screen cassette deck experience. 2. Canvas renders a detailed cassette body with transparent window, label area, guide posts, and screws. 3. Two reels spin with physically accurate angular velocity (constant linear tape speed → variable angular speed based on tape radius). 4. Tape visually transfers from left reel to right reel as track progresses. 5. Play/pause/seek correctly drive reel animation (spin, decelerate, jump). 6. Track metadata (title, artist, album) renders on the cassette label. 7. ESC closes retro mode, returning to normal view.",
+      "proof_level": "Not provided.",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
+      "sequence": 1,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M018",
+      "id": "S02",
+      "title": "Deck Housing — VU Meters, Odometer, Transport & LEDs",
+      "status": "pending",
+      "risk": "high",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Cassette now sits inside a full deck housing with dual VU meters bouncing to the music, a rolling mechanical odometer, and lit transport LEDs reflecting play/pause/seek state",
+      "created_at": "2026-04-25T19:52:18.382Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Render the deck housing around the cassette. Add dual analog VU meters driven by AnalyserNode with realistic needle physics. Mechanical odometer. Transport button indicators with LED states.",
+      "success_criteria": "VU meters react to audio in real-time with fast attack / slow decay. Odometer rolls digits smoothly. PLAY LED lit during playback, paused = off. FF/REW LEDs during seek.",
+      "proof_level": "VU needle movement correlates with audible transients. Odometer matches elapsed time ±1s.",
+      "integration_closure": "AnalyserNode data flows from existing useAnalyser hook to VU meters. Transport state from usePlayer drives LEDs.",
+      "observability_impact": "None beyond S01 frame time monitoring",
+      "sequence": 2,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M018",
+      "id": "S03",
+      "title": "Atmosphere — Neon Glow, Scanlines, Dynamic Colors & Animations",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "The deck now has full synthwave atmosphere: neon underglow tinted by album colors, CRT scanlines overlay, warm amber accents, and smooth transitions on track change",
+      "created_at": "2026-04-25T19:52:18.382Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Add synthwave visual polish: neon glow beneath the deck using album dynamic colors, CRT scanline CSS overlay, vignette effect, warm color grading. Track change triggers label crossfade and color transition.",
+      "success_criteria": "Neon glow color matches album palette. Scanlines visible but not distracting. Track change transitions smoothly (label + colors). Overall aesthetic reads as 'premium retro deck'.",
+      "proof_level": "Visual inspection across 5+ albums with different color palettes",
+      "integration_closure": "useDynamicTheme hook provides album colors. Track change event triggers transition animations.",
+      "observability_impact": "None — CSS effects only",
+      "sequence": 3,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M018",
+      "id": "S04",
+      "title": "Tape Audio Filter — Lo-Fi Chain, Wow & Flutter, Hiss",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Toggle a 'TAPE' button on the deck to hear the music through a cassette tape simulation: slightly muffled highs, subtle pitch wobble, and optional tape hiss",
+      "created_at": "2026-04-25T19:52:18.382Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Build a Web Audio filter chain: BiquadFilter for high-frequency rolloff, OscillatorNode LFO modulating playback rate for wow & flutter, white noise generator for tape hiss. All toggleable without audio artifacts.",
+      "success_criteria": "Filter toggles on/off without clicks or pops. Low-pass rolloff audible but not muddy. Wow & flutter adds warmth without sounding broken. Hiss at realistic level.",
+      "proof_level": "A/B comparison: filter on vs off clearly audible. No artifacts on toggle. No artifacts after 5min continuous playback.",
+      "integration_closure": "Filter chain inserts between existing audio source and destination. Does not interfere with AnalyserNode or existing audio pipeline.",
+      "observability_impact": "Console logs filter chain connect/disconnect events for debugging",
+      "sequence": 4,
       "replan_triggered_at": null
     }
   ],
@@ -8070,6 +8228,150 @@
       ],
       "expected_output": [
         "PlayerBar clean at all breakpoints, no regressions with sidebar"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M018",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "RetroMode shell and entry point",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Create the RetroMode component as a full-screen portal (like NowPlayingOverlay but independent). Add a cassette icon button to PlayerBar right controls. Wire up open/close state, ESC key handling, and pass player state (currentTrack, isPlaying, currentTime, duration, seek, pause, resume, next, prev) into the shell. The shell renders a dark background container ready for canvas children.",
+      "estimate": "25min",
+      "files": [
+        "musicode-ui/src/components/player/RetroMode.tsx",
+        "musicode-ui/src/components/player/PlayerBar.tsx"
+      ],
+      "verify": "Button visible in PlayerBar, click opens full-screen dark overlay, ESC closes it, player state accessible inside",
+      "inputs": [
+        "PlayerBar.tsx current button layout",
+        "NowPlayingOverlay.tsx portal pattern",
+        "usePlayer hook API"
+      ],
+      "expected_output": [
+        "RetroMode.tsx — portal shell component",
+        "PlayerBar.tsx — cassette button added to right controls"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M018",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "Cassette body canvas rendering",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Create CassetteCanvas component using Canvas 2D. Draw the cassette body: outer shell with rounded corners, transparent window area, two hub circles (empty reels), screw holes at corners, guide posts and pressure pad below the tape path, head gap. Use warm retro colors (dark plastic body, slightly transparent brown window). The canvas must be responsive — scale to fit the container while maintaining aspect ratio. Support devicePixelRatio for crisp rendering on HiDPI displays.",
+      "estimate": "40min",
+      "files": [
+        "musicode-ui/src/components/player/cassette/CassetteCanvas.tsx"
+      ],
+      "verify": "Canvas renders a recognizable cassette body at multiple container sizes, crisp on HiDPI",
+      "inputs": [
+        "Canvas 2D API",
+        "devicePixelRatio handling from Visualizer.tsx"
+      ],
+      "expected_output": [
+        "CassetteCanvas.tsx — static cassette body rendering"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M018",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "Reel physics and tape winding animation",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Implement reel animation with accurate tape physics. Each reel has a hub radius and tape radius that changes with progress (left shrinks, right grows). Angular velocity = linearSpeed / currentRadius (constant linear tape speed). Tape is visible as brown area on each reel (hub to tape radius). Use requestAnimationFrame loop. Props: progress (0-1), isPlaying (drives spin), onFrame callback for parent sync. When paused, reels decelerate with inertia wobble. When seeking, reels spin at accelerated speed in the correct direction.",
+      "estimate": "45min",
+      "files": [
+        "musicode-ui/src/components/player/cassette/CassetteCanvas.tsx",
+        "musicode-ui/src/components/player/cassette/reelPhysics.ts"
+      ],
+      "verify": "Reels spin when playing, left reel shrinks and right grows over track duration, pause causes deceleration, seek causes fast-forward visual",
+      "inputs": [
+        "Tape physics formulas: r = sqrt(hub² + tape_amount * thickness / π)",
+        "requestAnimationFrame pattern from Visualizer.tsx"
+      ],
+      "expected_output": [
+        "reelPhysics.ts — physics calculations",
+        "CassetteCanvas.tsx — animated reels with tape transfer"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M018",
+      "slice_id": "S01",
+      "id": "T04",
+      "title": "Cassette label and player integration",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Render the cassette label inside the body using canvas text (or DOM overlay for better typography). Label shows: 'MUSICODE' brand top-left, 'C-90' duration badge, track title in typewriter font, artist and album below. Wire CassetteCanvas into RetroMode shell with full player state: currentTime/duration drives progress, isPlaying drives animation, track change updates label with crossfade. Add basic transport controls below the cassette (reuse TransportControls component).",
+      "estimate": "35min",
+      "files": [
+        "musicode-ui/src/components/player/cassette/CassetteCanvas.tsx",
+        "musicode-ui/src/components/player/RetroMode.tsx"
+      ],
+      "verify": "Label shows current track info, transport controls work, track changes update label, tsc clean",
+      "inputs": [
+        "currentTrack from usePlayer",
+        "TransportControls component",
+        "Google Fonts or system monospace for typewriter feel"
+      ],
+      "expected_output": [
+        "CassetteCanvas.tsx — label rendering with track metadata",
+        "RetroMode.tsx — full integration with player state and transport controls"
       ],
       "observability_impact": "",
       "full_plan_md": "",

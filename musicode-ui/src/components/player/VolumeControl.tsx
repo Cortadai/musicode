@@ -39,7 +39,7 @@ function VolumeControl({ volume, onVolumeChange }: Props) {
         onChange={handleChange}
         aria-label="Volume"
         aria-valuetext={`${Math.round(pct)}%`}
-        className="w-20 h-1 appearance-none bg-zinc-700 rounded-full cursor-pointer
+        className="w-28 h-1 appearance-none bg-zinc-700 rounded-full cursor-pointer
           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5
           [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-200
           [&::-moz-range-thumb]:w-2.5 [&::-moz-range-thumb]:h-2.5 [&::-moz-range-thumb]:rounded-full

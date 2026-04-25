@@ -297,3 +297,9 @@
   pointer-events: none;
   z-index: 3;
 }
+
+/* === Retro Mode === */
+@keyframes retro-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
