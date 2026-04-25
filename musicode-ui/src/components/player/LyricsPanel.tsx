@@ -17,7 +17,7 @@ export default function LyricsPanel({ trackId, currentTime }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const lineRefs = useRef<Map<number, HTMLParagraphElement>>(new Map());
   const userScrolledRef = useRef(false);
-  const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const scrollTimerRef = useRef<number>(undefined);
 
   useEffect(() => {
     let cancelled = false;
