@@ -297,3 +297,4 @@
 {"v":2,"cmd":"complete-task","params":{"milestoneId":"M015","sliceId":"S02","taskId":"T02"},"ts":"2026-04-25T15:46:03.017Z","actor":"agent","hash":"420ac24701670ac6","session_id":"8ce54f14-601d-402d-adce-1b511b28acc8"}
 {"v":2,"cmd":"complete-task","params":{"milestoneId":"M015","sliceId":"S02","taskId":"T03"},"ts":"2026-04-25T15:46:08.224Z","actor":"agent","hash":"de6bbd6d314370b1","session_id":"8ce54f14-601d-402d-adce-1b511b28acc8"}
 {"v":2,"cmd":"complete-slice","params":{"milestoneId":"M015","sliceId":"S02"},"ts":"2026-04-25T15:46:18.559Z","actor":"agent","hash":"f67308af1d6dea31","session_id":"8ce54f14-601d-402d-adce-1b511b28acc8"}
+{"v":2,"cmd":"complete-milestone","params":{"milestoneId":"M015"},"ts":"2026-04-25T15:47:06.299Z","actor":"agent","hash":"463b06143a5a2696","session_id":"8ce54f14-601d-402d-adce-1b511b28acc8"}

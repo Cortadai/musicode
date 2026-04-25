@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
-<!-- gsd:codebase-meta {"generatedAt":"2026-04-25T15:41:14Z","fingerprint":"08be37e7f3824d06b8fbe23cc19ff5535a698eab","fileCount":245,"truncated":false} -->
+Generated: 2026-04-25T15:49:40Z | Files: 255 | Described: 0/255
+<!-- gsd:codebase-meta {"generatedAt":"2026-04-25T15:49:40Z","fingerprint":"9fdbd13b408d4489682fd01a2c921b34cb4595b8","fileCount":255,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -47,6 +47,7 @@ Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
 - `musicode-server/src/main/java/com/musicode/controller/CoverArtController.java`
 - `musicode-server/src/main/java/com/musicode/controller/LibraryController.java`
 - `musicode-server/src/main/java/com/musicode/controller/LibraryHealthController.java`
+- `musicode-server/src/main/java/com/musicode/controller/LyricsController.java`
 - `musicode-server/src/main/java/com/musicode/controller/PlayController.java`
 - `musicode-server/src/main/java/com/musicode/controller/ScrobbleController.java`
 - `musicode-server/src/main/java/com/musicode/controller/SearchController.java`
@@ -68,31 +69,13 @@ Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
 - `musicode-server/src/main/java/com/musicode/filter/RequestIdFilter.java`
 
 ### musicode-server/src/main/java/com/musicode/model/dto/
-- `musicode-server/src/main/java/com/musicode/model/dto/ActivityEvent.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/DailyPlayCount.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/HealthIssue.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/HealthIssueType.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/HealthSummary.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/ScanStatus.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/ScrobbleResult.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/ScrobbleSettingsRequest.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/ScrobbleSettingsResponse.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/SearchResults.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/StatsSummary.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/TokenPair.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/TopAlbumStat.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/TopArtistStat.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/TopTrackStat.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/TrackMetadata.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/UpdateUserRequest.java`
-- `musicode-server/src/main/java/com/musicode/model/dto/UserResponse.java`
+- *(21 files: 21 .java)*
 
 ### musicode-server/src/main/java/com/musicode/model/entity/
 - `musicode-server/src/main/java/com/musicode/model/entity/Album.java`
 - `musicode-server/src/main/java/com/musicode/model/entity/Artist.java`
 - `musicode-server/src/main/java/com/musicode/model/entity/LibraryFolder.java`
+- `musicode-server/src/main/java/com/musicode/model/entity/LyricsStatus.java`
 - `musicode-server/src/main/java/com/musicode/model/entity/PlaybackEvent.java`
 - `musicode-server/src/main/java/com/musicode/model/entity/RefreshToken.java`
 - `musicode-server/src/main/java/com/musicode/model/entity/Role.java`
@@ -118,6 +101,7 @@ Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
 - `musicode-server/src/main/java/com/musicode/service/LibraryHealthService.java`
 - `musicode-server/src/main/java/com/musicode/service/LibraryScanService.java`
 - `musicode-server/src/main/java/com/musicode/service/ListenBrainzService.java`
+- `musicode-server/src/main/java/com/musicode/service/LyricsService.java`
 - `musicode-server/src/main/java/com/musicode/service/MetadataService.java`
 - `musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java`
 - `musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java`
@@ -137,6 +121,7 @@ Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
 
 ### musicode-server/src/main/resources/db/migration/
 - `musicode-server/src/main/resources/db/migration/V1__baseline.sql`
+- `musicode-server/src/main/resources/db/migration/V2__add_lyrics_columns.sql`
 
 ### musicode-server/src/main/resources/static/
 - `musicode-server/src/main/resources/static/test.html`
@@ -152,6 +137,7 @@ Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
 - `musicode-server/src/test/java/com/musicode/controller/CoverArtControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/LibraryControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/LibraryHealthControllerTest.java`
+- `musicode-server/src/test/java/com/musicode/controller/LyricsControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/PlayControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/PlayScrobbleIntegrationTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/ScrobbleControllerTest.java`
@@ -178,6 +164,7 @@ Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
 - `musicode-server/src/test/java/com/musicode/service/LastfmServiceWireMockTest.java`
 - `musicode-server/src/test/java/com/musicode/service/ListenBrainzServiceTest.java`
 - `musicode-server/src/test/java/com/musicode/service/ListenBrainzServiceWireMockTest.java`
+- `musicode-server/src/test/java/com/musicode/service/LyricsServiceTest.java`
 - `musicode-server/src/test/java/com/musicode/service/MetadataServiceTest.java`
 - `musicode-server/src/test/java/com/musicode/service/MusicodeUserDetailsServiceTest.java`
 - `musicode-server/src/test/java/com/musicode/service/ScrobbleServiceTest.java`
@@ -242,6 +229,7 @@ Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
 - `musicode-ui/src/api/client.ts`
 - `musicode-ui/src/api/health.ts`
 - `musicode-ui/src/api/library.ts`
+- `musicode-ui/src/api/lyrics.ts`
 - `musicode-ui/src/api/plays.ts`
 - `musicode-ui/src/api/scrobble.ts`
 - `musicode-ui/src/api/search.ts`
@@ -281,6 +269,7 @@ Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
 - `musicode-ui/src/components/player/CrossfadePopover.tsx`
 - `musicode-ui/src/components/player/EqPopover.test.tsx`
 - `musicode-ui/src/components/player/EqPopover.tsx`
+- `musicode-ui/src/components/player/LyricsPanel.tsx`
 - `musicode-ui/src/components/player/NowPlayingOverlay.tsx`
 - `musicode-ui/src/components/player/PlayerBar.tsx`
 - `musicode-ui/src/components/player/ProgressBar.test.tsx`
@@ -329,6 +318,7 @@ Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
 - `musicode-ui/src/utils/errors.ts`
 - `musicode-ui/src/utils/format.test.ts`
 - `musicode-ui/src/utils/format.ts`
+- `musicode-ui/src/utils/lrcParser.ts`
 
 ### scripts/
 - `scripts/configure-scrobble.ps1`

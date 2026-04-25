@@ -30,10 +30,10 @@ function TrackInfo({ title, artistName, albumId, hasCover, isPlaying, onArtworkC
           }}
         >
           <div
-            className="w-full h-full rounded-full overflow-hidden relative"
+            className="w-full h-full rounded-full overflow-hidden relative ring-1 ring-zinc-600/50"
             style={{
-              background: 'radial-gradient(circle, #1a1a1a 20%, #0a0a0a 100%)',
-              boxShadow: '2px 0 15px rgba(0,0,0,0.5)',
+              background: 'radial-gradient(circle, #2a2a2a 20%, #151515 100%)',
+              boxShadow: '2px 0 15px rgba(0,0,0,0.5), inset 0 0 3px rgba(255,255,255,0.05)',
               animation: 'vinyl-spin 8s linear infinite',
               animationPlayState: isPlaying ? 'running' : 'paused',
             }}

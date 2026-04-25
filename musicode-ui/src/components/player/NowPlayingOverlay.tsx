@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Palette, BarChart3, AudioWaveform, Disc3, Disc, ChevronDown, MicVocal } from 'lucide-react';
+import { X, Palette, BarChart3, AudioWaveform, Disc3, Orbit, ChevronDown, MicVocal } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useDynamicTheme } from '../../hooks/useDynamicTheme';
 import audioGraph from '../../audio/audioGraph';
@@ -151,10 +151,10 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
 
         <div className="flex items-center gap-1">
           {([
-            { mode: 'vinyl' as VisualizerMode, Icon: Disc, label: 'Vinyl visualizer' },
+            { mode: 'vinyl' as VisualizerMode, Icon: Disc3, label: 'Vinyl visualizer' },
             { mode: 'bars' as VisualizerMode, Icon: BarChart3, label: 'Bars visualizer' },
             { mode: 'waveform' as VisualizerMode, Icon: AudioWaveform, label: 'Waveform visualizer' },
-            { mode: 'circular' as VisualizerMode, Icon: Disc3, label: 'Circular visualizer' },
+            { mode: 'circular' as VisualizerMode, Icon: Orbit, label: 'Circular visualizer' },
           ]).map(({ mode, Icon, label }) => {
             const active = showVisualizer && visualizerMode === mode;
             return (

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-04-25T15:46:18.542Z",
+  "exported_at": "2026-04-25T15:47:06.282Z",
   "milestones": [
     {
       "id": "M001",
@@ -521,10 +521,10 @@
     {
       "id": "M015",
       "title": "Synchronized Lyrics",
-      "status": "active",
+      "status": "complete",
       "depends_on": [],
       "created_at": "2026-04-25T15:09:57.994Z",
-      "completed_at": null,
+      "completed_at": "2026-04-25T15:47:06.243Z",
       "vision": "Display synchronized lyrics from LRCLIB.net alongside now-playing, with auto-scroll highlighting and DB caching. Plain lyrics fallback for tracks without timing data.",
       "success_criteria": [
         "Lyrics fetched lazily from LRCLIB.net on first request per track and cached in DB",
