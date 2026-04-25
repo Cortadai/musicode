@@ -1,7 +1,7 @@
 import { usePlayer } from '../../hooks/usePlayer';
 import audioGraph from '../../audio/audioGraph';
 import { useCallback, useState } from 'react';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Activity } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import type { VisualizerMode } from '../../audio/audioPreferences';
 import TrackInfo from './TrackInfo';
@@ -29,6 +29,14 @@ export default function PlayerBar() {
     return saved === 'vinyl' ? 'bars' : saved;
   });
   const [showNowPlaying, setShowNowPlaying] = useState(false);
+  const [waveformEnabled, setWaveformEnabled] = useState(() => loadPreferences().waveformEnabled);
+
+  const handleToggleWaveform = useCallback(() => {
+    setWaveformEnabled((v) => {
+      savePreferences({ waveformEnabled: !v });
+      return !v;
+    });
+  }, []);
 
   const handlePlayPause = useCallback(() => {
     audioGraph.init();
@@ -54,7 +62,7 @@ export default function PlayerBar() {
     <div role="region" aria-label="Music player" className="bg-zinc-900 border-t border-zinc-800 shrink-0 animate-slide-up">
       <Visualizer visible={showVisualizer} mode={visualizerMode} onModeChange={handleVisualizerModeChange} />
 
-      <div className="h-20 flex items-center px-4 gap-4">
+      <div className={`${waveformEnabled ? 'h-24' : 'h-20'} flex items-center px-4 gap-4 transition-[height] duration-200`}>
         <TrackInfo
           title={currentTrack.title}
           artistName={currentTrack.artist?.name ?? 'Unknown'}
@@ -77,11 +85,19 @@ export default function PlayerBar() {
             onToggleShuffle={toggleShuffle}
             onToggleRepeat={toggleRepeat}
           />
-          <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} />
+          <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} trackId={currentTrack.id} waveformEnabled={waveformEnabled} />
         </div>
 
         <div className="flex items-center gap-2 w-48 shrink-0 justify-end">
           <ScrobbleIndicator status={scrobbleStatus} />
+          <button
+            onClick={handleToggleWaveform}
+            aria-label={waveformEnabled ? 'Switch to flat progress bar' : 'Switch to waveform'}
+            aria-pressed={waveformEnabled}
+            className={`flex items-center justify-center transition-colors ${waveformEnabled ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+          >
+            <Activity className="w-4 h-4" />
+          </button>
           <CrossfadePopover getCrossfadeDuration={getCrossfadeDuration} setCrossfadeDuration={setCrossfadeDuration} />
           <EqPopover />
           <button

@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Palette, BarChart3, AudioWaveform, Disc3, Orbit, ChevronDown, MicVocal } from 'lucide-react';
+import { X, Palette, BarChart3, AudioWaveform, Disc3, Orbit, ChevronDown, MicVocal, Activity } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useDynamicTheme } from '../../hooks/useDynamicTheme';
 import audioGraph from '../../audio/audioGraph';
@@ -33,6 +33,14 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
   const [showVisualizer, setShowVisualizer] = useState(true);
   const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => loadPreferences().visualizerMode);
   const [showLyrics, setShowLyrics] = useState(false);
+  const [waveformEnabled, setWaveformEnabled] = useState(() => loadPreferences().waveformEnabled);
+
+  const handleToggleWaveform = useCallback(() => {
+    setWaveformEnabled((v) => {
+      savePreferences({ waveformEnabled: !v });
+      return !v;
+    });
+  }, []);
 
   // Artwork crossfade state
   const [prevCoverSrc, setPrevCoverSrc] = useState<string | null>(null);
@@ -182,6 +190,15 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
           </button>
 
           <button
+            onClick={handleToggleWaveform}
+            aria-label={waveformEnabled ? 'Switch to flat progress bar' : 'Switch to waveform'}
+            aria-pressed={waveformEnabled}
+            className={`p-1.5 rounded transition-colors ${waveformEnabled ? 'text-indigo-400 bg-indigo-400/10 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+          >
+            <Activity className="w-4 h-4" />
+          </button>
+
+          <button
             onClick={() => setShowLyrics(prev => !prev)}
             aria-label={showLyrics ? 'Hide lyrics' : 'Show lyrics'}
             aria-pressed={showLyrics}
@@ -253,7 +270,7 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
 
           {/* Progress */}
           <div className={`w-full ${showLyrics ? 'max-w-sm' : 'max-w-md'}`}>
-            <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} />
+            <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} trackId={currentTrack.id} waveformEnabled={waveformEnabled} />
           </div>
 
           {/* Transport */}
