@@ -45,6 +45,17 @@ public class Track {
 
     private String genre;
 
+    @Column(columnDefinition = "CLOB")
+    private String syncedLyrics;
+
+    @Column(columnDefinition = "CLOB")
+    private String plainLyrics;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    @Builder.Default
+    private LyricsStatus lyricsStatus = LyricsStatus.NOT_SEARCHED;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "album_id")
     @JsonIgnoreProperties({"tracks", "artist"})

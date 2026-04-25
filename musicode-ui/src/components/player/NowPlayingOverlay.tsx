@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Palette, BarChart3, AudioWaveform, Disc3, Disc, ChevronDown } from 'lucide-react';
+import { X, Palette, BarChart3, AudioWaveform, Disc3, Disc, ChevronDown, MicVocal } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useDynamicTheme } from '../../hooks/useDynamicTheme';
 import audioGraph from '../../audio/audioGraph';
@@ -12,6 +12,7 @@ import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
 import Visualizer from './Visualizer';
 import VinylVisualizer from './VinylVisualizer';
+import LyricsPanel from './LyricsPanel';
 
 interface Props {
   open: boolean;
@@ -31,6 +32,7 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
 
   const [showVisualizer, setShowVisualizer] = useState(true);
   const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => loadPreferences().visualizerMode);
+  const [showLyrics, setShowLyrics] = useState(false);
 
   // Artwork crossfade state
   const [prevCoverSrc, setPrevCoverSrc] = useState<string | null>(null);
@@ -179,6 +181,15 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
             <Palette className="w-4 h-4" />
           </button>
 
+          <button
+            onClick={() => setShowLyrics(prev => !prev)}
+            aria-label={showLyrics ? 'Hide lyrics' : 'Show lyrics'}
+            aria-pressed={showLyrics}
+            className={`p-1.5 rounded transition-all duration-300 ${showLyrics ? 'text-indigo-400 bg-indigo-400/15 shadow-[0_0_8px_rgba(129,140,248,0.3)] hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+          >
+            <MicVocal className="w-4 h-4" />
+          </button>
+
           <div className="w-px h-4 bg-zinc-700 mx-1" />
 
           <button
@@ -192,82 +203,100 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 gap-3 min-h-0 overflow-visible pb-6">
-        {/* Artwork — vinyl mode or standard crossfade */}
-        {isVinylMode ? (
-          <VinylVisualizer key={currentTrack.id} coverSrc={coverSrc} isPlaying={isPlaying} />
-        ) : (
-          <div
-            className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-2xl overflow-hidden shadow-2xl"
-            style={dynamicEnabled && colors ? { boxShadow: `0 20px 60px ${colors.primary}30` } : {}}
-          >
-            {coverFading && prevCoverSrc && (
-              <img
-                src={prevCoverSrc}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover np-cover-exit"
-              />
-            )}
+      <div className="relative z-10 flex-1 min-h-0 overflow-hidden pb-6 grid transition-[grid-template-columns] duration-300 ease-out"
+        style={{ gridTemplateColumns: showLyrics ? '1fr 1fr' : '1fr 0fr' }}
+      >
+        {/* Left side (or full width when lyrics hidden) */}
+        <div className={`flex flex-col items-center justify-center gap-3 ${showLyrics ? 'px-4' : 'px-8'}`}>
+          {/* Artwork — vinyl mode or standard crossfade */}
+          {isVinylMode ? (
+            <VinylVisualizer key={currentTrack.id} coverSrc={coverSrc} isPlaying={isPlaying} />
+          ) : (
+            <div
+              className={`relative rounded-2xl overflow-hidden shadow-2xl ${
+                showLyrics
+                  ? 'w-48 h-48 md:w-56 md:h-56 lg:w-72 lg:h-72'
+                  : 'w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96'
+              }`}
+              style={dynamicEnabled && colors ? { boxShadow: `0 20px 60px ${colors.primary}30` } : {}}
+            >
+              {coverFading && prevCoverSrc && (
+                <img
+                  src={prevCoverSrc}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover np-cover-exit"
+                />
+              )}
 
-            {coverSrc ? (
-              <img
-                src={coverSrc}
-                alt={`${currentTrack.album?.title} cover`}
-                className={`w-full h-full object-cover ${coverFading ? 'np-cover-enter' : ''}`}
-              />
-            ) : (
-              <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
-                <span className="text-6xl text-zinc-600">&#9835;</span>
-              </div>
-            )}
-          </div>
-        )}
+              {coverSrc ? (
+                <img
+                  src={coverSrc}
+                  alt={`${currentTrack.album?.title} cover`}
+                  className={`w-full h-full object-cover ${coverFading ? 'np-cover-enter' : ''}`}
+                />
+              ) : (
+                <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                  <span className="text-6xl text-zinc-600">&#9835;</span>
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* Track info */}
-        <div className="text-center max-w-md">
-          <h2 className="text-xl font-semibold text-zinc-100 truncate">{currentTrack.title}</h2>
-          <p className="text-sm text-zinc-400 mt-0.5 truncate">
-            {currentTrack.artist?.name ?? 'Unknown Artist'}
-            {currentTrack.album?.title ? ` \u2014 ${currentTrack.album.title}` : ''}
-          </p>
-        </div>
-
-        {/* Progress */}
-        <div className="w-full max-w-md">
-          <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} />
-        </div>
-
-        {/* Transport */}
-        <div className="flex items-center gap-4">
-          <TransportControls
-            isPlaying={isPlaying}
-            shuffle={shuffle}
-            repeatMode={repeatMode}
-            hasNext={hasNext}
-            hasPrev={hasPrev}
-            onPlayPause={handlePlayPause}
-            onNext={next}
-            onPrev={prev}
-            onToggleShuffle={toggleShuffle}
-            onToggleRepeat={toggleRepeat}
-          />
-        </div>
-
-        {/* Volume */}
-        <div className="flex items-center justify-center gap-2">
-          <VolumeControl volume={volume} onVolumeChange={setVolume} />
-          <div className="w-4" aria-hidden="true" />
-        </div>
-
-        {/* Up Next */}
-        {nextTrack && (
-          <div className="text-center mt-1">
-            <span className="text-[11px] text-zinc-600 uppercase tracking-wider">Up Next</span>
-            <p className="text-sm text-zinc-400 truncate max-w-xs mx-auto">
-              {nextTrack.title} {'\u2014'} {nextTrack.artist?.name ?? 'Unknown'}
+          {/* Track info */}
+          <div className="text-center max-w-md">
+            <h2 className="text-xl font-semibold text-zinc-100 truncate">{currentTrack.title}</h2>
+            <p className="text-sm text-zinc-400 mt-0.5 truncate">
+              {currentTrack.artist?.name ?? 'Unknown Artist'}
+              {currentTrack.album?.title ? ` \u2014 ${currentTrack.album.title}` : ''}
             </p>
           </div>
-        )}
+
+          {/* Progress */}
+          <div className={`w-full ${showLyrics ? 'max-w-sm' : 'max-w-md'}`}>
+            <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} />
+          </div>
+
+          {/* Transport */}
+          <div className="flex items-center gap-4">
+            <TransportControls
+              isPlaying={isPlaying}
+              shuffle={shuffle}
+              repeatMode={repeatMode}
+              hasNext={hasNext}
+              hasPrev={hasPrev}
+              onPlayPause={handlePlayPause}
+              onNext={next}
+              onPrev={prev}
+              onToggleShuffle={toggleShuffle}
+              onToggleRepeat={toggleRepeat}
+            />
+          </div>
+
+          {/* Volume */}
+          <div className="flex items-center justify-center gap-2">
+            <VolumeControl volume={volume} onVolumeChange={setVolume} />
+            <div className="w-4" aria-hidden="true" />
+          </div>
+
+          {/* Up Next */}
+          {nextTrack && (
+            <div className="text-center mt-1">
+              <span className="text-[11px] text-zinc-600 uppercase tracking-wider">Up Next</span>
+              <p className="text-sm text-zinc-400 truncate max-w-xs mx-auto">
+                {nextTrack.title} {'\u2014'} {nextTrack.artist?.name ?? 'Unknown'}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Right side — Lyrics panel */}
+        <div className={`border-l border-zinc-800/50 min-h-0 overflow-hidden transition-opacity duration-300 ${
+          showLyrics ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}>
+          {showLyrics && (
+            <LyricsPanel trackId={currentTrack.id} currentTime={currentTime} />
+          )}
+        </div>
       </div>
     </div>,
     document.body

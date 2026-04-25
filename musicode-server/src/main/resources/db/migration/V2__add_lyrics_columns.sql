@@ -1,0 +1,3 @@
+ALTER TABLE tracks ADD COLUMN synced_lyrics CLOB;
+ALTER TABLE tracks ADD COLUMN plain_lyrics CLOB;
+ALTER TABLE tracks ADD COLUMN lyrics_status VARCHAR(20) DEFAULT 'NOT_SEARCHED' NOT NULL;

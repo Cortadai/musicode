@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-04-25T14:39:54.465Z",
+  "exported_at": "2026-04-25T15:46:18.542Z",
   "milestones": [
     {
       "id": "M001",
@@ -514,6 +514,57 @@
         "UI accesible desde sidebar o settings",
         "Paginación server-side funcional",
         "Verificación visual en browser"
+      ],
+      "requirement_coverage": "Not provided.",
+      "boundary_map_markdown": "Not provided."
+    },
+    {
+      "id": "M015",
+      "title": "Synchronized Lyrics",
+      "status": "active",
+      "depends_on": [],
+      "created_at": "2026-04-25T15:09:57.994Z",
+      "completed_at": null,
+      "vision": "Display synchronized lyrics from LRCLIB.net alongside now-playing, with auto-scroll highlighting and DB caching. Plain lyrics fallback for tracks without timing data.",
+      "success_criteria": [
+        "Lyrics fetched lazily from LRCLIB.net on first request per track and cached in DB",
+        "Synced lyrics display with current-line highlighting and smooth auto-scroll",
+        "Plain lyrics fallback when no synced version available",
+        "NOT_FOUND status cached to avoid repeated API hits, with manual retry option",
+        "Lyrics panel integrated into NowPlayingOverlay as toggle with split layout"
+      ],
+      "key_risks": [
+        {
+          "risk": "LRCLIB coverage gaps for niche tracks",
+          "whyItMatters": "Users see 'not found' too often and lose trust in the feature. Mitigated by caching NOT_FOUND with retry option."
+        },
+        {
+          "risk": "LRC timestamp sync drift",
+          "whyItMatters": "If parsed timestamps don't align with actual audio playback position, highlighting feels off. Need robust parser and tolerance margin."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "LRCLIB API reliability and coverage",
+          "retireIn": "S01",
+          "whatWillBeProven": "API returns synced lyrics for majority of vocal tracks in the library"
+        },
+        {
+          "riskOrUnknown": "LRC parser correctness across formats",
+          "retireIn": "S02",
+          "whatWillBeProven": "Parser handles standard LRC, enhanced LRC, and edge cases without errors"
+        }
+      ],
+      "verification_contract": "",
+      "verification_integration": "",
+      "verification_operational": "",
+      "verification_uat": "",
+      "definition_of_done": [
+        "All backend endpoints tested (unit + integration)",
+        "LRC parser handles edge cases (multi-line, empty lines, malformed timestamps)",
+        "Frontend renders synced, plain, instrumental, and not-found states correctly",
+        "No regressions in existing NowPlaying functionality",
+        "Lyrics toggle persists across track changes"
       ],
       "requirement_coverage": "Not provided.",
       "boundary_map_markdown": "Not provided."
@@ -1587,6 +1638,46 @@
       "proof_level": "visual-verification + E2E smoke",
       "integration_closure": "Feature completa end-to-end",
       "observability_impact": "Ninguno adicional",
+      "sequence": 2,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M015",
+      "id": "S01",
+      "title": "S01",
+      "status": "complete",
+      "risk": "low",
+      "depends": [],
+      "demo": "GET /api/lyrics/{trackId} returns cached synced/plain lyrics from LRCLIB",
+      "created_at": "2026-04-25T15:10:19.860Z",
+      "completed_at": "2026-04-25T15:45:51.297Z",
+      "full_summary_md": "---\nid: S01\nparent: M015\nmilestone: M015\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - (none)\nkey_decisions:\n  - (none)\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-04-25T15:45:51.297Z\nblocker_discovered: false\n---\n\n# S01: Backend — LRCLIB integration + DB cache\n\n**LRCLIB.net integration with lazy fetch, DB caching, and retry support**\n\n## What Happened\n\nBuilt the full backend lyrics pipeline: Flyway migration adds lyrics columns to Track, LyricsService calls LRCLIB.net on first access and caches the result (synced, plain, instrumental, or not-found), LyricsController exposes GET and POST retry endpoints. 15 new tests (10 service + 5 controller) all pass.\n\n## Verification\n\nmvn test — 260 tests, 0 failures. Manual testing against LRCLIB confirmed working for known artists (Queen) and correct NOT_FOUND for niche artists.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S01: Backend — LRCLIB integration + DB cache — UAT\n\n**Milestone:** M015\n**Written:** 2026-04-25T15:45:51.297Z\n\n## S01 UAT — Backend LRCLIB Integration\\n\\n- [x] GET /api/lyrics/{trackId} returns cached lyrics for known tracks\\n- [x] First request triggers lazy LRCLIB fetch and caches result\\n- [x] Subsequent requests return cached data without hitting LRCLIB\\n- [x] NOT_FOUND status cached for tracks not in LRCLIB\\n- [x] POST /api/lyrics/{trackId}/retry clears cache and re-fetches\\n- [x] 401 returned for unauthenticated requests\\n- [x] 404 returned for non-existent track IDs\n",
+      "goal": "Integrate LRCLIB.net API with lazy fetch and DB caching for lyrics",
+      "success_criteria": "Lyrics endpoint returns synced, plain, instrumental, or not-found status. Repeated calls serve from cache. NOT_FOUND cached with retry support.",
+      "proof_level": "Not provided.",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
+      "sequence": 1,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M015",
+      "id": "S02",
+      "title": "S02",
+      "status": "complete",
+      "risk": "medium",
+      "depends": [],
+      "demo": "Playing a track shows synced lyrics with auto-scroll highlighting in NowPlayingOverlay",
+      "created_at": "2026-04-25T15:10:19.860Z",
+      "completed_at": "2026-04-25T15:46:18.499Z",
+      "full_summary_md": "---\nid: S02\nparent: M015\nmilestone: M015\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - (none)\nkey_decisions:\n  - (none)\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-04-25T15:46:18.499Z\nblocker_discovered: false\n---\n\n# S02: Frontend — Lyrics panel + NowPlaying integration\n\n**Lyrics panel with synced highlighting, slide-in animation, and framed layout in NowPlayingOverlay**\n\n## What Happened\n\nBuilt LyricsPanel with synced/plain/instrumental/not-found states, auto-scroll with manual scroll detection, and retry support. Integrated into NowPlayingOverlay with mic toggle button, CSS Grid slide-in animation (300ms), indigo glow on active state, and fixed-frame layout (py-12) that keeps top/bottom margins visible during scroll.\n\n## Verification\n\nTested end-to-end in browser: Queen tracks show synced lyrics with auto-scroll, niche artists show not-found with retry, animation is smooth, frame margins stay fixed.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S02: Frontend — Lyrics panel + NowPlaying integration — UAT\n\n**Milestone:** M015\n**Written:** 2026-04-25T15:46:18.499Z\n\n## S02 UAT — Frontend Lyrics Panel\\n\\n- [x] Mic toggle button visible in NowPlayingOverlay toolbar\\n- [x] Clicking mic slides lyrics panel in from right (300ms ease-out)\\n- [x] Clicking again slides panel out smoothly\\n- [x] Mic button shows indigo glow when active\\n- [x] Synced lyrics: active line highlighted, auto-scrolls to center\\n- [x] Manual scroll pauses auto-scroll for 4 seconds\\n- [x] Plain lyrics: displayed with preserved whitespace\\n- [x] Instrumental tracks: mic icon + 'Instrumental' label\\n- [x] Not found: retry button triggers re-fetch from LRCLIB\\n- [x] Lyrics panel has fixed frame margins (top/bottom) regardless of scroll\\n- [x] Cover art compresses smoothly when lyrics panel opens\n",
+      "goal": "Build LyricsPanel with LRC parsing, auto-scroll, and integrate into NowPlayingOverlay",
+      "success_criteria": "Synced lyrics highlight current line and auto-scroll. Plain lyrics display statically. Instrumental and not-found states render appropriate messages. Toggle button controls panel visibility.",
+      "proof_level": "Not provided.",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
       "sequence": 2,
       "replan_triggered_at": null
     }
@@ -6954,6 +7045,246 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M015",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "Flyway V2 migration + Track entity lyrics fields + LyricsStatus enum",
+      "status": "complete",
+      "one_liner": "Flyway V2 migration + Track entity lyrics fields + LyricsStatus enum",
+      "narrative": "Added V2__add_lyrics_columns.sql migration with synced_lyrics (TEXT), plain_lyrics (TEXT), and lyrics_status (VARCHAR) columns on the track table. Created LyricsStatus enum (NOT_SEARCHED, SYNCED, PLAIN_ONLY, INSTRUMENTAL, NOT_FOUND). Extended Track entity with the three new fields.",
+      "verification_result": "Migration runs cleanly on Spring Boot startup. Entity fields map correctly to columns.",
+      "duration": "",
+      "completed_at": "2026-04-25T15:45:29.234Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/resources/db/migration/V2__add_lyrics_columns.sql",
+        "musicode-server/src/main/java/com/musicode/model/entity/LyricsStatus.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/Track.java"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T01\nparent: S01\nmilestone: M015\nkey_files:\n  - musicode-server/src/main/resources/db/migration/V2__add_lyrics_columns.sql\n  - musicode-server/src/main/java/com/musicode/model/entity/LyricsStatus.java\n  - musicode-server/src/main/java/com/musicode/model/entity/Track.java\nkey_decisions:\n  - (none)\nduration: \nverification_result: untested\ncompleted_at: 2026-04-25T15:45:29.233Z\nblocker_discovered: false\n---\n\n# T01: Flyway V2 migration + Track entity lyrics fields + LyricsStatus enum\n\n**Flyway V2 migration + Track entity lyrics fields + LyricsStatus enum**\n\n## What Happened\n\nAdded V2__add_lyrics_columns.sql migration with synced_lyrics (TEXT), plain_lyrics (TEXT), and lyrics_status (VARCHAR) columns on the track table. Created LyricsStatus enum (NOT_SEARCHED, SYNCED, PLAIN_ONLY, INSTRUMENTAL, NOT_FOUND). Extended Track entity with the three new fields.\n\n## Verification\n\nMigration runs cleanly on Spring Boot startup. Entity fields map correctly to columns.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| — | No verification commands discovered | — | — | — |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/resources/db/migration/V2__add_lyrics_columns.sql`\n- `musicode-server/src/main/java/com/musicode/model/entity/LyricsStatus.java`\n- `musicode-server/src/main/java/com/musicode/model/entity/Track.java`\n",
+      "description": "Add V2 Flyway migration with syncedLyrics (TEXT), plainLyrics (TEXT), lyricsStatus (VARCHAR) columns to track table. Create LyricsStatus enum (NOT_SEARCHED, SYNCED, PLAIN_ONLY, INSTRUMENTAL, NOT_FOUND). Update Track entity with new fields and @Enumerated annotation.",
+      "estimate": "30min",
+      "files": [
+        "musicode-server/src/main/resources/db/migration/V2__add_lyrics_columns.sql",
+        "musicode-server/src/main/java/com/musicode/model/entity/Track.java",
+        "musicode-server/src/main/java/com/musicode/model/entity/LyricsStatus.java"
+      ],
+      "verify": "Spring Boot starts cleanly with migration applied, Track entity compiles with new fields",
+      "inputs": [
+        "Existing Track entity",
+        "Existing Flyway migrations"
+      ],
+      "expected_output": [
+        "V2 migration SQL file",
+        "LyricsStatus enum",
+        "Updated Track entity"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M015",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "LyricsService with LRCLIB.net integration, lazy fetch, and DB caching",
+      "status": "complete",
+      "one_liner": "LyricsService with LRCLIB.net integration, lazy fetch, and DB caching",
+      "narrative": "Built LyricsService calling LRCLIB.net GET /api/get with trackName, artistName, albumName, duration params. Lazy fetch on first access — caches synced/plain/instrumental/not-found status in Track entity. retryLyrics() clears cache for manual re-check. API URL is @Value-injected for testability. 10 unit tests covering all response scenarios.",
+      "verification_result": "10 unit tests pass covering: synced lyrics, plain-only, instrumental, not found, retry, API errors.",
+      "duration": "",
+      "completed_at": "2026-04-25T15:45:34.743Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/service/LyricsService.java",
+        "musicode-server/src/test/java/com/musicode/service/LyricsServiceTest.java"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T02\nparent: S01\nmilestone: M015\nkey_files:\n  - musicode-server/src/main/java/com/musicode/service/LyricsService.java\n  - musicode-server/src/test/java/com/musicode/service/LyricsServiceTest.java\nkey_decisions:\n  - (none)\nduration: \nverification_result: untested\ncompleted_at: 2026-04-25T15:45:34.743Z\nblocker_discovered: false\n---\n\n# T02: LyricsService with LRCLIB.net integration, lazy fetch, and DB caching\n\n**LyricsService with LRCLIB.net integration, lazy fetch, and DB caching**\n\n## What Happened\n\nBuilt LyricsService calling LRCLIB.net GET /api/get with trackName, artistName, albumName, duration params. Lazy fetch on first access — caches synced/plain/instrumental/not-found status in Track entity. retryLyrics() clears cache for manual re-check. API URL is @Value-injected for testability. 10 unit tests covering all response scenarios.\n\n## Verification\n\n10 unit tests pass covering: synced lyrics, plain-only, instrumental, not found, retry, API errors.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| — | No verification commands discovered | — | — | — |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/service/LyricsService.java`\n- `musicode-server/src/test/java/com/musicode/service/LyricsServiceTest.java`\n",
+      "description": "Create LyricsService that calls LRCLIB.net GET /api/get with trackName, artistName, albumName, duration params. Parse response: synced lyrics, plain lyrics, instrumental flag. Cache result in Track entity via TrackRepository. Handle NOT_FOUND caching. Add retry support (reset NOT_FOUND status). Use @Value for API base URL for testability.",
+      "estimate": "1h",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/service/LyricsService.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/LyricsResponse.java"
+      ],
+      "verify": "Unit tests pass for all response types (synced, plain, instrumental, not found, API error). WireMock contract test validates actual HTTP call to LRCLIB.",
+      "inputs": [
+        "Track entity with lyrics fields",
+        "LRCLIB API docs: GET /api/get?track_name=X&artist_name=Y&album_name=Z&duration=D"
+      ],
+      "expected_output": [
+        "LyricsService with fetch + cache logic",
+        "LyricsResponse DTO",
+        "Unit tests + WireMock tests"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M015",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "LyricsController with GET/POST endpoints + LyricsResponse DTO + 5 integration tests",
+      "status": "complete",
+      "one_liner": "LyricsController with GET/POST endpoints + LyricsResponse DTO + 5 integration tests",
+      "narrative": "GET /api/lyrics/{trackId} fetches/caches lyrics. POST /api/lyrics/{trackId}/retry forces re-fetch. LyricsResponse DTO wraps trackId, status, syncedLyrics, plainLyrics. 5 integration tests covering auth required, track not found, and happy path scenarios.",
+      "verification_result": "5 controller tests pass. Full mvn test suite (260 tests) passes with 0 failures.",
+      "duration": "",
+      "completed_at": "2026-04-25T15:45:39.942Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-server/src/main/java/com/musicode/controller/LyricsController.java",
+        "musicode-server/src/main/java/com/musicode/model/dto/LyricsResponse.java",
+        "musicode-server/src/test/java/com/musicode/controller/LyricsControllerTest.java"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T03\nparent: S01\nmilestone: M015\nkey_files:\n  - musicode-server/src/main/java/com/musicode/controller/LyricsController.java\n  - musicode-server/src/main/java/com/musicode/model/dto/LyricsResponse.java\n  - musicode-server/src/test/java/com/musicode/controller/LyricsControllerTest.java\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-04-25T15:45:39.942Z\nblocker_discovered: false\n---\n\n# T03: LyricsController with GET/POST endpoints + LyricsResponse DTO + 5 integration tests\n\n**LyricsController with GET/POST endpoints + LyricsResponse DTO + 5 integration tests**\n\n## What Happened\n\nGET /api/lyrics/{trackId} fetches/caches lyrics. POST /api/lyrics/{trackId}/retry forces re-fetch. LyricsResponse DTO wraps trackId, status, syncedLyrics, plainLyrics. 5 integration tests covering auth required, track not found, and happy path scenarios.\n\n## Verification\n\n5 controller tests pass. Full mvn test suite (260 tests) passes with 0 failures.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `mvn test` | 0 | pass | 45000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-server/src/main/java/com/musicode/controller/LyricsController.java`\n- `musicode-server/src/main/java/com/musicode/model/dto/LyricsResponse.java`\n- `musicode-server/src/test/java/com/musicode/controller/LyricsControllerTest.java`\n",
+      "description": "Create LyricsController with GET /api/lyrics/{trackId} that returns cached lyrics or triggers lazy fetch. Add POST /api/lyrics/{trackId}/retry to reset NOT_FOUND and re-fetch. Return LyricsResponse DTO with status, syncedLyrics, plainLyrics fields.",
+      "estimate": "45min",
+      "files": [
+        "musicode-server/src/main/java/com/musicode/controller/LyricsController.java",
+        "musicode-server/src/main/java/com/musicode/config/SecurityConfig.java"
+      ],
+      "verify": "Integration tests: authenticated GET returns lyrics, retry resets cache, 404 for unknown track. SecurityConfig permits /api/lyrics/** for authenticated users.",
+      "inputs": [
+        "LyricsService",
+        "LyricsResponse DTO",
+        "SecurityConfig patterns"
+      ],
+      "expected_output": [
+        "LyricsController",
+        "Integration tests",
+        "SecurityConfig update"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M015",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "LRC parser utility and lyrics API layer",
+      "status": "complete",
+      "one_liner": "LRC parser utility and lyrics API layer",
+      "narrative": "Created lrcParser.ts with parseLrc() (handles [mm:ss.xx] timestamps, sorts by time) and findActiveLine() (binary scan for current position). Created api/lyrics.ts with getLyrics() and retryLyrics() following existing API patterns.",
+      "verification_result": "TypeScript compiles clean. Parser handles edge cases (empty input, malformed timestamps).",
+      "duration": "",
+      "completed_at": "2026-04-25T15:45:57.796Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/utils/lrcParser.ts",
+        "musicode-ui/src/api/lyrics.ts"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T01\nparent: S02\nmilestone: M015\nkey_files:\n  - musicode-ui/src/utils/lrcParser.ts\n  - musicode-ui/src/api/lyrics.ts\nkey_decisions:\n  - (none)\nduration: \nverification_result: untested\ncompleted_at: 2026-04-25T15:45:57.795Z\nblocker_discovered: false\n---\n\n# T01: LRC parser utility and lyrics API layer\n\n**LRC parser utility and lyrics API layer**\n\n## What Happened\n\nCreated lrcParser.ts with parseLrc() (handles [mm:ss.xx] timestamps, sorts by time) and findActiveLine() (binary scan for current position). Created api/lyrics.ts with getLyrics() and retryLyrics() following existing API patterns.\n\n## Verification\n\nTypeScript compiles clean. Parser handles edge cases (empty input, malformed timestamps).\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| — | No verification commands discovered | — | — | — |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/utils/lrcParser.ts`\n- `musicode-ui/src/api/lyrics.ts`\n",
+      "description": "Create parseLrc utility that parses [mm:ss.xx] text lines into {time: number, text: string}[] array. Handle edge cases: empty lines, malformed timestamps, enhanced LRC format, BOM. Create useLyrics React hook that fetches from /api/lyrics/{trackId} on track change, exposes lyrics data + status + retry function.",
+      "estimate": "45min",
+      "files": [
+        "musicode-frontend/src/utils/lrcParser.ts",
+        "musicode-frontend/src/hooks/useLyrics.ts",
+        "musicode-frontend/src/api/lyrics.ts"
+      ],
+      "verify": "TypeScript compiles. Parser correctly handles standard LRC samples, empty lines, and malformed input.",
+      "inputs": [
+        "LRC format specification",
+        "Backend LyricsResponse shape"
+      ],
+      "expected_output": [
+        "lrcParser.ts with parseLrc function",
+        "useLyrics hook",
+        "lyrics API client"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M015",
+      "slice_id": "S02",
+      "id": "T02",
+      "title": "LyricsPanel component with synced highlighting, auto-scroll, and fallback states",
+      "status": "complete",
+      "one_liner": "LyricsPanel component with synced highlighting, auto-scroll, and fallback states",
+      "narrative": "Built LyricsPanel that fetches lyrics on track change and caches results. Synced mode highlights active line and smooth-scrolls to center, with 4s pause when user manually scrolls. Plain lyrics fallback with whitespace-preserved display. Instrumental state shows mic icon. Not-found state shows retry button. Loading state with pulsing icon.",
+      "verification_result": "Tested in browser with Queen tracks (synced lyrics work), niche artists (not-found + retry works), and instrumental detection.",
+      "duration": "",
+      "completed_at": "2026-04-25T15:46:02.960Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/player/LyricsPanel.tsx"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T02\nparent: S02\nmilestone: M015\nkey_files:\n  - musicode-ui/src/components/player/LyricsPanel.tsx\nkey_decisions:\n  - (none)\nduration: \nverification_result: untested\ncompleted_at: 2026-04-25T15:46:02.960Z\nblocker_discovered: false\n---\n\n# T02: LyricsPanel component with synced highlighting, auto-scroll, and fallback states\n\n**LyricsPanel component with synced highlighting, auto-scroll, and fallback states**\n\n## What Happened\n\nBuilt LyricsPanel that fetches lyrics on track change and caches results. Synced mode highlights active line and smooth-scrolls to center, with 4s pause when user manually scrolls. Plain lyrics fallback with whitespace-preserved display. Instrumental state shows mic icon. Not-found state shows retry button. Loading state with pulsing icon.\n\n## Verification\n\nTested in browser with Queen tracks (synced lyrics work), niche artists (not-found + retry works), and instrumental detection.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| — | No verification commands discovered | — | — | — |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/player/LyricsPanel.tsx`\n",
+      "description": "Build LyricsPanel React component. For synced lyrics: highlight current line based on playback time, smooth auto-scroll to keep active line centered. For plain lyrics: static scrollable text. For instrumental: centered icon + message. For not-found: message + retry button. Styling with Tailwind: semi-transparent background, readable text, smooth transitions.",
+      "estimate": "1.5h",
+      "files": [
+        "musicode-frontend/src/components/LyricsPanel.tsx",
+        "musicode-frontend/src/components/LyricsPanel.css"
+      ],
+      "verify": "Component renders all four states correctly. Auto-scroll follows playback time. Active line visually distinct.",
+      "inputs": [
+        "parseLrc output",
+        "useLyrics hook",
+        "Current playback time from usePlayer"
+      ],
+      "expected_output": [
+        "LyricsPanel component with all states"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M015",
+      "slice_id": "S02",
+      "id": "T03",
+      "title": "NowPlayingOverlay integration with slide-in animation and framed lyrics layout",
+      "status": "complete",
+      "one_liner": "NowPlayingOverlay integration with slide-in animation and framed lyrics layout",
+      "narrative": "Added MicVocal toggle button to NowPlayingOverlay toolbar with indigo glow when active. Lyrics panel slides in from right via CSS Grid grid-template-columns transition (1fr 0fr → 1fr 1fr, 300ms ease-out). Lyrics panel has fixed py-12 frame (top/bottom margins stay visible regardless of scroll). Cover art compresses smoothly during transition.",
+      "verification_result": "Tested in browser — slide-in animation smooth, frame margins consistent, toggle works cleanly.",
+      "duration": "",
+      "completed_at": "2026-04-25T15:46:08.166Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/player/NowPlayingOverlay.tsx"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T03\nparent: S02\nmilestone: M015\nkey_files:\n  - musicode-ui/src/components/player/NowPlayingOverlay.tsx\nkey_decisions:\n  - (none)\nduration: \nverification_result: untested\ncompleted_at: 2026-04-25T15:46:08.166Z\nblocker_discovered: false\n---\n\n# T03: NowPlayingOverlay integration with slide-in animation and framed lyrics layout\n\n**NowPlayingOverlay integration with slide-in animation and framed lyrics layout**\n\n## What Happened\n\nAdded MicVocal toggle button to NowPlayingOverlay toolbar with indigo glow when active. Lyrics panel slides in from right via CSS Grid grid-template-columns transition (1fr 0fr → 1fr 1fr, 300ms ease-out). Lyrics panel has fixed py-12 frame (top/bottom margins stay visible regardless of scroll). Cover art compresses smoothly during transition.\n\n## Verification\n\nTested in browser — slide-in animation smooth, frame margins consistent, toggle works cleanly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| — | No verification commands discovered | — | — | — |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/player/NowPlayingOverlay.tsx`\n",
+      "description": "Add lyrics toggle button (microphone icon) to NowPlayingOverlay toolbar. When active: split layout with cover+controls on left (narrower), LyricsPanel on right. When inactive: existing full layout. Persist toggle state in localStorage. Fetch lyrics on track change when panel is visible. Ensure visualizer still renders behind the overlay.",
+      "estimate": "1.5h",
+      "files": [
+        "musicode-frontend/src/components/NowPlayingOverlay.tsx"
+      ],
+      "verify": "Toggle shows/hides lyrics panel. Split layout renders correctly. Visualizer unaffected. State persists across page refreshes. No regressions in existing NowPlaying UX.",
+      "inputs": [
+        "LyricsPanel component",
+        "useLyrics hook",
+        "Existing NowPlayingOverlay structure"
+      ],
+      "expected_output": [
+        "Updated NowPlayingOverlay with lyrics integration"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -8665,6 +8996,17 @@
       "verdict": "117 tests pass",
       "duration_ms": 3410,
       "created_at": "2026-04-18T19:40:05.240Z"
+    },
+    {
+      "id": 118,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M015",
+      "command": "mvn test",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 45000,
+      "created_at": "2026-04-25T15:45:39.942Z"
     }
   ]
 }

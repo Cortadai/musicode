@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-04-25T14:59:22Z | Files: 237 | Described: 0/237
-<!-- gsd:codebase-meta {"generatedAt":"2026-04-25T14:59:22Z","fingerprint":"70ef5468896ce2b22d308c279bcf1fc7a8b0822e","fileCount":237,"truncated":false} -->
+Generated: 2026-04-25T15:41:14Z | Files: 245 | Described: 0/245
+<!-- gsd:codebase-meta {"generatedAt":"2026-04-25T15:41:14Z","fingerprint":"08be37e7f3824d06b8fbe23cc19ff5535a698eab","fileCount":245,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -46,6 +46,7 @@ Generated: 2026-04-25T14:59:22Z | Files: 237 | Described: 0/237
 - `musicode-server/src/main/java/com/musicode/controller/AuthController.java`
 - `musicode-server/src/main/java/com/musicode/controller/CoverArtController.java`
 - `musicode-server/src/main/java/com/musicode/controller/LibraryController.java`
+- `musicode-server/src/main/java/com/musicode/controller/LibraryHealthController.java`
 - `musicode-server/src/main/java/com/musicode/controller/PlayController.java`
 - `musicode-server/src/main/java/com/musicode/controller/ScrobbleController.java`
 - `musicode-server/src/main/java/com/musicode/controller/SearchController.java`
@@ -70,6 +71,9 @@ Generated: 2026-04-25T14:59:22Z | Files: 237 | Described: 0/237
 - `musicode-server/src/main/java/com/musicode/model/dto/ActivityEvent.java`
 - `musicode-server/src/main/java/com/musicode/model/dto/CreateUserRequest.java`
 - `musicode-server/src/main/java/com/musicode/model/dto/DailyPlayCount.java`
+- `musicode-server/src/main/java/com/musicode/model/dto/HealthIssue.java`
+- `musicode-server/src/main/java/com/musicode/model/dto/HealthIssueType.java`
+- `musicode-server/src/main/java/com/musicode/model/dto/HealthSummary.java`
 - `musicode-server/src/main/java/com/musicode/model/dto/LoginRequest.java`
 - `musicode-server/src/main/java/com/musicode/model/dto/ScanStatus.java`
 - `musicode-server/src/main/java/com/musicode/model/dto/ScrobbleResult.java`
@@ -111,6 +115,7 @@ Generated: 2026-04-25T14:59:22Z | Files: 237 | Described: 0/237
 - `musicode-server/src/main/java/com/musicode/service/CoverArtService.java`
 - `musicode-server/src/main/java/com/musicode/service/JwtService.java`
 - `musicode-server/src/main/java/com/musicode/service/LastfmService.java`
+- `musicode-server/src/main/java/com/musicode/service/LibraryHealthService.java`
 - `musicode-server/src/main/java/com/musicode/service/LibraryScanService.java`
 - `musicode-server/src/main/java/com/musicode/service/ListenBrainzService.java`
 - `musicode-server/src/main/java/com/musicode/service/MetadataService.java`
@@ -146,6 +151,7 @@ Generated: 2026-04-25T14:59:22Z | Files: 237 | Described: 0/237
 - `musicode-server/src/test/java/com/musicode/controller/AuthControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/CoverArtControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/LibraryControllerTest.java`
+- `musicode-server/src/test/java/com/musicode/controller/LibraryHealthControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/PlayControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/PlayScrobbleIntegrationTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/ScrobbleControllerTest.java`
@@ -234,6 +240,7 @@ Generated: 2026-04-25T14:59:22Z | Files: 237 | Described: 0/237
 - `musicode-ui/src/api/artists.ts`
 - `musicode-ui/src/api/auth.ts`
 - `musicode-ui/src/api/client.ts`
+- `musicode-ui/src/api/health.ts`
 - `musicode-ui/src/api/library.ts`
 - `musicode-ui/src/api/plays.ts`
 - `musicode-ui/src/api/scrobble.ts`
@@ -306,6 +313,7 @@ Generated: 2026-04-25T14:59:22Z | Files: 237 | Described: 0/237
 - `musicode-ui/src/pages/AlbumsPage.tsx`
 - `musicode-ui/src/pages/ArtistDetailPage.tsx`
 - `musicode-ui/src/pages/ArtistsPage.tsx`
+- `musicode-ui/src/pages/LibraryHealthPage.tsx`
 - `musicode-ui/src/pages/LoginPage.tsx`
 - `musicode-ui/src/pages/SearchPage.tsx`
 - `musicode-ui/src/pages/SettingsPage.tsx`
