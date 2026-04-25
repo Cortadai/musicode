@@ -1,6 +1,8 @@
 package com.musicode.repository;
 
 import com.musicode.model.entity.Album;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,4 +19,10 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     List<Album> findByTitleContainingIgnoreCase(String title);
 
     long countByArtistId(Long artistId);
+
+    // --- Library Health queries ---
+
+    Page<Album> findByHasCoverArtFalse(Pageable pageable);
+
+    long countByHasCoverArtFalse();
 }

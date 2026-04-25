@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router';
-import { Disc3, Users, Music, Search, Settings, UserCog, LogOut, TrendingUp } from 'lucide-react';
+import { Disc3, Users, Music, Search, Settings, UserCog, LogOut, TrendingUp, HeartPulse } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import audioGraph from '../../audio/audioGraph';
 import ActivityFeed from '../activity/ActivityFeed';
@@ -17,7 +17,8 @@ export default function Sidebar() {
   ];
 
   const adminItems = [
-    { to: '/settings', label: 'Settings', icon: Settings },
+    { to: '/settings', label: 'Settings', icon: Settings, end: true },
+    { to: '/settings/health', label: 'Library Health', icon: HeartPulse },
     { to: '/users', label: 'Users', icon: UserCog },
   ];
 
@@ -56,10 +57,11 @@ export default function Sidebar() {
         {isAdmin && (
           <>
             <div className="my-3 border-t border-zinc-800" />
-            {adminItems.map(({ to, label, icon: Icon }) => (
+            {adminItems.map(({ to, label, icon: Icon, end }) => (
               <NavLink
                 key={to}
                 to={to}
+                end={end}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive
