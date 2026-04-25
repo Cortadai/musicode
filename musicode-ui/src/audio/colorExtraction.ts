@@ -17,6 +17,7 @@ const cache = new Map<number, ColorPalette>();
 const SAMPLE_SIZE = 64;
 const MIN_BRIGHTNESS = 105;
 const MAX_BRIGHTNESS = 185;
+const MIN_SATURATION = 0.45;
 
 export function getCachedPalette(albumId: number): ColorPalette | undefined {
   return cache.get(albumId);
@@ -97,18 +98,25 @@ function quantize(data: Uint8ClampedArray): ColorPalette {
     }
   }
 
-  const sorted = [...buckets.values()]
-    .sort((a, b) => b.count - a.count);
+  const scored = [...buckets.values()].map(bucket => {
+    const avg = averageColor(bucket);
+    const sat = rgbSaturation(avg);
+    // Weight: sqrt(count) keeps large areas relevant but dampens dominance,
+    // multiply by (1 + sat*2) so a fully saturated bucket scores 3x a grey one
+    const score = Math.sqrt(bucket.count) * (1 + sat * 2);
+    return { bucket, avg, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
 
-  if (sorted.length === 0) return FALLBACK;
+  if (scored.length === 0) return FALLBACK;
 
-  const primary = averageColor(sorted[0]);
-  const secondary = sorted.length > 1 ? averageColor(sorted[1]) : shiftHue(primary);
+  const primary = scored[0].avg;
+  const secondary = scored.length > 1 ? scored[1].avg : shiftHue(primary);
   const background = darken(primary, 0.2);
 
   return {
-    primary: adjustBrightness(toHex(primary)),
-    secondary: adjustBrightness(toHex(secondary)),
+    primary: adjustBrightness(toHex(boostSaturation(primary))),
+    secondary: adjustBrightness(toHex(boostSaturation(secondary))),
     background: toHex(background),
   };
 }
@@ -135,6 +143,48 @@ function shiftHue(color: RGB): RGB {
 
 function toHex(c: RGB): string {
   return `#${[c.r, c.g, c.b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function rgbSaturation(c: RGB): number {
+  const r = c.r / 255, g = c.g / 255, b = c.b / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  if (max === min) return 0;
+  const l = (max + min) / 2;
+  return l > 0.5 ? (max - min) / (2 - max - min) : (max - min) / (max + min);
+}
+
+function boostSaturation(color: RGB): RGB {
+  const r = color.r / 255, g = color.g / 255, b = color.b / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+
+  if (max === min) return color; // achromatic, nothing to boost
+
+  let s = l > 0.5 ? (max - min) / (2 - max - min) : (max - min) / (max + min);
+  if (s >= MIN_SATURATION) return color;
+
+  let h = 0;
+  const d = max - min;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else h = ((r - g) / d + 4) / 6;
+
+  s = MIN_SATURATION;
+  const hue2rgb = (p: number, q: number, t: number) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1/6) return p + (q - p) * 6 * t;
+    if (t < 1/2) return q;
+    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  return {
+    r: Math.round(hue2rgb(p, q, h + 1/3) * 255),
+    g: Math.round(hue2rgb(p, q, h) * 255),
+    b: Math.round(hue2rgb(p, q, h - 1/3) * 255),
+  };
 }
 
 function adjustBrightness(hex: string): string {

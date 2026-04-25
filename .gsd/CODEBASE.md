@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-04-25T19:21:50Z | Files: 264 | Described: 0/264
-<!-- gsd:codebase-meta {"generatedAt":"2026-04-25T19:21:50Z","fingerprint":"b5a51535bfbeac409513a51da5da73e9e1858d6f","fileCount":264,"truncated":false} -->
+Generated: 2026-04-25T19:32:48Z | Files: 265 | Described: 0/265
+<!-- gsd:codebase-meta {"generatedAt":"2026-04-25T19:32:48Z","fingerprint":"d6603d1a55e904a889eb9c39f7a53f913ec148b9","fileCount":265,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -303,6 +303,7 @@ Generated: 2026-04-25T19:21:50Z | Files: 264 | Described: 0/264
 - `musicode-ui/src/hooks/useMediaSession.ts`
 - `musicode-ui/src/hooks/usePlayer.ts`
 - `musicode-ui/src/hooks/useScrobble.ts`
+- `musicode-ui/src/hooks/useSidebarCollapse.ts`
 - `musicode-ui/src/hooks/useWaveform.ts`
 
 ### musicode-ui/src/pages/
