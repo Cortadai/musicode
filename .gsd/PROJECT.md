@@ -12,7 +12,7 @@ Think "my own VLC but prettier, in a browser, and personal."
 
 ## Current State
 
-Fully functional music player with 13 milestones complete. Library of 877 tracks scanned. Multi-user auth, listening stats, scrobbling integrations, real-time activity feed, Swagger API docs, gapless playback, crossfade, 5-band parametric EQ, expandable visualizer (3 modes), fullscreen Now Playing overlay with cover art color extraction and inline visualizer selector, code-split routes with role-based guards, GitHub Actions CI, and 345 tests (236 backend + 109 frontend).
+Fully functional music player with 17 milestones complete. Library of 877 tracks scanned. Multi-user auth, listening stats, scrobbling integrations, real-time activity feed, Swagger API docs, gapless playback, crossfade, 5-band parametric EQ, expandable visualizer (4 modes + cassette deck), synced lyrics, waveform seek bar, fullscreen Now Playing overlay with cover art color extraction, collapsible sidebar, responsive layout, code-split routes with role-based guards, GitHub Actions CI, and 410 tests (272 backend + 117 frontend + 21 E2E).
 
 ## Architecture / Key Patterns
 
@@ -77,13 +77,10 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 - [x] M012: Structural Cleanup & CI — usePlayer decomposition (418→190 LOC), lazy routes, role-based guards, GitHub Actions CI
 - [x] M013: Visual Experience — Fullscreen Now Playing overlay (portal-based), cover art color extraction, inline visualizer selector (3 modes + artwork-only default)
 
-## Planned Milestones
-
-- [ ] M014: Metadata Editing — Edit tags (title, artist, album, year, genre) from the UI, write back to FLAC/MP3 files, re-sync with DB
-- [ ] M015: Filesystem Watcher — Auto-detect new/deleted/moved files in registered folders without manual rescan
-- [ ] M016: Synchronized Lyrics — Display time-synced lyrics from .lrc sidecar files or embedded tags
-- [ ] M017: Retro Mode — Cassette deck UI with spinning reels, VHS scanline transitions, and optional tape audio filter (Web Audio API)
-- [ ] M018: Responsive Layout — Collapsible sidebar, mobile-friendly grids, adaptive player bar and Now Playing overlay
+- [x] M014: Library Health — Dashboard to detect metadata issues (missing tags, orphan files) and guide fixes
+- [x] M016: Audio Experience — Waveform progress bar (ffmpeg backend), synchronized lyrics (LRCLIB.net)
+- [x] M017: Responsive Layout — Collapsible sidebar, adaptive player bar, desktop to tablet
+- [x] M018: Cassette Deck — Full retro mode with animated reels, VU meters, odometer, 3 themes, cover art on label
 
 ## Pending Setup
 

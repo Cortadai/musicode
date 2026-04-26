@@ -4,6 +4,8 @@ localhost {
         reverse_proxy musicode-server:8080
     }
 
+    # Swagger UI and OpenAPI spec are intentionally not proxied (defense in depth)
+
     # Serve React static build for everything else
     handle {
         root * /srv

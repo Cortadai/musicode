@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
     open-in-view: false
 
@@ -22,7 +22,7 @@ musicode:
   admin:
     default-password: ${MUSICODE_ADMIN_PASSWORD:changeme}
   jwt:
-    secret: ${MUSICODE_JWT_SECRET:musicode-docker-secret-key-change-in-production-at-least-32-bytes}
+    secret: ${MUSICODE_JWT_SECRET}
     access-token-expiration-ms: 900000
     refresh-token-expiration-ms: 604800000
   cookies:

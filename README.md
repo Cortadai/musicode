@@ -371,9 +371,9 @@ musicode/
 
 | Variable | Default | Description |
 |---|---|---|
-| `MUSIC_DIR` | `C:/Users/david/Music` | Host path to music library (mounted read-only) |
+| `MUSIC_DIR` | _(required)_ | Host path to music library (mounted read-only) |
 | `MUSICODE_ADMIN_PASSWORD` | `changeme` | Initial admin password |
-| `MUSICODE_JWT_SECRET` | dev default | JWT signing key (≥32 chars, change in prod) |
+| `MUSICODE_JWT_SECRET` | _(required)_ | JWT signing key (≥32 chars) |
 | `MUSICODE_TOKEN_ENCRYPTION_KEY` | _(required)_ | AES-256-GCM key for encrypting scrobble tokens at rest |
 | `LASTFM_API_KEY` | _(optional)_ | Last.fm API key for scrobbling |
 | `LASTFM_API_SECRET` | _(optional)_ | Last.fm API secret for scrobbling |

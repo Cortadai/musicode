@@ -1,16 +1,13 @@
 # Codebase Map
 
-Generated: 2026-04-26T08:09:38Z | Files: 272 | Described: 0/272
-<!-- gsd:codebase-meta {"generatedAt":"2026-04-26T08:09:38Z","fingerprint":"1bac3ae0fb46b4119612c617a0f64d7d5346fe24","fileCount":272,"truncated":false} -->
+Generated: 2026-04-26T09:10:34Z | Files: 269 | Described: 0/269
+<!-- gsd:codebase-meta {"generatedAt":"2026-04-26T09:10:34Z","fingerprint":"6f8f6e21f505ba32c3c4d195cd4442bb9be149a3","fileCount":269,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
 - `.gitignore`
 - `Caddyfile`
 - `docker-compose.yml`
-- `HANDOVER.md`
-- `personal-media-player-proyecto.md`
-- `PLAN.md`
 - `README.md`
 
 ### .github/workflows/

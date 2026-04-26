@@ -19,7 +19,7 @@ services:
       - "8080"
     volumes:
       - ./musicode-server/data:/app/data
-      - ${MUSIC_DIR:-C:/Users/david/Music}:/music:ro
+      - ${MUSIC_DIR:?MUSIC_DIR must be set in .env}:/music:ro
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - MUSICODE_COVERS_DIR=/app/data/covers

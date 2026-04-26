@@ -40,8 +40,8 @@ playwright-report/
 
 # Misc / scratch
 *.png
+!docs/assets/*.png
 cookies.txt
-SCROBBLING.md
 .mcp.json
 
 # Coverage reports
