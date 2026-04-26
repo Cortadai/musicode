@@ -12,9 +12,9 @@ const THEME_STYLES: Record<DeckThemeId, { bg: string; border: string; track: str
     thumb: '#888', thumbPos: '2px', thumbShadow: 'none', label: '#555',
   },
   indigo: {
-    bg: 'rgba(99,102,241,0.15)', border: 'rgba(99,102,241,0.35)',
-    track: 'linear-gradient(90deg, #4338ca, #6366f1)', trackShadow: '0 0 6px rgba(99,102,241,0.4)',
-    thumb: '#e0e7ff', thumbPos: '8px', thumbShadow: '0 0 4px rgba(224,231,255,0.5)', label: '#818cf8',
+    bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.3)',
+    track: 'linear-gradient(90deg, #3f3f46, #6366f1)', trackShadow: '0 0 6px rgba(99,102,241,0.35)',
+    thumb: '#e4e4e7', thumbPos: '8px', thumbShadow: '0 0 4px rgba(228,228,231,0.4)', label: '#818cf8',
   },
   synthwave: {
     bg: 'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.2))', border: 'rgba(139,92,246,0.4)',
@@ -36,11 +36,11 @@ function DeckThemeToggle({ theme, onToggle }: Props) {
     <button
       onClick={onToggle}
       aria-label={`Switch to ${nextTheme} theme`}
-      className="flex items-center gap-1.5 px-2 py-1 rounded transition-all duration-200 hover:brightness-125"
+      className="flex items-center gap-1.5 w-[88px] px-2.5 py-1.5 rounded transition-all duration-200 hover:brightness-125"
       style={{ background: s.bg, border: `1px solid ${s.border}` }}
     >
       <div
-        className="w-6 h-3 rounded-full relative transition-all duration-200"
+        className="w-6 h-3 rounded-full relative flex-shrink-0 transition-all duration-200"
         style={{ background: s.track, boxShadow: s.trackShadow }}
       >
         <div
@@ -49,7 +49,7 @@ function DeckThemeToggle({ theme, onToggle }: Props) {
         />
       </div>
       <span
-        className="font-mono text-[8px] font-bold tracking-[0.15em] uppercase select-none"
+        className="font-mono text-[9px] font-bold tracking-[0.15em] uppercase select-none"
         style={{ color: s.label }}
       >
         {THEME_LABELS[theme]}

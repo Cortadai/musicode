@@ -73,15 +73,15 @@ function getColors(theme: DeckThemeId): CassetteColors {
   }
   if (theme === 'indigo') {
     return {
-      body: '#0c1020', bodyBorder: '#312e81', bodyBevel: 'rgba(99,102,241,0.05)',
-      window: 'rgba(15, 23, 42, 0.6)', windowBorder: 'rgba(99, 102, 241, 0.3)',
-      tape: '#1e1b4b', tapeEdge: 'rgba(99, 102, 241, 0.35)',
-      hub: '#1e1b4b', hubStroke: '#818cf8', hubSpoke: '#6366f1',
-      screw: '#312e81', screwSlot: '#1e1b4b',
-      guide: '#3730a3', guideBorder: '#6366f1',
-      labelBg: '#0f172a', labelBorder: '#4338ca', labelLines: 'rgba(99,102,241,0.15)',
-      labelBrand: '#818cf8', labelDivider: '#4338ca',
-      labelTitle: '#e0e7ff', labelArtist: '#a5b4fc', labelMeta: '#6366f1',
+      body: '#09090b', bodyBorder: '#27272a', bodyBevel: 'rgba(99,102,241,0.04)',
+      window: 'rgba(24, 24, 27, 0.7)', windowBorder: 'rgba(99, 102, 241, 0.25)',
+      tape: '#1c1c20', tapeEdge: 'rgba(99, 102, 241, 0.3)',
+      hub: '#27272a', hubStroke: '#818cf8', hubSpoke: '#6366f1',
+      screw: '#3f3f46', screwSlot: '#18181b',
+      guide: '#52525b', guideBorder: '#6366f1',
+      labelBg: '#0c0c0f', labelBorder: '#4f46e5', labelLines: 'rgba(99,102,241,0.12)',
+      labelBrand: '#818cf8', labelDivider: '#4f46e5',
+      labelTitle: '#e4e4e7', labelArtist: '#a5b4fc', labelMeta: '#6366f1',
     };
   }
   return {
@@ -219,6 +219,32 @@ function drawLabel(
   } else {
     ctx.fillStyle = c.labelBg;
     ctx.fill();
+
+    // Diagonal hatching — like textured cassette label paper
+    ctx.save();
+    drawRoundedRect(ctx, LABEL_X, LABEL_Y, LABEL_W, LABEL_H, LABEL_RADIUS);
+    ctx.clip();
+    ctx.strokeStyle = c.labelLines;
+    ctx.lineWidth = 0.4;
+    const spacing = 8;
+    for (let i = -LABEL_H; i < LABEL_W + LABEL_H; i += spacing) {
+      ctx.beginPath();
+      ctx.moveTo(LABEL_X + i, LABEL_Y);
+      ctx.lineTo(LABEL_X + i - LABEL_H, LABEL_Y + LABEL_H);
+      ctx.stroke();
+    }
+
+    // Subtle dot grid — mimics paper grain
+    ctx.fillStyle = c.labelLines;
+    const dotSpacing = 12;
+    for (let dx = LABEL_X + 6; dx < LABEL_X + LABEL_W; dx += dotSpacing) {
+      for (let dy = LABEL_Y + 6; dy < LABEL_Y + LABEL_H; dy += dotSpacing) {
+        ctx.beginPath();
+        ctx.arc(dx, dy, 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
   }
 
   ctx.restore();
@@ -229,14 +255,17 @@ function drawLabel(
   ctx.stroke();
 
   if (!coverImage) {
-    ctx.strokeStyle = c.labelLines;
-    ctx.lineWidth = 0.5;
+    // Horizontal writing lines over the texture
+    ctx.strokeStyle = c.labelDivider;
+    ctx.lineWidth = 0.3;
+    ctx.globalAlpha = 0.4;
     for (let y = LABEL_Y + 40; y < LABEL_Y + LABEL_H - 10; y += 22) {
       ctx.beginPath();
       ctx.moveTo(LABEL_X + 15, y);
       ctx.lineTo(LABEL_X + LABEL_W - 15, y);
       ctx.stroke();
     }
+    ctx.globalAlpha = 1.0;
   }
 
   const textShadow = coverImage ? 'rgba(0,0,0,0.9)' : '';

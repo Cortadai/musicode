@@ -21,12 +21,12 @@ export default function Odometer({ seconds, theme }: Props) {
     ];
   }, [seconds]);
 
-  const cellBg = synth ? '#0c0620' : ind ? '#0c1025' : '#0a0a0a';
-  const cellBorder = synth ? '#2d1f5e' : ind ? '#312e81' : '#333';
+  const cellBg = synth ? '#0c0620' : ind ? '#0a0a0c' : '#0a0a0a';
+  const cellBorder = synth ? '#2d1f5e' : ind ? '#27272a' : '#333';
   const cellShadow = synth
     ? 'inset 0 1px 3px rgba(88,28,135,0.5)'
     : ind
-      ? 'inset 0 1px 3px rgba(49,46,129,0.5)'
+      ? 'inset 0 1px 3px rgba(0,0,0,0.7)'
       : 'inset 0 1px 3px rgba(0,0,0,0.8)';
   const digitColor = synth ? '#c084fc' : ind ? '#a5b4fc' : '#e8e0d0';
   const digitGlow = synth

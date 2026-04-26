@@ -42,16 +42,16 @@ export default function VUMeter({ isPlaying, width = 260, height = 160, theme }:
     ctx.save();
     ctx.beginPath();
     roundRect(ctx, x, y, w, h, 6);
-    ctx.fillStyle = s ? '#0e0828' : ind ? '#0c1025' : '#1c1915';
+    ctx.fillStyle = s ? '#0e0828' : ind ? '#0f0f12' : '#1c1915';
     ctx.fill();
-    ctx.strokeStyle = s ? '#3b1f8e' : ind ? '#312e81' : '#3a352e';
+    ctx.strokeStyle = s ? '#3b1f8e' : ind ? '#27272a' : '#3a352e';
     ctx.lineWidth = 1;
     ctx.stroke();
 
     const faceMargin = 8;
     ctx.beginPath();
     roundRect(ctx, x + faceMargin, y + faceMargin, w - faceMargin * 2, h - faceMargin * 2 - 8, 4);
-    ctx.fillStyle = s ? '#1a1040' : ind ? '#0f172a' : '#f5eed8';
+    ctx.fillStyle = s ? '#1a1040' : ind ? '#111114' : '#f5eed8';
     ctx.fill();
 
     const scaleRadius = needleLen - 10;
@@ -105,7 +105,7 @@ export default function VUMeter({ isPlaying, width = 260, height = 160, theme }:
     const redEnd = (NEEDLE_MAX_ANGLE - 90) * Math.PI / 180;
     ctx.beginPath();
     ctx.arc(cx, bottom, scaleRadius + 2, redStart, redEnd);
-    ctx.strokeStyle = s ? 'rgba(244, 114, 182, 0.5)' : ind ? 'rgba(248, 113, 113, 0.4)' : 'rgba(204, 68, 51, 0.3)';
+    ctx.strokeStyle = s ? 'rgba(244, 114, 182, 0.5)' : ind ? 'rgba(248, 113, 113, 0.35)' : 'rgba(204, 68, 51, 0.3)';
     ctx.lineWidth = 4;
     ctx.stroke();
 
@@ -118,14 +118,14 @@ export default function VUMeter({ isPlaying, width = 260, height = 160, theme }:
     ctx.beginPath();
     ctx.moveTo(cx + 1, bottom + 1);
     ctx.lineTo(tipX + 1, tipY + 1);
-    ctx.strokeStyle = s ? 'rgba(139,92,246,0.2)' : ind ? 'rgba(99,102,241,0.2)' : 'rgba(0,0,0,0.2)';
+    ctx.strokeStyle = s ? 'rgba(139,92,246,0.2)' : ind ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.2)';
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
     ctx.beginPath();
     ctx.moveTo(cx, bottom);
     ctx.lineTo(tipX, tipY);
-    ctx.strokeStyle = s ? '#ffffff' : ind ? '#e0e7ff' : '#1a1a1a';
+    ctx.strokeStyle = s ? '#ffffff' : ind ? '#e4e4e7' : '#1a1a1a';
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -140,7 +140,7 @@ export default function VUMeter({ isPlaying, width = 260, height = 160, theme }:
 
     ctx.beginPath();
     ctx.arc(cx, bottom, 4, 0, Math.PI * 2);
-    ctx.fillStyle = s ? '#7c3aed' : ind ? '#4338ca' : '#333';
+    ctx.fillStyle = s ? '#7c3aed' : ind ? '#3f3f46' : '#333';
     ctx.fill();
 
     ctx.font = `bold ${Math.max(9, w * 0.04)}px monospace`;

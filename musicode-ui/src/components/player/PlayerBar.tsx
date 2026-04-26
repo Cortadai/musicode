@@ -1,7 +1,7 @@
 import { usePlayer } from '../../hooks/usePlayer';
 import audioGraph from '../../audio/audioGraph';
 import { useCallback, useState } from 'react';
-import { BarChart3, Activity, Disc } from 'lucide-react';
+import { BarChart3, Activity, CassetteTape } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import type { VisualizerMode } from '../../audio/audioPreferences';
 import TrackInfo from './TrackInfo';
@@ -117,7 +117,7 @@ export default function PlayerBar() {
             aria-label="Retro cassette mode"
             className="hidden md:flex items-center justify-center transition-colors text-zinc-500 hover:text-amber-400"
           >
-            <Disc className="w-4 h-4" />
+            <CassetteTape className="w-4 h-4" />
           </button>
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
         </div>

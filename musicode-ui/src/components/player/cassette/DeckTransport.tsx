@@ -35,25 +35,25 @@ function DeckButton({
   const bgActive = synth
     ? 'linear-gradient(180deg, #2a1855 0%, #1a1040 50%, #140c30 100%)'
     : ind
-      ? 'linear-gradient(180deg, #312e81 0%, #1e1b4b 50%, #171538 100%)'
+      ? 'linear-gradient(180deg, #3f3f46 0%, #27272a 50%, #1c1c1f 100%)'
       : 'linear-gradient(180deg, #4a4a4a 0%, #2e2e2e 50%, #252525 100%)';
   const bgIdle = synth
     ? 'linear-gradient(180deg, #201248 0%, #160e38 50%, #100a28 100%)'
     : ind
-      ? 'linear-gradient(180deg, #252370 0%, #1a185a 50%, #121045 100%)'
+      ? 'linear-gradient(180deg, #2c2c30 0%, #202023 50%, #18181b 100%)'
       : 'linear-gradient(180deg, #404040 0%, #2a2a2a 50%, #1e1e1e 100%)';
-  const borderC = synth ? '#4c1d95' : ind ? '#3730a3' : '#555';
+  const borderC = synth ? '#4c1d95' : ind ? '#3f3f46' : '#555';
   const borderTop = synth ? '#6d28d9' : ind ? '#4f46e5' : '#666';
-  const borderBot = synth ? '#0a0420' : ind ? '#080618' : '#0a0a0a';
+  const borderBot = synth ? '#0a0420' : ind ? '#09090b' : '#0a0a0a';
   const shadowActive = synth
     ? 'inset 0 2px 4px rgba(88,28,135,0.5), 0 1px 0 rgba(139,92,246,0.05)'
     : ind
-      ? 'inset 0 2px 4px rgba(49,46,129,0.5), 0 1px 0 rgba(99,102,241,0.05)'
+      ? 'inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(99,102,241,0.05)'
       : 'inset 0 2px 4px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.03)';
   const shadowIdle = synth
     ? '0 3px 6px rgba(88,28,135,0.3), inset 0 1px 0 rgba(139,92,246,0.1), 0 1px 0 rgba(139,92,246,0.03)'
     : ind
-      ? '0 3px 6px rgba(49,46,129,0.3), inset 0 1px 0 rgba(99,102,241,0.1), 0 1px 0 rgba(99,102,241,0.03)'
+      ? '0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(99,102,241,0.08), 0 1px 0 rgba(99,102,241,0.03)'
       : '0 3px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 0 rgba(255,255,255,0.03)';
   const colorActive = synth ? '#e9d5ff' : ind ? '#e0e7ff' : '#f0e6d3';
   const colorIdle = synth ? '#a78bfa' : ind ? '#818cf8' : '#aaa';

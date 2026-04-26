@@ -68,40 +68,40 @@ export default function RetroMode({ open, onClose }: Props) {
   const coverUrl = hasCover && albumId ? getCoverUrl(albumId) : undefined;
 
   // Theme-aware color helpers
-  const bg = synth ? '#0a0614' : indigo ? '#020617' : '#09090b';
+  const bg = synth ? '#0a0614' : indigo ? '#09090b' : '#09090b';
   const housingBg = synth
     ? 'linear-gradient(180deg, #1a1030 0%, #120c24 40%, #0e0818 100%)'
     : indigo
-      ? 'linear-gradient(180deg, #0f172a 0%, #0c1222 40%, #080e1a 100%)'
+      ? 'linear-gradient(180deg, #18181b 0%, #111113 40%, #09090b 100%)'
       : 'linear-gradient(180deg, #1e1c18 0%, #161412 40%, #121110 100%)';
-  const housingBorder = synth ? '#2d1f5e' : indigo ? '#312e81' : '#2a2825';
+  const housingBorder = synth ? '#2d1f5e' : indigo ? '#27272a' : '#2a2825';
   const housingShadow = synth
     ? '0 8px 32px rgba(88,28,135,0.3), inset 0 1px 0 rgba(139,92,246,0.05)'
     : indigo
-      ? '0 8px 32px rgba(49,46,129,0.4), inset 0 1px 0 rgba(99,102,241,0.05)'
+      ? '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(99,102,241,0.04)'
       : '0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)';
   const vuBg = synth
     ? 'linear-gradient(180deg, #0c0820 0%, #100a28 100%)'
     : indigo
-      ? 'linear-gradient(180deg, #0c1025 0%, #0e1230 100%)'
+      ? 'linear-gradient(180deg, #0f0f12 0%, #121215 100%)'
       : 'linear-gradient(180deg, #0e0d0b 0%, #141310 100%)';
-  const vuBorder = synth ? '#2d1f5e' : indigo ? '#312e81' : '#2a2825';
+  const vuBorder = synth ? '#2d1f5e' : indigo ? '#27272a' : '#2a2825';
   const vuShadow = synth
     ? 'inset 0 2px 6px rgba(88,28,135,0.3), inset 0 -1px 0 rgba(139,92,246,0.03)'
     : indigo
-      ? 'inset 0 2px 6px rgba(49,46,129,0.4), inset 0 -1px 0 rgba(99,102,241,0.03)'
+      ? 'inset 0 2px 6px rgba(0,0,0,0.5), inset 0 -1px 0 rgba(99,102,241,0.03)'
       : 'inset 0 2px 6px rgba(0,0,0,0.6), inset 0 -1px 0 rgba(255,255,255,0.02)';
-  const wellBg = synth ? '#080418' : indigo ? '#060a18' : '#0c0b09';
-  const wellBorder = synth ? '#1e1445' : indigo ? '#1e1b4b' : '#222';
+  const wellBg = synth ? '#080418' : indigo ? '#0a0a0c' : '#0c0b09';
+  const wellBorder = synth ? '#1e1445' : indigo ? '#1e1e22' : '#222';
   const wellShadow = synth
     ? 'inset 0 2px 8px rgba(88,28,135,0.3)'
     : indigo
-      ? 'inset 0 2px 8px rgba(49,46,129,0.4)'
+      ? 'inset 0 2px 8px rgba(0,0,0,0.6)'
       : 'inset 0 2px 8px rgba(0,0,0,0.7)';
   const divider = synth
     ? 'linear-gradient(90deg, transparent, #4c1d95 20%, #7c3aed 50%, #4c1d95 80%, transparent)'
     : indigo
-      ? 'linear-gradient(90deg, transparent, #312e81 20%, #6366f1 50%, #312e81 80%, transparent)'
+      ? 'linear-gradient(90deg, transparent, #3f3f46 20%, #6366f1 50%, #3f3f46 80%, transparent)'
       : 'linear-gradient(90deg, transparent, #3a3530 20%, #4a4540 50%, #3a3530 80%, transparent)';
   const counterLabel = synth ? '#7c3aed80' : indigo ? '#6366f180' : '#71717a';
   const progBg = synth ? 'rgba(139,92,246,0.08)' : indigo ? 'rgba(99,102,241,0.08)' : 'transparent';
