@@ -89,6 +89,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/library/folders/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/library/scan").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/library/cleanup").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/library/reset").hasRole("ADMIN")
                 // Everything else: any authenticated user (ADMIN or LISTENER)
                 .anyRequest().authenticated()
             )

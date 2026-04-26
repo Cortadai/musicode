@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getFolders, addFolder, removeFolder, startScan, getScanStatus } from '../api/library';
+import { getFolders, addFolder, removeFolder, startScan, getScanStatus, resetLibrary } from '../api/library';
 import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle } from 'lucide-react';
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [newPath, setNewPath] = useState('');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const { data: folders, isLoading: foldersLoading } = useQuery({
     queryKey: ['folders'],
@@ -43,7 +44,28 @@ export default function SettingsPage() {
 
   const removeMutation = useMutation({
     mutationFn: removeFolder,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['folders'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      queryClient.invalidateQueries({ queryKey: ['albums'] });
+      queryClient.invalidateQueries({ queryKey: ['artists'] });
+      queryClient.invalidateQueries({ queryKey: ['tracks-infinite'] });
+      queryClient.invalidateQueries({ queryKey: ['search'] });
+    },
+  });
+
+  const resetMutation = useMutation({
+    mutationFn: resetLibrary,
+    onSuccess: () => {
+      setShowResetConfirm(false);
+      queryClient.invalidateQueries({ queryKey: ['folders'] });
+      queryClient.invalidateQueries({ queryKey: ['albums'] });
+      queryClient.invalidateQueries({ queryKey: ['artists'] });
+      queryClient.invalidateQueries({ queryKey: ['tracks-infinite'] });
+      queryClient.invalidateQueries({ queryKey: ['search'] });
+      queryClient.invalidateQueries({ queryKey: ['scanStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['activity'] });
+    },
   });
 
   const scanMutation = useMutation({
@@ -138,6 +160,60 @@ export default function SettingsPage() {
             )}
           </div>
         )}
+      </section>
+
+      {/* Danger Zone */}
+      <section className="mt-8">
+        <h3 className="text-sm font-medium text-red-400/80 uppercase tracking-wider mb-3">Danger Zone</h3>
+
+        <div className="p-4 bg-zinc-900 border border-red-500/20 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-zinc-200">Reset Library</p>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Remove all tracks, albums, artists, covers, folders, and play history. Audio files on disk are not affected.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              disabled={scanStatus?.scanning || resetMutation.isPending}
+              className="shrink-0 px-4 py-2 bg-red-600/20 hover:bg-red-600/40 text-red-400 text-sm font-medium rounded-lg border border-red-500/30 transition-colors disabled:opacity-50"
+            >
+              Reset
+            </button>
+          </div>
+
+          {showResetConfirm && (
+            <div className="mt-4 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="w-4 h-4 text-red-400" />
+                <span className="text-sm text-red-300 font-medium">This action cannot be undone</span>
+              </div>
+              <p className="text-xs text-zinc-400 mb-3">
+                All library data will be permanently deleted. You will need to re-add folders and re-scan.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => resetMutation.mutate()}
+                  disabled={resetMutation.isPending}
+                  className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-medium rounded transition-colors disabled:opacity-50"
+                >
+                  {resetMutation.isPending ? 'Resetting…' : 'Yes, reset everything'}
+                </button>
+                <button
+                  onClick={() => setShowResetConfirm(false)}
+                  className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium rounded transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {resetMutation.isError && (
+            <p className="text-red-400 text-sm mt-2">{getErrorMessage(resetMutation.error, 'Reset failed')}</p>
+          )}
+        </div>
       </section>
 
       {/* Scrobbling */}

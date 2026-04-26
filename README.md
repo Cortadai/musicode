@@ -295,6 +295,8 @@ sequenceDiagram
     J-->>S: Tokens
     S-->>R: Set-Cookie: ACCESS_TOKEN (HttpOnly, Secure, SameSite=Strict)
     S-->>R: Set-Cookie: REFRESH_TOKEN (HttpOnly, Secure, SameSite=Strict)
+    S-->>R: Body: { user, accessTokenExpiresIn }
+    R->>R: Schedule proactive refresh (expiresIn − 60s)
     R-->>B: Redirect to /
 
     Note over B,J: Subsequent requests
@@ -304,21 +306,19 @@ sequenceDiagram
     J-->>S: Valid + username + role
     S-->>R: 200 + album data
 
-    Note over B,J: Token expired
-    R->>S: GET /api/tracks (expired token)
-    S-->>R: 401
-    R->>R: Queue failed request
+    Note over B,J: Proactive token refresh (~1 min before expiry)
+    R->>R: Timer fires
     R->>S: POST /api/auth/refresh (refresh cookie)
     S->>J: Validate refresh, generate new pair
     J-->>S: New tokens
-    S-->>R: Set-Cookie (new tokens)
-    R->>S: Retry: GET /api/tracks
-    S-->>R: 200 + tracks
+    S-->>R: Set-Cookie (new tokens) + { user, accessTokenExpiresIn }
+    R->>R: Schedule next refresh
 ```
 
 - **HttpOnly cookies** — JavaScript never touches tokens (XSS protection)
 - **SameSite=Strict** — Cookies not sent on cross-origin requests (CSRF protection)
-- **Concurrent refresh queue** — Multiple 401s trigger a single refresh, all pending requests retry after
+- **Proactive refresh** — Timer refreshes tokens ~1 min before expiry, so `<audio>` and SSE streams (which bypass axios interceptors) never hit a 401
+- **Reactive fallback** — Axios interceptor still queues and retries on unexpected 401s
 
 ### Activity Feed (Real-Time SSE)
 

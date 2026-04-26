@@ -61,6 +61,10 @@ public class JwtService {
         return parseClaims(token).getExpiration().toInstant();
     }
 
+    public long getAccessTokenExpirationMs() {
+        return accessTokenExpirationMs;
+    }
+
     public long getRefreshTokenExpirationMs() {
         return refreshTokenExpirationMs;
     }

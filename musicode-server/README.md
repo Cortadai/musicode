@@ -164,8 +164,8 @@ graph LR
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/api/auth/login` | none | Login, sets HttpOnly cookies |
-| POST | `/api/auth/refresh` | refresh cookie | Rotate access + refresh tokens |
+| POST | `/api/auth/login` | none | Login, sets HttpOnly cookies. Body: `{ user, accessTokenExpiresIn }` |
+| POST | `/api/auth/refresh` | refresh cookie | Rotate access + refresh tokens. Body: `{ user, accessTokenExpiresIn }` |
 | POST | `/api/auth/logout` | access cookie | Revoke refresh token |
 | GET | `/api/auth/me` | access cookie | Current user info |
 

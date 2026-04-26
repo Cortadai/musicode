@@ -24,3 +24,8 @@ export async function getScanStatus() {
   const { data } = await api.get<ScanStatus>('/library/scan/status');
   return data;
 }
+
+export async function resetLibrary() {
+  const { data } = await api.delete('/library/reset');
+  return data;
+}

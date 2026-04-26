@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-04-26T09:10:34Z | Files: 269 | Described: 0/269
-<!-- gsd:codebase-meta {"generatedAt":"2026-04-26T09:10:34Z","fingerprint":"6f8f6e21f505ba32c3c4d195cd4442bb9be149a3","fileCount":269,"truncated":false} -->
+Generated: 2026-04-26T14:15:48Z | Files: 270 | Described: 0/270
+<!-- gsd:codebase-meta {"generatedAt":"2026-04-26T14:15:48Z","fingerprint":"fe3af63037385d8ff7a1bfc73a813a79844b19b4","fileCount":270,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -9,6 +9,7 @@ Generated: 2026-04-26T09:10:34Z | Files: 269 | Described: 0/269
 - `Caddyfile`
 - `docker-compose.yml`
 - `README.md`
+- `SCROBBLING.md`
 
 ### .github/workflows/
 - `.github/workflows/ci.yml`

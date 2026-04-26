@@ -7,15 +7,17 @@ interface UseScrobbleParams {
   trackId: number | null;
   currentTime: number;
   duration: number;
+  enabled: boolean;
 }
 
-export function useScrobble({ trackId, currentTime, duration }: UseScrobbleParams) {
+export function useScrobble({ trackId, currentTime, duration, enabled }: UseScrobbleParams) {
   const playReportedRef = useRef<number | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [status, setStatus] = useState<ScrobbleStatus>('idle');
 
   useEffect(() => {
     if (
+      enabled &&
       duration > 0 &&
       currentTime > duration * 0.5 &&
       trackId !== null &&
@@ -36,7 +38,7 @@ export function useScrobble({ trackId, currentTime, duration }: UseScrobbleParam
           setStatus('error');
         });
     }
-  }, [trackId, currentTime, duration]);
+  }, [trackId, currentTime, duration, enabled]);
 
   // Reset when track changes
   useEffect(() => {

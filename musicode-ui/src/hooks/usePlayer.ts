@@ -28,11 +28,12 @@ export function usePlayer() {
     };
   }, []);
 
-  // --- Scrobble: report play at 50% ---
+  // --- Scrobble: report play at 50% (owner-only to avoid duplicates) ---
   const { status: scrobbleStatus } = useScrobble({
     trackId: state.currentTrack?.id ?? null,
     currentTime: state.currentTime,
     duration: state.duration,
+    enabled: isOwner,
   });
 
   // --- Gapless & crossfade ---

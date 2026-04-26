@@ -21,6 +21,8 @@ public interface TrackRepository extends JpaRepository<Track, Long> {
 
     long countByArtistId(Long artistId);
 
+    List<Track> findByFilePathStartingWith(String pathPrefix);
+
     // --- Library Health queries ---
 
     @Query("SELECT t FROM Track t JOIN t.artist a WHERE a.name = 'Unknown Artist'")

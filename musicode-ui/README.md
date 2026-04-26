@@ -150,26 +150,32 @@ sequenceDiagram
     alt Valid session
         API-->>Ax: 200 { username, role }
         Ax-->>Ctx: Set user
+        Ctx->>API: POST /api/auth/refresh
+        API-->>Ctx: { user, accessTokenExpiresIn }
+        Ctx->>Ctx: Schedule proactive refresh (expiresIn − 60s)
     else No session
         API-->>Ax: 401
         Ax-->>Ctx: Redirect to /login
     end
 
-    Note over App,API: Token Refresh (transparent)
+    Note over App,API: Proactive Token Refresh (~1 min before expiry)
+    Ctx->>Ctx: Timer fires
+    Ctx->>API: POST /api/auth/refresh
+    API-->>Ctx: 200 { user, accessTokenExpiresIn } (new cookies set)
+    Ctx->>Ctx: Schedule next refresh
+
+    Note over App,API: Reactive Fallback (unexpected 401)
     App->>Ax: GET /api/albums
     Ax->>API: (expired access token)
     API-->>Ax: 401
-    Ax->>Ax: isRefreshing = true
-    Ax->>Ax: Queue original request
+    Ax->>Ax: isRefreshing = true, queue request
     Ax->>API: POST /api/auth/refresh
     API-->>Ax: 200 (new cookies set)
-    Ax->>Ax: processQueue()
-    Ax->>API: Retry GET /api/albums
-    API-->>Ax: 200 albums data
+    Ax->>Ax: processQueue() → retry
     Ax-->>App: Albums rendered
 ```
 
-Concurrent 401s during refresh are queued behind a single refresh call — no thundering herd.
+**Proactive refresh** keeps the access token cookie valid continuously — `<audio>` streaming and SSE connections (which bypass axios) never hit a 401. The reactive interceptor remains as a safety net for edge cases.
 
 ---
 

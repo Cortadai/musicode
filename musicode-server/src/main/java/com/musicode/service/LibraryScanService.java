@@ -9,11 +9,13 @@ import com.musicode.model.entity.Track;
 import com.musicode.repository.AlbumRepository;
 import com.musicode.repository.ArtistRepository;
 import com.musicode.repository.LibraryFolderRepository;
+import com.musicode.repository.PlaybackEventRepository;
 import com.musicode.repository.TrackRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,6 +23,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -34,6 +38,7 @@ public class LibraryScanService {
     private final AlbumRepository albumRepository;
     private final TrackRepository trackRepository;
     private final LibraryFolderRepository libraryFolderRepository;
+    private final PlaybackEventRepository playbackEventRepository;
 
     private final ScanStatus scanStatus = new ScanStatus();
 
@@ -273,12 +278,13 @@ public class LibraryScanService {
      * Called after track deletion or full rescan to keep the library clean.
      */
     public void cleanupOrphanAlbumsAndArtists() {
-        // Remove albums with no tracks
+        // Remove albums with no tracks (and their cover files)
         var allAlbums = albumRepository.findAll();
         int albumsRemoved = 0;
         for (var album : allAlbums) {
             if (trackRepository.countByAlbumId(album.getId()) == 0) {
                 log.debug("Removing orphan album: {} (id={})", album.getTitle(), album.getId());
+                coverArtService.deleteCoverArt(album.getId());
                 albumRepository.delete(album);
                 albumsRemoved++;
             }
@@ -299,5 +305,38 @@ public class LibraryScanService {
         if (albumsRemoved > 0 || artistsRemoved > 0) {
             log.info("Cleanup: {} orphan albums, {} orphan artists removed", albumsRemoved, artistsRemoved);
         }
+    }
+
+    @Transactional
+    public int removeTracksInFolder(String folderPath) {
+        String normalizedPath = Paths.get(folderPath).toAbsolutePath().toString();
+        List<Track> tracks = trackRepository.findByFilePathStartingWith(normalizedPath);
+        if (tracks.isEmpty()) return 0;
+
+        Set<Long> trackIds = tracks.stream().map(Track::getId).collect(Collectors.toSet());
+        playbackEventRepository.deleteByTrackIdIn(trackIds);
+        trackRepository.deleteAll(tracks);
+        log.info("Removed {} tracks from folder: {}", tracks.size(), folderPath);
+
+        cleanupOrphanAlbumsAndArtists();
+        return tracks.size();
+    }
+
+    @Transactional
+    public void resetLibrary() {
+        log.info("Resetting entire library...");
+
+        playbackEventRepository.deleteAll();
+        trackRepository.deleteAll();
+
+        // Delete cover files for all albums before removing them
+        albumRepository.findAll().forEach(album -> coverArtService.deleteCoverArt(album.getId()));
+        albumRepository.deleteAll();
+
+        artistRepository.deleteAll();
+        libraryFolderRepository.deleteAll();
+
+        resetStatus();
+        log.info("Library reset complete");
     }
 }

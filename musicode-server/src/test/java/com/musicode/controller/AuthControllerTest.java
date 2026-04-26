@@ -61,12 +61,13 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"admin\",\"password\":\"admin123\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username", is("admin")))
-                .andExpect(jsonPath("$.role", is("ADMIN")))
-                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.user.username", is("admin")))
+                .andExpect(jsonPath("$.user.role", is("ADMIN")))
+                .andExpect(jsonPath("$.user.id").isNumber())
+                .andExpect(jsonPath("$.accessTokenExpiresIn").isNumber())
                 // Password should never appear
-                .andExpect(jsonPath("$.password").doesNotExist())
-                .andExpect(jsonPath("$.passwordHash").doesNotExist())
+                .andExpect(jsonPath("$.user.password").doesNotExist())
+                .andExpect(jsonPath("$.user.passwordHash").doesNotExist())
                 .andReturn();
 
         // Verify cookies are set

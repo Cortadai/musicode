@@ -54,14 +54,16 @@ public class LibraryController {
     }
 
     @DeleteMapping("/folders/{id}")
-    @Operation(summary = "Remove library folder", description = "Unregister a music folder. Does not delete files. ADMIN only.")
-    public Map<String, Long> removeFolder(@PathVariable Long id) {
-        if (!libraryFolderRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Folder", id);
-        }
+    @Operation(summary = "Remove library folder", description = "Unregister a music folder and remove its tracks from the library. Does not delete audio files on disk. ADMIN only.")
+    public Map<String, Object> removeFolder(@PathVariable Long id) {
+        var folder = libraryFolderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Folder", id));
+
+        int tracksRemoved = libraryScanService.removeTracksInFolder(folder.getPath());
         libraryFolderRepository.deleteById(id);
-        log.info("Removed library folder with id: {}", id);
-        return Map.of("deleted", id);
+
+        log.info("Removed library folder id={} ({}), {} tracks cleaned up", id, folder.getPath(), tracksRemoved);
+        return Map.of("deleted", id, "tracksRemoved", tracksRemoved);
     }
 
     @PostMapping("/scan")
@@ -90,5 +92,16 @@ public class LibraryController {
         var removed = libraryScanService.removeOrphanTracks();
         log.info("Cleanup complete: {} orphan tracks removed", removed);
         return Map.of("removed", removed);
+    }
+
+    @DeleteMapping("/reset")
+    @Operation(summary = "Reset library", description = "Wipe all library data: tracks, albums, artists, covers, folders, and play history. Does not delete audio files on disk. ADMIN only.")
+    public Map<String, String> resetLibrary() {
+        if (libraryScanService.isScanning()) {
+            throw new BadRequestException("Cannot reset while a scan is in progress");
+        }
+        libraryScanService.resetLibrary();
+        log.info("Library reset by admin");
+        return Map.of("message", "Library reset complete");
     }
 }

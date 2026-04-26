@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react';
 import type { UserInfo } from '../types';
 import * as authApi from '../api/auth';
 
@@ -13,23 +13,37 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-/**
- * Authentication context provider — manages the current user session.
- *
- * SESSION RESTORATION: On mount, calls GET /api/auth/me to check if the browser
- * already has valid auth cookies (e.g. user refreshed the page or reopened the tab).
- * If the cookies are valid, the user is restored without requiring re-login.
- * If they're expired, the axios interceptor will attempt a refresh automatically.
- *
- * WHY CONTEXT, NOT ZUSTAND/REDUX: Auth state is simple (one user object + loading flag)
- * and changes infrequently (login/logout). Context avoids an external dependency for
- * something that doesn't need optimized re-renders or middleware.
- */
+const REFRESH_MARGIN_MS = 60_000;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Check existing session on mount — cancel if unmounted before response
+  const scheduleRefresh = useCallback((expiresInMs: number) => {
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    const delay = Math.max(expiresInMs - REFRESH_MARGIN_MS, 10_000);
+    console.debug(`[auth] Scheduling token refresh in ${Math.round(delay / 1000)}s`);
+    refreshTimerRef.current = setTimeout(async () => {
+      try {
+        const { user: refreshedUser, accessTokenExpiresIn } = await authApi.refresh();
+        console.debug('[auth] Proactive refresh succeeded');
+        setUser(refreshedUser);
+        scheduleRefresh(accessTokenExpiresIn);
+      } catch {
+        console.debug('[auth] Proactive refresh failed — session expired');
+        setUser(null);
+      }
+    }, delay);
+  }, []);
+
+  const clearRefreshTimer = useCallback(() => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = undefined;
+    }
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
     console.debug('[auth] Checking existing session...');
@@ -37,6 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((u) => {
         console.debug('[auth] Session restored for:', u.username, u.role);
         setUser(u);
+        // We don't know exact expiry from getMe — do an immediate refresh to get it
+        authApi.refresh()
+          .then(({ accessTokenExpiresIn }) => scheduleRefresh(accessTokenExpiresIn))
+          .catch(() => { /* reactive interceptor will handle it */ });
       })
       .catch(() => {
         if (controller.signal.aborted) return;
@@ -46,26 +64,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
-    return () => controller.abort();
-  }, []);
+    return () => {
+      controller.abort();
+      clearRefreshTimer();
+    };
+  }, [scheduleRefresh, clearRefreshTimer]);
 
   const login = useCallback(async (username: string, password: string) => {
-    const userInfo = await authApi.login({ username, password });
-    console.debug('[auth] Login success:', userInfo.username, userInfo.role);
-    setUser(userInfo);
-  }, []);
+    const { user: loggedInUser, accessTokenExpiresIn } = await authApi.login({ username, password });
+    console.debug('[auth] Login success:', loggedInUser.username, loggedInUser.role);
+    setUser(loggedInUser);
+    scheduleRefresh(accessTokenExpiresIn);
+  }, [scheduleRefresh]);
 
   const logout = useCallback(async () => {
     console.debug('[auth] Logging out');
+    clearRefreshTimer();
     try {
       await authApi.logout();
     } catch {
-      // Ignore logout errors — clear local state regardless.
-      // The server may be down or the token already expired — either way,
-      // the user wants to be logged out locally.
+      // Ignore — clear local state regardless
     }
     setUser(null);
-  }, []);
+  }, [clearRefreshTimer]);
 
   return (
     <AuthContext.Provider

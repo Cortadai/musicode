@@ -48,7 +48,10 @@ public class AuthController {
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(tokenPair.accessToken()).toString())
                     .header(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(tokenPair.refreshToken()).toString())
-                    .body(UserResponse.from(user));
+                    .body(Map.of(
+                            "user", UserResponse.from(user),
+                            "accessTokenExpiresIn", jwtService.getAccessTokenExpirationMs()
+                    ));
         } catch (AuthenticationException e) {
             log.warn("Login failed for user '{}': {}", request.username(), e.getMessage());
             return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
@@ -73,12 +76,16 @@ public class AuthController {
         }
 
         var username = jwtService.extractUsername(tokenPair.accessToken());
-        var user = userRepository.findByUsername(username);
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("User not found after refresh: " + username));
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(tokenPair.accessToken()).toString())
                 .header(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(tokenPair.refreshToken()).toString())
-                .body(user.map(UserResponse::from).orElse(null));
+                .body(Map.of(
+                        "user", UserResponse.from(user),
+                        "accessTokenExpiresIn", jwtService.getAccessTokenExpirationMs()
+                ));
     }
 
     @PostMapping("/logout")
