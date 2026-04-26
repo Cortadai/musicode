@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-04-25T21:06:44Z | Files: 265 | Described: 0/265
-<!-- gsd:codebase-meta {"generatedAt":"2026-04-25T21:06:44Z","fingerprint":"d6603d1a55e904a889eb9c39f7a53f913ec148b9","fileCount":265,"truncated":false} -->
+Generated: 2026-04-26T08:09:38Z | Files: 272 | Described: 0/272
+<!-- gsd:codebase-meta {"generatedAt":"2026-04-26T08:09:38Z","fingerprint":"1bac3ae0fb46b4119612c617a0f64d7d5346fe24","fileCount":272,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -280,6 +280,7 @@ Generated: 2026-04-25T21:06:44Z | Files: 265 | Described: 0/265
 - `musicode-ui/src/components/player/PlayerBar.tsx`
 - `musicode-ui/src/components/player/ProgressBar.test.tsx`
 - `musicode-ui/src/components/player/ProgressBar.tsx`
+- `musicode-ui/src/components/player/RetroMode.tsx`
 - `musicode-ui/src/components/player/ScrobbleIndicator.tsx`
 - `musicode-ui/src/components/player/TrackInfo.test.tsx`
 - `musicode-ui/src/components/player/TrackInfo.tsx`
@@ -290,6 +291,14 @@ Generated: 2026-04-25T21:06:44Z | Files: 265 | Described: 0/265
 - `musicode-ui/src/components/player/VolumeControl.test.tsx`
 - `musicode-ui/src/components/player/VolumeControl.tsx`
 - `musicode-ui/src/components/player/WaveformBar.tsx`
+
+### musicode-ui/src/components/player/cassette/
+- `musicode-ui/src/components/player/cassette/CassetteCanvas.tsx`
+- `musicode-ui/src/components/player/cassette/DeckLEDs.tsx`
+- `musicode-ui/src/components/player/cassette/DeckThemeToggle.tsx`
+- `musicode-ui/src/components/player/cassette/DeckTransport.tsx`
+- `musicode-ui/src/components/player/cassette/Odometer.tsx`
+- `musicode-ui/src/components/player/cassette/VUMeter.tsx`
 
 ### musicode-ui/src/context/
 - `musicode-ui/src/context/AuthContext.test.ts`
