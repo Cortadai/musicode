@@ -18,7 +18,7 @@ const REFRESH_MARGIN_MS = 60_000;
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const refreshTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const scheduleRefresh = useCallback((expiresInMs: number) => {
     if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);

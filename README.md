@@ -21,31 +21,10 @@
 
 ---
 
-<!-- 
-  SCREENSHOTS
-  Place your screenshots in docs/assets/ and uncomment the sections below.
-  Recommended captures:
-    - musicode-albums.png      → Album grid view (main page)
-    - musicode-now-playing.png → Now Playing overlay with visualizer
-    - musicode-cassette.png    → Cassette deck retro mode
-    - musicode-stats.png       → Stats dashboard
-    - musicode-lyrics.png      → Lyrics panel open
-    - musicode-mobile.png      → Responsive mobile layout
--->
-
-<!--
 <p align="center">
-  <img src="docs/assets/musicode-albums.png" alt="Album Grid" width="800" />
+  <img src="docs/assets/musicode-hero.jpg" alt="Musicode — Album grid with player bar and activity feed" width="800" />
 </p>
-<p align="center"><em>Browse your library by album, artist, or track.</em></p>
--->
-
-<!--
-<p align="center">
-  <img src="docs/assets/musicode-now-playing.png" alt="Now Playing" width="800" />
-</p>
-<p align="center"><em>Immersive Now Playing overlay with visualizer and dynamic colors.</em></p>
--->
+<p align="center"><em>Browse your library by album, artist, or track — with real-time activity feed and persistent player bar.</em></p>
 
 ## Highlights
 
@@ -178,11 +157,10 @@ graph LR
 
 ### Visualizer Modes
 
-<!--
 <p align="center">
-  <img src="docs/assets/musicode-visualizer-modes.png" alt="Visualizer Modes" width="700" />
+  <img src="docs/assets/musicode-now-playing.jpg" alt="Now Playing — Vinyl visualizer with dynamic colors" width="700" />
 </p>
--->
+<p align="center"><em>Vinyl visualizer with album-extracted dynamic colors.</em></p>
 
 | Mode | How it works |
 |---|---|
@@ -195,11 +173,9 @@ All canvas-based modes run at 60fps via `requestAnimationFrame`, pause on page v
 
 ### Cassette Deck (Retro Mode)
 
-<!--
 <p align="center">
-  <img src="docs/assets/musicode-cassette.png" alt="Cassette Deck" width="700" />
+  <img src="docs/assets/musicode-cassette.png" alt="Cassette Deck — Classic theme with VU meters and animated reels" width="700" />
 </p>
--->
 
 Full-screen retro cassette experience:
 
@@ -226,11 +202,10 @@ Colors extracted from album artwork adapt the entire player UI — progress bar,
 
 ### Synced Lyrics
 
-<!--
 <p align="center">
-  <img src="docs/assets/musicode-lyrics.png" alt="Lyrics Panel" width="400" />
+  <img src="docs/assets/musicode-lyrics.jpg" alt="Now Playing with synced lyrics, waveform seekbar, and vinyl visualizer" width="700" />
 </p>
--->
+<p align="center"><em>Synced lyrics with waveform seek bar and vinyl visualizer.</em></p>
 
 - LRC format parsing with millisecond timing
 - Auto-scroll to the active line during playback
@@ -240,11 +215,7 @@ Colors extracted from album artwork adapt the entire player UI — progress bar,
 
 ### Listening Stats & Scrobbling
 
-<!--
-<p align="center">
-  <img src="docs/assets/musicode-stats.png" alt="Stats Dashboard" width="700" />
-</p>
--->
+<!-- Stats screenshot pending — waiting for more listening data -->
 
 **Play tracking** fires at 50% of track duration — no accidental skips counted.
 
@@ -405,30 +376,21 @@ cd musicode-ui && npm run test:e2e
 
 ---
 
-## Screenshots
+## More Screenshots
 
-<!-- 
-  Add your screenshots here. Recommended set:
+<p align="center">
+  <img src="docs/assets/musicode-health.png" alt="Library Health dashboard" width="700" />
+</p>
+<p align="center"><em>Library Health dashboard — detect metadata issues, missing covers, and orphan files.</em></p>
 
-  | Screenshot | Description | Suggested filename |
-  |---|---|---|
-  | Album grid | Main page showing album covers in a grid | musicode-albums.png |
-  | Album detail | Album page with track list | musicode-album-detail.png |
-  | Now Playing | Full-screen overlay with visualizer | musicode-now-playing.png |
-  | Cassette deck | Retro mode with animated tape | musicode-cassette.png |
-  | Lyrics panel | Now Playing with lyrics open | musicode-lyrics.png |
-  | Stats dashboard | Listening statistics | musicode-stats.png |
-  | Settings | Admin settings page | musicode-settings.png |
-  | Library health | Health dashboard with issues | musicode-health.png |
-  | Responsive | Mobile/tablet viewport | musicode-responsive.png |
+### Responsive Layout
 
-  Place files in docs/assets/ and use:
-  <p align="center">
-    <img src="docs/assets/musicode-albums.png" alt="Album Grid" width="800" />
-  </p>
--->
-
-*Screenshots coming soon — add images to `docs/assets/` and uncomment the placeholders above.*
+<p align="center">
+  <img src="docs/assets/musicode-mobile-library.jpg" alt="Mobile — Album grid with compact sidebar" width="300" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/assets/musicode-mobile-player.png" alt="Mobile — Now Playing with vinyl visualizer" width="300" />
+</p>
+<p align="center"><em>Fully responsive — collapsible icon sidebar, adaptive player bar, and full Now Playing on mobile.</em></p>
 
 ---
 
