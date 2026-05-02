@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import audioGraph from '../audio/audioGraph';
 import { loadPreferences, savePreferences } from '../audio/audioPreferences';
+import { refresh } from '../api/auth';
 import type { Track } from '../types';
 import type { PlayerAction } from '../context/PlayerContext';
 
@@ -129,10 +130,32 @@ export function useGapless({
       dispatch({ type: 'NEXT' });
     });
 
+    audioGraph.setOnError((element: HTMLAudioElement) => {
+      const code = element.error?.code;
+      const msg = element.error?.message ?? 'unknown';
+      console.warn(`[gapless] Audio error (code=${code}): ${msg}`);
+
+      // Network/decode error — try refreshing the token and retrying once
+      if (code === MediaError.MEDIA_ERR_NETWORK || code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+        const src = element.src;
+        console.debug('[gapless] Attempting token refresh + stream retry');
+        refresh()
+          .then(() => {
+            element.src = src;
+            element.load();
+            element.play().catch(() => {});
+          })
+          .catch(() => {
+            console.warn('[gapless] Token refresh failed — cannot recover stream');
+          });
+      }
+    });
+
     return () => {
       audioGraph.setOnTimeUpdate(null);
       audioGraph.setOnLoadedMetadata(null);
       audioGraph.setOnEnded(null);
+      audioGraph.setOnError(null);
     };
   }, [isOwner, dispatch, getNextTrackSrc, onTimeUpdate]);
 

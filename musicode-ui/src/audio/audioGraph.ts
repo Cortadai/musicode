@@ -79,10 +79,12 @@ function getNext(): { element: HTMLAudioElement; source: MediaElementAudioSource
 
 type AudioCallback = () => void;
 type TimeCallback = (time: number) => void;
+type ErrorCallback = (element: HTMLAudioElement) => void;
 
 let onTimeUpdate: TimeCallback | null = null;
 let onLoadedMetadata: AudioCallback | null = null;
 let onEnded: AudioCallback | null = null;
+let onError: ErrorCallback | null = null;
 
 // Wire native events — both elements fire through the same callbacks,
 // but only the active element's events are meaningful.
@@ -110,13 +112,23 @@ function handleEnded(element: HTMLAudioElement) {
   };
 }
 
+function handleError(element: HTMLAudioElement) {
+  return () => {
+    if (element === getActive().element) {
+      onError?.(element);
+    }
+  };
+}
+
 elementA.addEventListener('timeupdate', handleTimeUpdate(elementA));
 elementA.addEventListener('loadedmetadata', handleLoadedMetadata(elementA));
 elementA.addEventListener('ended', handleEnded(elementA));
+elementA.addEventListener('error', handleError(elementA));
 
 elementB.addEventListener('timeupdate', handleTimeUpdate(elementB));
 elementB.addEventListener('loadedmetadata', handleLoadedMetadata(elementB));
 elementB.addEventListener('ended', handleEnded(elementB));
+elementB.addEventListener('error', handleError(elementB));
 
 // --- Public API ---
 
@@ -483,6 +495,10 @@ function setOnEnded(cb: AudioCallback | null): void {
   onEnded = cb;
 }
 
+function setOnError(cb: ErrorCallback | null): void {
+  onError = cb;
+}
+
 // --- Export as namespace-like object ---
 
 const audioGraph = {
@@ -511,6 +527,7 @@ const audioGraph = {
   setOnTimeUpdate,
   setOnLoadedMetadata,
   setOnEnded,
+  setOnError,
 } as const;
 
 export default audioGraph;
