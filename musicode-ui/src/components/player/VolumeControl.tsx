@@ -27,7 +27,7 @@ function VolumeControl({ volume, onVolumeChange }: Props) {
       <button
         onClick={handleMuteToggle}
         aria-label={volume === 0 ? 'Unmute' : 'Mute'}
-        className="mc-interactive-muted transition-colors hidden md:block"
+        className="mc-interactive-muted transition-colors"
       >
         <VolumeIcon className="w-4 h-4" />
       </button>
@@ -40,7 +40,7 @@ function VolumeControl({ volume, onVolumeChange }: Props) {
         onChange={handleChange}
         aria-label="Volume"
         aria-valuetext={`${Math.round(pct)}%`}
-        className="w-20 md:w-28 shrink-0 h-1 appearance-none rounded-full cursor-pointer
+        className="w-28 shrink-0 h-1 appearance-none rounded-full cursor-pointer
           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5
           [&::-webkit-slider-thumb]:rounded-full
           [&::-moz-range-thumb]:w-2.5 [&::-moz-range-thumb]:h-2.5 [&::-moz-range-thumb]:rounded-full
@@ -55,7 +55,7 @@ function VolumeControl({ volume, onVolumeChange }: Props) {
       <button
         onClick={() => onVolumeChange(0.8)}
         aria-label={`Volume ${Math.round(pct)}% — click to reset`}
-        className="hidden md:inline-block w-8 shrink-0 -ml-1 text-right text-xs font-mono tabular-nums cursor-pointer select-none hover:opacity-75 transition-opacity"
+        className="inline-block w-8 shrink-0 -ml-1 text-right text-xs font-mono tabular-nums cursor-pointer select-none hover:opacity-75 transition-opacity"
         style={{ color: 'var(--mc-accent-primary)', background: 'none', border: 'none', padding: 0 }}
       >
         {Math.round(pct)}

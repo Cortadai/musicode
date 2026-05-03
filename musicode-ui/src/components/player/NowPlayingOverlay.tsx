@@ -237,8 +237,8 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
             <div
               className={`relative rounded-2xl overflow-hidden shadow-2xl ${
                 showLyrics
-                  ? 'w-48 h-48 md:w-56 md:h-56 lg:w-72 lg:h-72'
-                  : 'w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96'
+                  ? 'w-72 h-72'
+                  : 'w-96 h-96'
               }`}
               style={dynamicEnabled && colors ? { boxShadow: `0 20px 60px ${colors.primary}30` } : {}}
             >

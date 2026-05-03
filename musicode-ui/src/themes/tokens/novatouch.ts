@@ -29,10 +29,10 @@ export const novatouchTheme: ThemeConfig = {
     accentPrimaryMuted: 'rgba(99, 102, 241, 0.2)',
     accentSecondary: '#a78bfa',  // violet-400
 
-    // Glassmorphism — more pronounced
-    glassBackground: 'rgba(255, 255, 255, 0.05)',
-    glassBorder: 'rgba(255, 255, 255, 0.12)',
-    glassBlur: '16px',
+    // Glassmorphism — disabled (solid look)
+    glassBackground: '#12121a',
+    glassBorder: '#1e1e2e',
+    glassBlur: '0px',
 
     // Player
     playerBackground: '#12121a',

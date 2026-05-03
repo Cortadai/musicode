@@ -37,7 +37,7 @@ export function AlbumCardSkeleton() {
 
 export function AlbumGridSkeleton({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-5 xl:grid-cols-6 gap-4">
       {Array.from({ length: count }, (_, i) => (
         <AlbumCardSkeleton key={i} />
       ))}
@@ -57,7 +57,7 @@ export function ArtistCardSkeleton() {
 
 export function ArtistGridSkeleton({ count = 10 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-5 gap-4">
       {Array.from({ length: count }, (_, i) => (
         <ArtistCardSkeleton key={i} />
       ))}
@@ -138,7 +138,7 @@ export function StatsSkeleton() {
         <div className="mc-skeleton w-20 h-6" />
         <div className="mc-skeleton w-48 h-8 rounded-lg" />
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-4 gap-3 mb-8">
         {Array.from({ length: 4 }, (_, i) => (
           <StatCardSkeleton key={i} />
         ))}
@@ -147,7 +147,7 @@ export function StatsSkeleton() {
         <div className="mc-skeleton w-24 h-4 mb-3" />
         <div className="mc-skeleton w-full h-[200px]" />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <TopListSkeleton />
         <TopListSkeleton />
         <TopListSkeleton />

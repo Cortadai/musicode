@@ -29,10 +29,10 @@ export const minimalTheme: ThemeConfig = {
     accentPrimaryMuted: 'rgba(99, 102, 241, 0.15)',
     accentSecondary: '#a78bfa',  // violet-400
 
-    // Glassmorphism — very subtle
-    glassBackground: 'rgba(255, 255, 255, 0.02)',
-    glassBorder: 'rgba(255, 255, 255, 0.05)',
-    glassBlur: '8px',
+    // Glassmorphism — refined glass
+    glassBackground: 'rgba(255, 255, 255, 0.04)',
+    glassBorder: 'rgba(255, 255, 255, 0.09)',
+    glassBlur: '12px',
 
     // Player
     playerBackground: '#141416',

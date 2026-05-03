@@ -31,7 +31,7 @@ function TransportControls({
         onClick={onToggleShuffle}
         aria-label="Shuffle"
         aria-pressed={shuffle}
-        className={`hidden md:flex transition-colors ${shuffle ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+        className={`flex transition-colors ${shuffle ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
       >
         <Shuffle className="w-4 h-4" />
       </button>
@@ -63,7 +63,7 @@ function TransportControls({
         onClick={onToggleRepeat}
         aria-label={`Repeat: ${repeatMode}`}
         aria-pressed={repeatMode !== 'off'}
-        className={`hidden md:flex transition-colors ${repeatMode !== 'off' ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+        className={`flex transition-colors ${repeatMode !== 'off' ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
       >
         <RepeatIcon className="w-4 h-4" />
       </button>

@@ -179,7 +179,7 @@ function AlbumsTab() {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-5 xl:grid-cols-6 gap-4">
       {data.content.map((album) => (
         <AlbumCard key={album.id} album={album} />
       ))}
@@ -201,7 +201,7 @@ function ArtistsTab() {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-5 gap-4">
       {data.content.map((artist) => (
         <ArtistCard key={artist.id} artist={artist} />
       ))}

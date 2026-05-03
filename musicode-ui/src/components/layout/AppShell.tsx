@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useTheme } from '../../themes';
+import { QueuePanelProvider } from '../../context/QueuePanelContext';
 import EvolvedShell from './shells/EvolvedShell';
 import NovatouchShell from './shells/NovatouchShell';
 import MinimalShell from './shells/MinimalShell';
@@ -59,5 +60,9 @@ export default function AppShell() {
   }, [isPlaying, currentTrack, pause, resume, next, prev, setVolume, volume]);
 
   const Shell = shellByLayout[theme.layout];
-  return <Shell />;
+  return (
+    <QueuePanelProvider>
+      <Shell />
+    </QueuePanelProvider>
+  );
 }

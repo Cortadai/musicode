@@ -5,6 +5,7 @@ import { Home, Library, Music, Search, Settings, UserCog, TrendingUp, HeartPulse
 import { useAuth } from '../../../context/AuthContext';
 import audioGraph from '../../../audio/audioGraph';
 import PlayerBar from '../../player/PlayerBar';
+import QueuePanel from '../../player/QueuePanel';
 
 export default function MinimalShell() {
   const { isAdmin, user, logout } = useAuth();
@@ -40,7 +41,12 @@ export default function MinimalShell() {
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--mc-bg-base)', color: 'var(--mc-text-primary)' }}>
       <header
         className="h-12 flex items-center px-5 gap-6 shrink-0"
-        style={{ backgroundColor: 'var(--mc-sidebar-background)', borderBottom: '1px solid var(--mc-sidebar-border)' }}
+        style={{
+          background: 'linear-gradient(to right, var(--mc-sidebar-background), var(--mc-glass-background))',
+          borderBottom: '1px solid var(--mc-glass-border)',
+          backdropFilter: 'blur(var(--mc-glass-blur))',
+          WebkitBackdropFilter: 'blur(var(--mc-glass-blur))',
+        }}
       >
         <span className="font-semibold text-sm tracking-tight flex items-center gap-1.5" style={{ color: 'var(--mc-accent-primary)' }}>
           <Music className="w-4 h-4" />
@@ -85,7 +91,7 @@ export default function MinimalShell() {
           ))}
         </nav>
 
-        <form onSubmit={handleSearch} className="ml-auto" className="flex items-center gap-3">
+        <form onSubmit={handleSearch} className="ml-auto flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--mc-text-muted)' }} />
             <input
@@ -114,9 +120,12 @@ export default function MinimalShell() {
         </form>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-6">
-        <Outlet />
-      </main>
+      <div className="flex-1 flex min-h-0">
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+        <QueuePanel />
+      </div>
 
       <PlayerBar />
     </div>

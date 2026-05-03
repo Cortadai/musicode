@@ -88,7 +88,7 @@ export default function StatsPage() {
 
       {/* Summary cards */}
       {s && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-4 gap-3 mb-8">
           <SummaryCard icon={Music} label="Total Plays" value={s.totalPlays.toLocaleString()} />
           <SummaryCard icon={Clock} label="Listening Time" value={formatDuration(s.totalListeningSec)} />
           <SummaryCard icon={Users} label="Artists" value={s.uniqueArtists.toLocaleString()} />
@@ -116,7 +116,7 @@ export default function StatsPage() {
       )}
 
       {/* Top lists grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <TopList title="Top Artists" icon={Users} items={topArtists.data} nameKey="name" />
         <TopList title="Top Albums" icon={Disc3} items={topAlbums.data} nameKey="title" subKey="artistName" />
         <TopList title="Top Tracks" icon={Music} items={topTracks.data} nameKey="title" subKey="artistName" />

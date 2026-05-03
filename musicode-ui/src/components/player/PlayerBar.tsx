@@ -1,7 +1,7 @@
 import { usePlayer } from '../../hooks/usePlayer';
 import audioGraph from '../../audio/audioGraph';
 import { useCallback, useState } from 'react';
-import { BarChart3, Activity, CassetteTape } from 'lucide-react';
+import { BarChart3, Activity, CassetteTape, ListMusic } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import type { VisualizerMode } from '../../audio/audioPreferences';
 import TrackInfo from './TrackInfo';
@@ -16,6 +16,7 @@ import RetroMode from './RetroMode';
 import ScrobbleIndicator from './ScrobbleIndicator';
 import HeartButton from '../common/HeartButton';
 import { useFavorites } from '../../hooks/useFavorites';
+import { useQueuePanel } from '../../context/QueuePanelContext';
 
 export default function PlayerBar() {
   const {
@@ -27,6 +28,7 @@ export default function PlayerBar() {
   } = usePlayer();
 
   const { isFavorite, toggle: toggleFavorite } = useFavorites();
+  const { isOpen: isQueueOpen, toggle: toggleQueue } = useQueuePanel();
 
   const [showVisualizer, setShowVisualizer] = useState(false);
   const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => {
@@ -65,7 +67,7 @@ export default function PlayerBar() {
   const hasPrev = queueIndex > 0 || currentTime > 3 || repeatMode === 'all';
 
   return (
-    <div role="region" aria-label="Music player" className="shrink-0 animate-slide-up" style={{ backgroundColor: 'var(--mc-player-background)', borderTop: '1px solid var(--mc-player-border)' }}>
+    <div role="region" aria-label="Music player" className="shrink-0 animate-slide-up" style={{ background: 'linear-gradient(to top, var(--mc-player-background), var(--mc-glass-background))', borderTop: '1px solid var(--mc-glass-border)', backdropFilter: 'blur(var(--mc-glass-blur))', WebkitBackdropFilter: 'blur(var(--mc-glass-blur))' }}>
       <Visualizer visible={showVisualizer} mode={visualizerMode} onModeChange={handleVisualizerModeChange} />
 
       <div className={`${waveformEnabled ? 'h-24' : 'h-20'} flex items-center px-4 gap-4 transition-[height] duration-200`}>
@@ -82,7 +84,7 @@ export default function PlayerBar() {
           bitsPerSample={currentTrack.bitsPerSample}
         />
 
-        <div className="flex-1 flex flex-col items-center gap-1 min-w-0 md:max-w-2xl md:mx-auto">
+        <div className="flex-1 flex flex-col items-center gap-1 min-w-0 max-w-2xl mx-auto">
           <TransportControls
             isPlaying={isPlaying}
             shuffle={shuffle}
@@ -98,7 +100,7 @@ export default function PlayerBar() {
           <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} trackId={currentTrack.id} waveformEnabled={waveformEnabled} />
         </div>
 
-        <div className="flex items-center gap-2 w-auto md:w-48 shrink-0 justify-end">
+        <div className="flex items-center gap-2 w-48 shrink-0 justify-end">
           <HeartButton
             active={isFavorite(currentTrack.id)}
             onClick={() => toggleFavorite(currentTrack.id)}
@@ -108,28 +110,34 @@ export default function PlayerBar() {
             onClick={handleToggleWaveform}
             aria-label={waveformEnabled ? 'Switch to flat progress bar' : 'Switch to waveform'}
             aria-pressed={waveformEnabled}
-            className={`hidden md:flex items-center justify-center transition-colors ${waveformEnabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+            className={`flex items-center justify-center transition-colors ${waveformEnabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
           >
             <Activity className="w-4 h-4" />
           </button>
-          <span className="hidden md:contents">
-            <CrossfadePopover getCrossfadeDuration={getCrossfadeDuration} setCrossfadeDuration={setCrossfadeDuration} />
-            <EqPopover />
-          </span>
+          <CrossfadePopover getCrossfadeDuration={getCrossfadeDuration} setCrossfadeDuration={setCrossfadeDuration} />
+          <EqPopover />
           <button
             onClick={handleToggleVisualizer}
             aria-label={showVisualizer ? 'Hide visualizer' : 'Show visualizer'}
             aria-pressed={showVisualizer}
-            className={`hidden md:flex items-center justify-center transition-colors ${showVisualizer ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+            className={`flex items-center justify-center transition-colors ${showVisualizer ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
           >
             <BarChart3 className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowRetroMode(true)}
             aria-label="Retro cassette mode"
-            className="hidden md:flex items-center justify-center transition-colors mc-interactive-warning"
+            className="flex items-center justify-center transition-colors mc-interactive-warning"
           >
             <CassetteTape className="w-4 h-4" />
+          </button>
+          <button
+            onClick={toggleQueue}
+            aria-label={isQueueOpen ? 'Hide queue' : 'Show queue'}
+            aria-pressed={isQueueOpen}
+            className={`flex items-center justify-center transition-colors ${isQueueOpen ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+          >
+            <ListMusic className="w-4 h-4" />
           </button>
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
         </div>

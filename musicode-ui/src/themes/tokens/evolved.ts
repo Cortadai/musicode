@@ -29,10 +29,10 @@ export const evolvedTheme: ThemeConfig = {
     accentPrimaryMuted: 'rgba(99, 102, 241, 0.2)', // indigo-500/20
     accentSecondary: '#a78bfa',  // violet-400
 
-    // Glassmorphism
-    glassBackground: 'rgba(255, 255, 255, 0.03)',
-    glassBorder: 'rgba(255, 255, 255, 0.08)',
-    glassBlur: '12px',
+    // Glassmorphism — subtle glass
+    glassBackground: 'rgba(255, 255, 255, 0.04)',
+    glassBorder: 'rgba(255, 255, 255, 0.10)',
+    glassBlur: '14px',
 
     // Player
     playerBackground: '#18181b', // zinc-900

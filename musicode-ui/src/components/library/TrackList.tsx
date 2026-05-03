@@ -128,7 +128,7 @@ const TrackRow = memo(function TrackRow({
         </p>
       </div>
       {onToggleFavorite && (
-        <span className="hidden md:flex shrink-0 justify-center w-6">
+        <span className="flex shrink-0 justify-center w-6">
           <HeartButton
             active={!!favorited}
             onClick={() => onToggleFavorite(track.id)}
@@ -136,7 +136,7 @@ const TrackRow = memo(function TrackRow({
           />
         </span>
       )}
-      <span className="hidden md:flex w-14 shrink-0 justify-center">
+      <span className="flex w-14 shrink-0 justify-center">
         <span
           className="text-[10px] font-mono px-1.5 py-0.5 rounded"
           style={{
@@ -193,8 +193,8 @@ export default function TrackList({ tracks, showAlbum = false, showFavorites = f
           <span className="w-8 text-right shrink-0">#</span>
           <span className="w-8 shrink-0" />
           <span className="flex-1 min-w-0">Title</span>
-          {showFavorites && <span className="hidden md:inline w-6 shrink-0" />}
-          <span className="hidden md:inline w-14 shrink-0 text-center">Codec</span>
+          {showFavorites && <span className="w-6 shrink-0" />}
+          <span className="w-14 shrink-0 text-center">Codec</span>
           <span className="w-12 text-right shrink-0">Time</span>
         </div>
       )}

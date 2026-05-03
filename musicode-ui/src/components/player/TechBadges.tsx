@@ -48,7 +48,7 @@ function TechBadges({ filePath, bitRate, sampleRate, bitsPerSample, className }:
   const isHiRes = (sampleRate ?? 0) > 44100 || (bitsPerSample ?? 0) > 16;
 
   return (
-    <div className={className ?? 'hidden md:flex items-center gap-1 mt-0.5'}>
+    <div className={className ?? 'flex items-center gap-1 mt-0.5'}>
       {badges.map((label) => (
         <span
           key={label}

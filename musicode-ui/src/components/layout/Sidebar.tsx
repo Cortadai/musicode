@@ -34,7 +34,12 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   return (
     <aside
       className={`${collapsed ? 'w-16' : 'w-56'} flex flex-col h-full transition-[width] duration-200 ease-in-out`}
-      style={{ backgroundColor: 'var(--mc-sidebar-background)', borderRight: '1px solid var(--mc-sidebar-border)' }}
+      style={{
+        background: 'linear-gradient(to bottom, var(--mc-sidebar-background), var(--mc-glass-background))',
+        borderRight: '1px solid var(--mc-glass-border)',
+        backdropFilter: 'blur(var(--mc-glass-blur))',
+        WebkitBackdropFilter: 'blur(var(--mc-glass-blur))',
+      }}
     >
       {/* Header */}
       <div className={`py-5 flex items-center ${collapsed ? 'px-0 justify-center' : 'px-5 justify-between'}`}>

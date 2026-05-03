@@ -8,6 +8,11 @@
   user-select: none;
 }
 
+/* Desktop-only: enforce minimum width (half a 1920 screen) */
+html {
+  min-width: 960px;
+}
+
 /* Kill overscroll bounce/pull-to-refresh */
 html, body {
   overscroll-behavior: none;
@@ -234,7 +239,7 @@ body {
 
 /* === Vinyl Visualizer === */
 .vinyl-stage {
-  --vinyl-size: 16rem;
+  --vinyl-size: 24rem;
   position: relative;
   display: flex;
   align-items: center;
@@ -244,13 +249,6 @@ body {
   overflow: visible;
 }
 
-@media (min-width: 768px) {
-  .vinyl-stage { --vinyl-size: 20rem; }
-}
-
-@media (min-width: 1024px) {
-  .vinyl-stage { --vinyl-size: 24rem; }
-}
 
 .vinyl-group {
   position: relative;

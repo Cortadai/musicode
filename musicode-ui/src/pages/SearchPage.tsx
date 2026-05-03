@@ -69,7 +69,7 @@ export default function SearchPage() {
       {data.albums.length > 0 && (
         <section className="mb-8">
           <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Albums</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-5 xl:grid-cols-6 gap-4">
             {data.albums.map((album) => (
               <AlbumCard key={album.id} album={album} />
             ))}

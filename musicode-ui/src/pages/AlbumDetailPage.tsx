@@ -5,10 +5,11 @@ import { getAlbum, getCoverUrl } from '../api/albums';
 import TrackList from '../components/library/TrackList';
 import { usePlayer } from '../hooks/usePlayer';
 import { useCurrentTrackInfo } from '../context/PlayerContext';
-import { ArrowLeft, Disc3 } from 'lucide-react';
+import { ArrowLeft, Disc3, Play } from 'lucide-react';
 import { AlbumDetailSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
+import { formatAlbumDuration } from '../utils/format';
 
 export default function AlbumDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -33,10 +34,17 @@ export default function AlbumDetailPage() {
     [album]
   );
 
+  const totalDuration = useMemo(
+    () => tracks.reduce((sum, t) => sum + (t.duration ?? 0), 0),
+    [tracks]
+  );
+
   const handlePlay = useCallback(
     (_track: import('../types').Track, index: number) => playAlbum(tracks, index),
     [playAlbum, tracks]
   );
+
+  const handlePlayAlbum = useCallback(() => playAlbum(tracks, 0), [playAlbum, tracks]);
 
   if (isLoading) return <AlbumDetailSkeleton />;
   if (error || !album) return <ErrorMessage message="Album not found" detail={getErrorMessage(error)} />;
@@ -65,6 +73,23 @@ export default function AlbumDetailPage() {
             {album.year && ` · ${album.year}`}
             {` · ${tracks.length} tracks`}
           </p>
+          <button
+            onClick={handlePlayAlbum}
+            aria-label={`Play ${album.title}`}
+            className="mt-3 flex items-center justify-between w-52 px-5 py-2.5 rounded-full text-sm font-medium transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2"
+            style={{
+              backgroundColor: 'var(--mc-accent-primary)',
+              color: 'var(--mc-bg-base)',
+              ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
+            }}
+          >
+            <span className="flex items-center gap-2">
+              <Play className="w-4 h-4" fill="currentColor" /> Play
+            </span>
+            {totalDuration > 0 && (
+              <span className="opacity-75 text-xs">{formatAlbumDuration(totalDuration)}</span>
+            )}
+          </button>
         </div>
       </div>
 
