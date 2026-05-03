@@ -1,10 +1,11 @@
 import { useSearchParams } from 'react-router';
-import { Disc3, Users, Music } from 'lucide-react';
+import { Disc3, Users, Music, Heart } from 'lucide-react';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { getAlbums } from '../api/albums';
 import { getArtists } from '../api/artists';
 import { getTracks } from '../api/tracks';
+import { getFavorites, getFavoriteCount } from '../api/favorites';
 import AlbumCard from '../components/library/AlbumCard';
 import TrackList from '../components/library/TrackList';
 import ArtistCard from '../components/library/ArtistCard';
@@ -14,12 +15,13 @@ import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 import type { Track } from '../types';
 
-type Tab = 'tracks' | 'albums' | 'artists';
+type Tab = 'tracks' | 'albums' | 'artists' | 'favorites';
 
 const TABS: { id: Tab; label: string; icon: typeof Music }[] = [
   { id: 'albums', label: 'Albums', icon: Disc3 },
   { id: 'artists', label: 'Artists', icon: Users },
   { id: 'tracks', label: 'Tracks', icon: Music },
+  { id: 'favorites', label: 'Favorites', icon: Heart },
 ];
 
 const PAGE_SIZE = 30;
@@ -60,6 +62,7 @@ export default function LibraryPage() {
       {activeTab === 'tracks' && <TracksTab />}
       {activeTab === 'albums' && <AlbumsTab />}
       {activeTab === 'artists' && <ArtistsTab />}
+      {activeTab === 'favorites' && <FavoritesTab />}
     </div>
   );
 }
@@ -77,11 +80,16 @@ function TabCount({ tab }: { tab: Tab }) {
     queryKey: ['tracks-count'],
     queryFn: () => getTracks(0, 1, 'title,asc'),
   });
+  const { data: favCount } = useQuery({
+    queryKey: ['favorites-count'],
+    queryFn: getFavoriteCount,
+  });
 
   let count: number | undefined;
   if (tab === 'albums') count = albumsData?.totalElements;
   if (tab === 'artists') count = artistsData?.totalElements;
   if (tab === 'tracks') count = tracksData?.totalElements;
+  if (tab === 'favorites') count = favCount;
 
   if (count === undefined) return null;
   return (
@@ -149,7 +157,7 @@ function TracksTab() {
 
   return (
     <>
-      <TrackList tracks={allTracks} showAlbum onPlay={handlePlay} />
+      <TrackList tracks={allTracks} showAlbum showFavorites onPlay={handlePlay} />
       <div ref={sentinelRef} className="h-8" />
       {isFetchingNextPage && <Spinner text="Loading more…" />}
     </>
@@ -197,5 +205,73 @@ function ArtistsTab() {
         <ArtistCard key={artist.id} artist={artist} />
       ))}
     </div>
+  );
+}
+
+function FavoritesTab() {
+  const { playTrack } = usePlayer();
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['favorites-infinite'],
+    queryFn: ({ pageParam = 0 }) => getFavorites(pageParam, PAGE_SIZE),
+    getNextPageParam: (lastPage) =>
+      lastPage.page + 1 < lastPage.totalPages ? lastPage.page + 1 : undefined,
+    initialPageParam: 0,
+  });
+
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const target = entries[0];
+      if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
+  );
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(handleObserver, { threshold: 0.1 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [handleObserver]);
+
+  const allTracks: Track[] = useMemo(
+    () => data?.pages.flatMap((p) => p.content) ?? [],
+    [data?.pages]
+  );
+
+  const handlePlay = useCallback(
+    (track: Track, index: number) => playTrack(track, allTracks, index),
+    [playTrack, allTracks]
+  );
+
+  if (isLoading) return <Spinner text="Loading favorites…" />;
+  if (error) return <ErrorMessage message="Failed to load favorites" detail={getErrorMessage(error)} />;
+
+  if (allTracks.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <Heart className="w-12 h-12" style={{ color: 'var(--mc-text-muted)' }} />
+        <p style={{ color: 'var(--mc-text-muted)' }}>No favorites yet. Click the heart on any track to add it here.</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <TrackList tracks={allTracks} showAlbum showFavorites onPlay={handlePlay} />
+      <div ref={sentinelRef} className="h-8" />
+      {isFetchingNextPage && <Spinner text="Loading more…" />}
+    </>
   );
 }

@@ -54,15 +54,25 @@ function TechBadges({ filePath, bitRate, sampleRate, bitsPerSample, className }:
           key={label}
           className="text-[10px] font-mono leading-none px-1.5 py-0.5 rounded"
           style={{
-            backgroundColor: isHiRes
-              ? 'color-mix(in srgb, var(--mc-accent-primary) 20%, transparent)'
-              : 'color-mix(in srgb, var(--mc-text-muted) 15%, transparent)',
-            color: isHiRes ? 'var(--mc-accent-primary)' : 'var(--mc-text-muted)',
+            backgroundColor: 'color-mix(in srgb, var(--mc-accent-primary) 20%, transparent)',
+            color: 'var(--mc-accent-primary)',
           }}
         >
           {label}
         </span>
       ))}
+      {isHiRes && (
+        <span
+          className="text-[10px] font-bold font-mono leading-none px-1.5 py-0.5 rounded"
+          style={{
+            backgroundColor: 'var(--mc-accent-primary)',
+            color: 'var(--mc-bg-primary)',
+            filter: 'drop-shadow(0 0 5px var(--mc-accent-primary))',
+          }}
+        >
+          HI-RES
+        </span>
+      )}
     </div>
   );
 }

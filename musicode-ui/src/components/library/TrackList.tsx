@@ -4,6 +4,8 @@ import { formatDuration } from '../../utils/format';
 import { useCurrentTrackInfo } from '../../context/PlayerContext';
 import { Play, Disc3 } from 'lucide-react';
 import { getCoverUrl } from '../../api/albums';
+import HeartButton from '../common/HeartButton';
+import { useFavorites } from '../../hooks/useFavorites';
 
 const CODEC_MAP: Record<string, string> = {
   flac: 'FLAC', mp3: 'MP3', ogg: 'OGG', m4a: 'AAC', wav: 'WAV',
@@ -47,11 +49,14 @@ interface TrackRowProps {
   isScrollTarget: boolean;
   scrollTargetRef?: React.Ref<HTMLDivElement>;
   onPlay?: (track: Track, index: number) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (trackId: number) => void;
 }
 
 const TrackRow = memo(function TrackRow({
   track, index, showAlbum, isCurrent, isPlaying,
   isScrollTarget, scrollTargetRef, onPlay,
+  isFavorite: favorited, onToggleFavorite,
 }: TrackRowProps) {
   const handleClick = useCallback(
     () => onPlay?.(track, index),
@@ -122,6 +127,15 @@ const TrackRow = memo(function TrackRow({
           {showAlbum && track.album && ` · ${track.album.title}`}
         </p>
       </div>
+      {onToggleFavorite && (
+        <span className="hidden md:flex shrink-0 justify-center w-6">
+          <HeartButton
+            active={!!favorited}
+            onClick={() => onToggleFavorite(track.id)}
+            size={14}
+          />
+        </span>
+      )}
       <span className="hidden md:flex w-14 shrink-0 justify-center">
         <span
           className="text-[10px] font-mono px-1.5 py-0.5 rounded"
@@ -143,12 +157,14 @@ const TrackRow = memo(function TrackRow({
 interface Props {
   tracks: Track[];
   showAlbum?: boolean;
+  showFavorites?: boolean;
   scrollToTrackId?: number;
   onPlay?: (track: Track, index: number) => void;
 }
 
-export default function TrackList({ tracks, showAlbum = false, scrollToTrackId, onPlay }: Props) {
+export default function TrackList({ tracks, showAlbum = false, showFavorites = false, scrollToTrackId, onPlay }: Props) {
   const { trackId: currentTrackId, isPlaying } = useCurrentTrackInfo();
+  const { isFavorite, toggle: toggleFavorite } = useFavorites();
   const scrollTargetRef = useRef<HTMLDivElement>(null);
   const hasScrolled = useRef(false);
 
@@ -177,6 +193,7 @@ export default function TrackList({ tracks, showAlbum = false, scrollToTrackId, 
           <span className="w-8 text-right shrink-0">#</span>
           <span className="w-8 shrink-0" />
           <span className="flex-1 min-w-0">Title</span>
+          {showFavorites && <span className="hidden md:inline w-6 shrink-0" />}
           <span className="hidden md:inline w-14 shrink-0 text-center">Codec</span>
           <span className="w-12 text-right shrink-0">Time</span>
         </div>
@@ -192,6 +209,8 @@ export default function TrackList({ tracks, showAlbum = false, scrollToTrackId, 
           isScrollTarget={track.id === scrollToTrackId}
           scrollTargetRef={scrollTargetRef}
           onPlay={onPlay}
+          isFavorite={showFavorites ? isFavorite(track.id) : undefined}
+          onToggleFavorite={showFavorites ? toggleFavorite : undefined}
         />
       ))}
     </div>

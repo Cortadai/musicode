@@ -14,6 +14,8 @@ import Visualizer from './Visualizer';
 import NowPlayingOverlay from './NowPlayingOverlay';
 import RetroMode from './RetroMode';
 import ScrobbleIndicator from './ScrobbleIndicator';
+import HeartButton from '../common/HeartButton';
+import { useFavorites } from '../../hooks/useFavorites';
 
 export default function PlayerBar() {
   const {
@@ -23,6 +25,8 @@ export default function PlayerBar() {
     toggleShuffle, toggleRepeat, setCrossfadeDuration, getCrossfadeDuration,
     scrobbleStatus,
   } = usePlayer();
+
+  const { isFavorite, toggle: toggleFavorite } = useFavorites();
 
   const [showVisualizer, setShowVisualizer] = useState(false);
   const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => {
@@ -95,6 +99,10 @@ export default function PlayerBar() {
         </div>
 
         <div className="flex items-center gap-2 w-auto md:w-48 shrink-0 justify-end">
+          <HeartButton
+            active={isFavorite(currentTrack.id)}
+            onClick={() => toggleFavorite(currentTrack.id)}
+          />
           <ScrobbleIndicator status={scrobbleStatus} />
           <button
             onClick={handleToggleWaveform}
