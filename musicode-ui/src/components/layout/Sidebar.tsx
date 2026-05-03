@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router';
-import { Home, Disc3, Users, Music, Settings, UserCog, LogOut, TrendingUp, HeartPulse, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Home, Library, Settings, UserCog, LogOut, TrendingUp, HeartPulse, PanelLeftClose, PanelLeftOpen, Music } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import audioGraph from '../../audio/audioGraph';
 import ActivityFeed from '../activity/ActivityFeed';
@@ -15,9 +15,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   const navItems = [
     { to: '/', label: 'Home', icon: Home, end: true },
-    { to: '/albums', label: 'Albums', icon: Disc3 },
-    { to: '/artists', label: 'Artists', icon: Users },
-    { to: '/tracks', label: 'Tracks', icon: Music },
+    { to: '/library', label: 'Library', icon: Library },
     { to: '/stats', label: 'Stats', icon: TrendingUp },
     { to: '/settings', label: 'Settings', icon: Settings, end: true },
   ];

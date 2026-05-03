@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { AuthProvider } from './context/AuthContext';
 import { PlayerProvider } from './context/PlayerContext';
 import { ThemeProvider } from './themes';
@@ -12,11 +12,9 @@ import HomePage from './pages/HomePage';
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 
-const AlbumsPage = lazy(() => import('./pages/AlbumsPage'));
+const LibraryPage = lazy(() => import('./pages/LibraryPage'));
 const AlbumDetailPage = lazy(() => import('./pages/AlbumDetailPage'));
-const ArtistsPage = lazy(() => import('./pages/ArtistsPage'));
 const ArtistDetailPage = lazy(() => import('./pages/ArtistDetailPage'));
-const TracksPage = lazy(() => import('./pages/TracksPage'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const StatsPage = lazy(() => import('./pages/StatsPage'));
@@ -48,15 +46,16 @@ export default function App() {
               <Route element={<ProtectedRoute />}>
                 <Route element={<AppShell />}>
                   <Route index element={<HomePage />} />
-                  <Route path="/albums" element={<Suspense fallback={<Spinner />}><AlbumsPage /></Suspense>} />
+                  <Route path="/library" element={<Suspense fallback={<Spinner />}><LibraryPage /></Suspense>} />
                   <Route path="/albums/:id" element={<Suspense fallback={<Spinner />}><AlbumDetailPage /></Suspense>} />
-                  <Route path="/artists" element={<Suspense fallback={<Spinner />}><ArtistsPage /></Suspense>} />
                   <Route path="/artists/:id" element={<Suspense fallback={<Spinner />}><ArtistDetailPage /></Suspense>} />
-                  <Route path="/tracks" element={<Suspense fallback={<Spinner />}><TracksPage /></Suspense>} />
                   <Route path="/search" element={<Suspense fallback={<Spinner />}><SearchPage /></Suspense>} />
                   <Route path="/stats" element={<Suspense fallback={<Spinner />}><StatsPage /></Suspense>} />
                   <Route path="/settings" element={<Suspense fallback={<Spinner />}><SettingsPage /></Suspense>} />
-
+                  {/* Redirects from old routes */}
+                  <Route path="/albums" element={<Navigate to="/library?tab=albums" replace />} />
+                  <Route path="/artists" element={<Navigate to="/library?tab=artists" replace />} />
+                  <Route path="/tracks" element={<Navigate to="/library?tab=tracks" replace />} />
                 </Route>
               </Route>
 

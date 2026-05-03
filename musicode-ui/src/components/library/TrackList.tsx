@@ -1,8 +1,42 @@
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { Track } from '../../types';
 import { formatDuration } from '../../utils/format';
 import { useCurrentTrackInfo } from '../../context/PlayerContext';
-import { Play } from 'lucide-react';
+import { Play, Disc3 } from 'lucide-react';
+import { getCoverUrl } from '../../api/albums';
+
+const CODEC_MAP: Record<string, string> = {
+  flac: 'FLAC', mp3: 'MP3', ogg: 'OGG', m4a: 'AAC', wav: 'WAV',
+  opus: 'OPUS', aac: 'AAC', wma: 'WMA', alac: 'ALAC', aiff: 'AIFF', aif: 'AIFF',
+};
+
+function extractCodec(filePath: string): string {
+  const ext = filePath.split('.').pop()?.toLowerCase() ?? '';
+  return CODEC_MAP[ext] ?? ext.toUpperCase();
+}
+
+function CoverThumb({ albumId, title }: { albumId: number; title: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div
+        className="w-8 h-8 rounded shrink-0 flex items-center justify-center"
+        style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}
+      >
+        <Disc3 className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={getCoverUrl(albumId)}
+      alt={title}
+      className="w-8 h-8 rounded shrink-0 object-cover"
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
 interface TrackRowProps {
   track: Track;
@@ -55,7 +89,7 @@ const TrackRow = memo(function TrackRow({
         ['--tw-ring-offset-color' as string]: 'var(--mc-bg-surface)',
       }}
     >
-      <span className="w-8 text-right text-xs tabular-nums relative">
+      <span className="w-8 text-right text-xs tabular-nums relative shrink-0">
         {isCurrent && isPlaying ? (
           <span className="text-sm" style={{ color: 'var(--mc-accent-primary)' }}>♪</span>
         ) : (
@@ -69,6 +103,16 @@ const TrackRow = memo(function TrackRow({
           </>
         )}
       </span>
+      {showAlbum && track.album?.hasCoverArt && track.album ? (
+        <CoverThumb albumId={track.album.id} title={track.album.title} />
+      ) : showAlbum ? (
+        <div
+          className="w-8 h-8 rounded shrink-0 flex items-center justify-center"
+          style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}
+        >
+          <Disc3 className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+        </div>
+      ) : null}
       <div className="flex-1 min-w-0">
         <p className="text-sm truncate" style={{ color: isCurrent ? 'var(--mc-accent-primary)' : 'var(--mc-text-primary)', fontWeight: isCurrent ? 500 : undefined }}>
           {track.title}
@@ -78,7 +122,18 @@ const TrackRow = memo(function TrackRow({
           {showAlbum && track.album && ` · ${track.album.title}`}
         </p>
       </div>
-      <span className="text-xs tabular-nums" style={{ color: 'var(--mc-text-muted)' }}>
+      <span className="hidden md:flex w-14 shrink-0 justify-center">
+        <span
+          className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--mc-text-muted) 15%, transparent)',
+            color: 'var(--mc-text-muted)',
+          }}
+        >
+          {extractCodec(track.filePath)}
+        </span>
+      </span>
+      <span className="text-xs tabular-nums shrink-0 w-12 text-right" style={{ color: 'var(--mc-text-muted)' }}>
         {formatDuration(track.duration)}
       </span>
     </div>
@@ -114,6 +169,18 @@ export default function TrackList({ tracks, showAlbum = false, scrollToTrackId, 
 
   return (
     <div className="space-y-0.5">
+      {showAlbum && (
+        <div
+          className="flex items-center gap-4 px-4 py-1.5 text-[11px] uppercase tracking-wider"
+          style={{ color: 'var(--mc-text-muted)' }}
+        >
+          <span className="w-8 text-right shrink-0">#</span>
+          <span className="w-8 shrink-0" />
+          <span className="flex-1 min-w-0">Title</span>
+          <span className="hidden md:inline w-14 shrink-0 text-center">Codec</span>
+          <span className="w-12 text-right shrink-0">Time</span>
+        </div>
+      )}
       {tracks.map((track, index) => (
         <TrackRow
           key={track.id}

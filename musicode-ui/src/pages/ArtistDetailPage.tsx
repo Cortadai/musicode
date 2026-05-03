@@ -2,7 +2,8 @@ import { useParams, Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getArtist } from '../api/artists';
 import AlbumCard from '../components/library/AlbumCard';
-import { ArrowLeft, User } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { artistGradient, artistInitials } from '../utils/artistAvatar';
 import type { Album } from '../types';
 import Spinner from '../components/common/Spinner';
 import ErrorMessage from '../components/common/ErrorMessage';
@@ -25,13 +26,13 @@ export default function ArtistDetailPage() {
 
   return (
     <div>
-      <Link to="/artists" className="inline-flex items-center gap-1.5 text-sm mc-interactive-muted mb-6">
+      <Link to="/library?tab=artists" className="inline-flex items-center gap-1.5 text-sm mc-interactive-muted mb-6">
         <ArrowLeft className="w-4 h-4" /> Back to artists
       </Link>
 
       <div className="flex items-center gap-6 mb-8">
-        <div className="w-24 h-24 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}>
-          <User className="w-10 h-10" style={{ color: 'var(--mc-text-muted)' }} />
+        <div className="w-24 h-24 rounded-full flex items-center justify-center shrink-0" style={{ background: artistGradient(artist.name) }}>
+          <span className="text-2xl font-bold text-white/90 select-none">{artistInitials(artist.name)}</span>
         </div>
         <div>
           <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--mc-text-muted)' }}>Artist</p>

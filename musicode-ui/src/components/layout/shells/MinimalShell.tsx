@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router';
 import { Outlet } from 'react-router';
 import { useState } from 'react';
-import { Home, Disc3, Users, Music, Search, Settings, UserCog, TrendingUp, HeartPulse, LogOut } from 'lucide-react';
+import { Home, Library, Music, Search, Settings, UserCog, TrendingUp, HeartPulse, LogOut } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import audioGraph from '../../../audio/audioGraph';
 import PlayerBar from '../../player/PlayerBar';
@@ -13,9 +13,7 @@ export default function MinimalShell() {
 
   const navItems = [
     { to: '/', icon: Home, label: 'Home', end: true },
-    { to: '/albums', icon: Disc3, label: 'Albums' },
-    { to: '/artists', icon: Users, label: 'Artists' },
-    { to: '/tracks', icon: Music, label: 'Tracks' },
+    { to: '/library', icon: Library, label: 'Library' },
     { to: '/stats', icon: TrendingUp, label: 'Stats' },
     { to: '/settings', icon: Settings, label: 'Settings', end: true },
   ];
