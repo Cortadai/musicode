@@ -32,7 +32,7 @@ export default function ProgressBar({ currentTime, duration, onSeek, trackId, wa
   );
 
   return (
-    <div className="flex items-center gap-2 w-full">
+    <div className="flex items-center gap-2 w-full max-w-[600px] mx-auto">
       <span className="text-[11px] tabular-nums w-12 text-right shrink-0" style={{ color: 'var(--mc-text-muted)' }}>
         {formatDuration(Math.floor(currentTime))}
       </span>

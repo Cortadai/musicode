@@ -11,6 +11,27 @@ import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 import { formatAlbumDuration } from '../utils/format';
 
+function PlayAlbumButton({ onClick, albumTitle, totalDuration }: { onClick: () => void; albumTitle: string; totalDuration: number }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={`Play ${albumTitle}`}
+      className="play-album-btn mt-3 flex items-center justify-between w-52 px-5 py-2.5 rounded-full text-sm font-medium focus-visible:outline-none focus-visible:ring-2"
+      style={{
+        color: 'var(--mc-bg-base)',
+        ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
+      }}
+    >
+      <span className="flex items-center gap-2">
+        <Play className="w-4 h-4" fill="currentColor" /> Play
+      </span>
+      {totalDuration > 0 && (
+        <span className="opacity-75 text-xs">{formatAlbumDuration(totalDuration)}</span>
+      )}
+    </button>
+  );
+}
+
 export default function AlbumDetailPage() {
   const { id } = useParams<{ id: string }>();
   const albumId = Number(id);
@@ -73,23 +94,7 @@ export default function AlbumDetailPage() {
             {album.year && ` · ${album.year}`}
             {` · ${tracks.length} tracks`}
           </p>
-          <button
-            onClick={handlePlayAlbum}
-            aria-label={`Play ${album.title}`}
-            className="mt-3 flex items-center justify-between w-52 px-5 py-2.5 rounded-full text-sm font-medium transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2"
-            style={{
-              backgroundColor: 'var(--mc-accent-primary)',
-              color: 'var(--mc-bg-base)',
-              ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Play className="w-4 h-4" fill="currentColor" /> Play
-            </span>
-            {totalDuration > 0 && (
-              <span className="opacity-75 text-xs">{formatAlbumDuration(totalDuration)}</span>
-            )}
-          </button>
+          <PlayAlbumButton onClick={handlePlayAlbum} albumTitle={album.title} totalDuration={totalDuration} />
         </div>
       </div>
 

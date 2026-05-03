@@ -514,6 +514,41 @@ body {
   z-index: 3;
 }
 
+/* === Play Album Button — subtle gradient sweep === */
+.play-album-btn {
+  background: var(--mc-accent-primary);
+  transition: transform 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.play-album-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.25) 45%,
+    rgba(255, 255, 255, 0.25) 55%,
+    transparent 80%
+  );
+  translate: -120% 0;
+  transition: translate 0.6s ease;
+}
+
+.play-album-btn:hover {
+  transform: scale(1.05);
+}
+
+.play-album-btn:hover::after {
+  translate: 120% 0;
+}
+
+.play-album-btn:active {
+  transform: scale(0.97);
+}
+
 /* === Retro Mode === */
 @keyframes retro-fade-in {
   from { opacity: 0; }

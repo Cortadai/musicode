@@ -7,7 +7,7 @@ interface Props {
   onSeek: (ratio: number) => void;
 }
 
-const BAR_WIDTH = 3;
+const BAR_WIDTH = 4;
 const BAR_GAP = 2;
 const MIN_HEIGHT_RATIO = 0.06;
 
@@ -69,8 +69,12 @@ export default function WaveformBar({ peaks, progress, onSeek }: Props) {
 
     if (progress > 0 && progress < 1) {
       const lineX = Math.round(progressX);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-      ctx.fillRect(lineX - 1, 0, 2, h);
+      const overshoot = 4;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.fillRect(lineX - 1, -overshoot, 2, h + overshoot * 2);
+      ctx.beginPath();
+      ctx.arc(lineX, -overshoot, 3, 0, Math.PI * 2);
+      ctx.fill();
     }
   }, [peaks, progress, colors]);
 
@@ -121,7 +125,7 @@ export default function WaveformBar({ peaks, progress, onSeek }: Props) {
   return (
     <div
       ref={containerRef}
-      className="flex-1 h-14 cursor-pointer relative rounded-lg"
+      className="flex-1 h-12 cursor-pointer relative rounded-lg"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -133,7 +137,8 @@ export default function WaveformBar({ peaks, progress, onSeek }: Props) {
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full"
+        className="w-full h-full overflow-visible"
+        style={{ overflow: 'visible' }}
       />
     </div>
   );
