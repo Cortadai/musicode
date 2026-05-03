@@ -19,27 +19,50 @@ function AlbumCard({ album }: Props) {
     <Link
       to={`/albums/${album.id}`}
       aria-label={`${album.title} by ${album.artist?.name ?? 'Unknown Artist'}`}
-      className="group block rounded-xl overflow-hidden transition-colors mc-nav-item"
-      style={{ backgroundColor: 'var(--mc-bg-surface)' }}
+      className="group block rounded-2xl overflow-hidden transition-all duration-200 mc-nav-item hover:-translate-y-1 hover:shadow-lg"
+      style={{
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+      }}
     >
-      <div className="aspect-square relative overflow-hidden" style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}>
-        {album.hasCoverArt ? (
-          <img
-            ref={imgRef}
-            src={getCoverUrl(album.id)}
-            alt={album.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 animate-cover-fade"
-            loading="lazy"
-            onLoad={handleLoad}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Disc3 className="w-12 h-12" style={{ color: 'var(--mc-text-muted)' }} />
-          </div>
-        )}
+      <div className="p-2.5 pb-0">
+        <div className="aspect-square relative overflow-hidden rounded-xl" style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}>
+          {album.hasCoverArt ? (
+            <img
+              ref={imgRef}
+              src={getCoverUrl(album.id)}
+              alt={album.title}
+              className="w-full h-full object-cover animate-cover-fade"
+              loading="lazy"
+              onLoad={handleLoad}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Disc3 className="w-12 h-12" style={{ color: 'var(--mc-text-muted)' }} />
+            </div>
+          )}
+        </div>
       </div>
-      <div className="p-3">
-        <p className="text-sm font-medium truncate" style={{ color: 'var(--mc-text-primary)' }}>{album.title}</p>
+      <div className="px-3 py-2.5 overflow-hidden">
+        <div className="overflow-hidden">
+          <div className="card-marquee-container">
+            <span
+              className="text-sm font-medium whitespace-nowrap card-marquee-text"
+              style={{ color: 'var(--mc-text-primary)' }}
+            >
+              {album.title}
+            </span>
+            <span
+              className="text-sm font-medium whitespace-nowrap card-marquee-text"
+              style={{ color: 'var(--mc-text-primary)' }}
+              aria-hidden="true"
+            >
+              {album.title}
+            </span>
+          </div>
+        </div>
         <p className="text-xs truncate mt-0.5" style={{ color: 'var(--mc-text-muted)' }}>
           {album.artist?.name ?? 'Unknown Artist'}
           {album.year && ` · ${album.year}`}

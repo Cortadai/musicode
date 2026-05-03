@@ -145,18 +145,29 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
 
       {/* Top bar */}
       <div className="relative z-10 flex items-center justify-between px-6 pt-4 pb-2">
-        <button
-          onClick={onClose}
-          className="flex items-center gap-2 mc-interactive-muted transition-colors group"
-        >
-          <ChevronDown className="w-5 h-5 transition-transform group-hover:translate-y-0.5" />
-          <span className="text-sm uppercase tracking-wider font-medium flex items-center gap-2">
-            Now Playing
-            {isPlaying && (
-              <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--mc-accent-primary)' }} />
-            )}
-          </span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-2 mc-interactive-muted transition-colors group"
+          >
+            <ChevronDown className="w-5 h-5 transition-transform group-hover:translate-y-0.5" />
+            <span className="text-sm uppercase tracking-wider font-medium flex items-center gap-2">
+              Now Playing
+              {isPlaying && (
+                <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--mc-accent-primary)' }} />
+              )}
+            </span>
+          </button>
+          {currentTrack && (
+            <TechBadges
+              filePath={currentTrack.filePath}
+              bitRate={currentTrack.bitRate}
+              sampleRate={currentTrack.sampleRate}
+              bitsPerSample={currentTrack.bitsPerSample}
+              className="flex items-center gap-1"
+            />
+          )}
+        </div>
 
         <div className="flex items-center gap-1">
           {([
@@ -271,15 +282,6 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
               {currentTrack.artist?.name ?? 'Unknown Artist'}
               {currentTrack.album?.title ? ` \u2014 ${currentTrack.album.title}` : ''}
             </p>
-            <div className="flex justify-center mt-1">
-              <TechBadges
-                filePath={currentTrack.filePath}
-                bitRate={currentTrack.bitRate}
-                sampleRate={currentTrack.sampleRate}
-                bitsPerSample={currentTrack.bitsPerSample}
-                className="flex items-center gap-1"
-              />
-            </div>
           </div>
 
           {/* Progress */}
@@ -306,7 +308,6 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
           {/* Volume */}
           <div className="flex items-center justify-center gap-2">
             <VolumeControl volume={volume} onVolumeChange={setVolume} />
-            <div className="w-4" aria-hidden="true" />
           </div>
 
           {/* Up Next */}

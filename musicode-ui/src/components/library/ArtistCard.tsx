@@ -10,8 +10,13 @@ export default function ArtistCard({ artist }: ArtistCardProps) {
   return (
     <Link
       to={`/artists/${artist.id}`}
-      className="group flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-200 mc-nav-item hover:-translate-y-1 hover:shadow-lg"
-      style={{ backgroundColor: 'var(--mc-bg-surface)' }}
+      className="group flex flex-col items-center gap-3 p-4 rounded-2xl transition-all duration-200 mc-nav-item hover:-translate-y-1 hover:shadow-lg"
+      style={{
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+      }}
     >
       <div
         className="w-20 h-20 rounded-full flex items-center justify-center transition-shadow duration-200 group-hover:shadow-md"

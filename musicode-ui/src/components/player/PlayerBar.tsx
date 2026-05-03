@@ -83,6 +83,10 @@ export default function PlayerBar() {
           sampleRate={currentTrack.sampleRate}
           bitsPerSample={currentTrack.bitsPerSample}
         />
+        <HeartButton
+          active={isFavorite(currentTrack.id)}
+          onClick={() => toggleFavorite(currentTrack.id)}
+        />
 
         <div className="flex-1 flex flex-col items-center gap-1 min-w-0 max-w-2xl mx-auto">
           <TransportControls
@@ -100,11 +104,7 @@ export default function PlayerBar() {
           <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} trackId={currentTrack.id} waveformEnabled={waveformEnabled} />
         </div>
 
-        <div className="flex items-center gap-2 w-48 shrink-0 justify-end">
-          <HeartButton
-            active={isFavorite(currentTrack.id)}
-            onClick={() => toggleFavorite(currentTrack.id)}
-          />
+        <div className="flex items-center gap-2 w-44 shrink-0 justify-end">
           <ScrobbleIndicator status={scrobbleStatus} />
           <button
             onClick={handleToggleWaveform}

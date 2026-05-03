@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router';
 import { Outlet } from 'react-router';
 import { Home, Library, Music, Search, Settings, UserCog, LogOut, TrendingUp, HeartPulse } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import audioGraph from '../../../audio/audioGraph';
 import PlayerBar from '../../player/PlayerBar';
 import QueuePanel from '../../player/QueuePanel';
@@ -9,11 +10,14 @@ import QueuePanel from '../../player/QueuePanel';
 export default function NovatouchShell() {
   const { isAdmin, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
     { to: '/', icon: Home, label: 'Home', end: true },
     { to: '/library', icon: Library, label: 'Library' },
-    { to: '/search', icon: Search, label: 'Search' },
     { to: '/stats', icon: TrendingUp, label: 'Stats' },
     { to: '/settings', icon: Settings, label: 'Settings', end: true },
   ];
@@ -22,6 +26,40 @@ export default function NovatouchShell() {
     { to: '/settings/health', icon: HeartPulse, label: 'Library Health' },
     { to: '/users', icon: UserCog, label: 'Users' },
   ];
+
+  const handleSearchSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (q) {
+      navigate(`/search?q=${encodeURIComponent(q)}`);
+      setSearchOpen(false);
+      setSearchQuery('');
+    }
+  }, [searchQuery, navigate]);
+
+  useEffect(() => {
+    if (searchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    }
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') setSearchOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [searchOpen]);
 
   async function handleLogout() {
     audioGraph.stop();
@@ -53,7 +91,7 @@ export default function NovatouchShell() {
                 `flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                   isActive
                     ? 'mc-nav-active'
-                    : 'mc-interactive-muted'
+                    : 'mc-nav-item'
                 }`
               }
               style={({ isActive }) => isActive ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
@@ -61,6 +99,40 @@ export default function NovatouchShell() {
               <Icon className="w-4 h-4" />
             </NavLink>
           ))}
+
+          {/* Search with floating input */}
+          <div className="relative" ref={searchContainerRef}>
+            <button
+              onClick={() => setSearchOpen(v => !v)}
+              title="Search"
+              className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
+                searchOpen ? 'mc-nav-active' : 'mc-nav-item'
+              }`}
+              style={searchOpen ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
+            >
+              <Search className="w-4 h-4" />
+            </button>
+            {searchOpen && (
+              <form
+                onSubmit={handleSearchSubmit}
+                className="absolute left-full top-0 ml-2 z-50 flex items-center rounded-lg shadow-lg overflow-hidden"
+                style={{
+                  backgroundColor: 'var(--mc-bg-surface)',
+                  border: '1px solid var(--mc-border-default)',
+                }}
+              >
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className="w-56 px-3 py-2 text-sm bg-transparent outline-none selectable"
+                  style={{ color: 'var(--mc-text-primary)' }}
+                />
+              </form>
+            )}
+          </div>
 
           {isAdmin && (
             <>
@@ -75,7 +147,7 @@ export default function NovatouchShell() {
                     `flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                       isActive
                         ? 'mc-nav-active'
-                        : 'mc-interactive-muted'
+                        : 'mc-nav-item'
                     }`
                   }
                   style={({ isActive }) => isActive ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
@@ -90,7 +162,7 @@ export default function NovatouchShell() {
         <button
           onClick={handleLogout}
           title="Sign out"
-          className="flex items-center justify-center w-9 h-9 rounded-lg mc-interactive-muted transition-colors"
+          className="flex items-center justify-center w-9 h-9 rounded-lg mc-nav-item transition-colors"
         >
           <LogOut className="w-4 h-4" />
         </button>

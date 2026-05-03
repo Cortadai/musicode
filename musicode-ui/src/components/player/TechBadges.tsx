@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react';
+import { Star } from 'lucide-react';
 
 interface Props {
   filePath: string;
@@ -47,32 +48,25 @@ function TechBadges({ filePath, bitRate, sampleRate, bitsPerSample, className }:
 
   const isHiRes = (sampleRate ?? 0) > 44100 || (bitsPerSample ?? 0) > 16;
 
+  const badgeBg = isHiRes
+    ? 'color-mix(in srgb, #f59e0b 20%, transparent)'
+    : 'color-mix(in srgb, var(--mc-accent-primary) 20%, transparent)';
+  const badgeColor = isHiRes ? '#f59e0b' : 'var(--mc-accent-primary)';
+
   return (
     <div className={className ?? 'flex items-center gap-1 mt-0.5'}>
+      {isHiRes && (
+        <Star className="w-3 h-3 fill-current" style={{ color: '#f59e0b' }} />
+      )}
       {badges.map((label) => (
         <span
           key={label}
           className="text-[10px] font-mono leading-none px-1.5 py-0.5 rounded"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--mc-accent-primary) 20%, transparent)',
-            color: 'var(--mc-accent-primary)',
-          }}
+          style={{ backgroundColor: badgeBg, color: badgeColor }}
         >
           {label}
         </span>
       ))}
-      {isHiRes && (
-        <span
-          className="text-[10px] font-bold font-mono leading-none px-1.5 py-0.5 rounded"
-          style={{
-            backgroundColor: 'var(--mc-accent-primary)',
-            color: 'var(--mc-bg-primary)',
-            filter: 'drop-shadow(0 0 5px var(--mc-accent-primary))',
-          }}
-        >
-          HI-RES
-        </span>
-      )}
     </div>
   );
 }

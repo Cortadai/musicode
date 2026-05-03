@@ -37,7 +37,7 @@ export function AlbumCardSkeleton() {
 
 export function AlbumGridSkeleton({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-5 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-6 xl:grid-cols-7 gap-3">
       {Array.from({ length: count }, (_, i) => (
         <AlbumCardSkeleton key={i} />
       ))}

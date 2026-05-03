@@ -341,6 +341,29 @@ body {
   animation-play-state: paused;
 }
 
+@keyframes card-marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(calc(-50% - 1rem)); }
+}
+
+.card-marquee-container {
+  display: flex;
+  gap: 2rem;
+  width: max-content;
+}
+
+.card-marquee-container > :last-child {
+  display: none;
+}
+
+.card-marquee-container:hover > :last-child {
+  display: inline;
+}
+
+.card-marquee-container:hover {
+  animation: card-marquee 5s linear infinite;
+}
+
 /* EQ vertical slider styling */
 .eq-slider::-webkit-slider-runnable-track {
   width: 4px;
