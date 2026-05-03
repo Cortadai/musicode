@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-04-25T19:55:42.393Z",
+  "exported_at": "2026-05-03T09:16:59.781Z",
   "milestones": [
     {
       "id": "M001",
@@ -753,6 +753,72 @@
       ],
       "requirement_coverage": "Not provided.",
       "boundary_map_markdown": "### In Scope\\n- Full-screen cassette deck as isolated experience\\n- Canvas 2D rendering for cassette, reels, tape, deck housing\\n- VU meters with AnalyserNode integration\\n- Mechanical odometer\\n- Transport state LEDs\\n- Neon glow, scanlines, dynamic album colors\\n- Tape audio filter (lo-pass, wow/flutter, hiss)\\n- Dedicated activation button in PlayerBar\\n- Desktop viewports only\\n\\n### Out of Scope\\n- Mobile/touch support\\n- Integration with existing visualizer toggle cycle\\n- Recording functionality (REC button is decorative)\\n- Multiple cassette skin themes\\n- Cassette flip (Side A/B) mechanics"
+    },
+    {
+      "id": "M019",
+      "title": "UX Polish — Three Themes + Feature Upgrade",
+      "status": "planning",
+      "depends_on": [],
+      "created_at": "2026-05-03T07:36:41.298Z",
+      "completed_at": null,
+      "vision": "Elevar Musicode a nivel de reproductor premium con tres themes intercambiables (Evolved, Novatouch, Minimal), home page con carruseles, play bar rediseñada, favoritos, queue/now playing panels, y glassmorphism. Inspirado en Astra Music pero manteniendo la identidad Musicode (multi-usuario, stats, scrobbling, cassette deck, activity feed).",
+      "success_criteria": [
+        "Los 3 themes se seleccionan y persisten correctamente, cada uno con layout estructuralmente diferente",
+        "Home page muestra recently played, recent albums, recent artists con datos reales del backend",
+        "Play bar rediseñada con 3 secciones, waveform prominente, badges técnicos y controles de volumen numérico",
+        "Sistema de favoritos funcional (backend + frontend) con persistencia por usuario",
+        "Queue panel con drag-reorder y Now Playing panel con tabs INFO/LYRICS operativos",
+        "Glassmorphism aplicado consistentemente en cards y paneles",
+        "No regresiones en funcionalidad existente (playback, scrobbling, auth, cassette deck)"
+      ],
+      "key_risks": [
+        {
+          "risk": "Theme architecture complexity — layout switching may break component assumptions",
+          "whyItMatters": "Si el ThemeProvider no maneja bien los layouts intercambiables, cada theme multiplica el trabajo de mantenimiento y debugging"
+        },
+        {
+          "risk": "Play bar redesign touches the most-used component",
+          "whyItMatters": "El play bar es el corazón de la app. Una regresión aquí afecta toda la experiencia de usuario"
+        },
+        {
+          "risk": "Backend changes (Favorite entity, new endpoints) may conflict with existing schema",
+          "whyItMatters": "Flyway migrations deben ser compatibles con la BD existente. Un error bloquea el arranque del servidor"
+        },
+        {
+          "risk": "Glassmorphism performance on lower-end browsers",
+          "whyItMatters": "backdrop-filter es costoso en GPU. Si no se aplica selectivamente puede degradar la experiencia"
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "Theme architecture handles 3 structurally different layouts",
+          "retireIn": "S01",
+          "whatWillBeProven": "ThemeProvider switches between sidebar/horizontal/icon-only layouts without breaking shared components"
+        },
+        {
+          "riskOrUnknown": "Play bar redesign preserves all playback functionality",
+          "retireIn": "S03",
+          "whatWillBeProven": "Audio playback, seek, volume, shuffle, repeat, scrobbling all work with the new 3-section layout"
+        },
+        {
+          "riskOrUnknown": "Favorite entity integrates cleanly with existing schema",
+          "retireIn": "S05",
+          "whatWillBeProven": "Flyway migration runs, CRUD operations work, no FK conflicts with existing entities"
+        }
+      ],
+      "verification_contract": "API contracts mantenidos — endpoints existentes no cambian firma",
+      "verification_integration": "Backend tests pasan, Flyway migrations corren limpio, endpoints nuevos responden correctamente",
+      "verification_operational": "Build de producción compila, Docker image se construye, app arranca sin errores",
+      "verification_uat": "Browser verification de cada theme con playback completo, navegación entre vistas, y todas las features nuevas",
+      "definition_of_done": [
+        "Los 3 themes renderizan correctamente y el selector persiste la preferencia",
+        "Todas las features nuevas (home, play bar, favorites, queue, now playing) funcionan end-to-end",
+        "Tests backend pasan (existentes + nuevos para Favorite)",
+        "No regresiones visuales ni funcionales en features existentes",
+        "Build de producción compila sin errores"
+      ],
+      "requirement_coverage": "Not provided.",
+      "boundary_map_markdown": "Not provided."
     }
   ],
   "slices": [
@@ -2050,6 +2116,181 @@
       "integration_closure": "Filter chain inserts between existing audio source and destination. Does not interfere with AnalyserNode or existing audio pipeline.",
       "observability_impact": "Console logs filter chain connect/disconnect events for debugging",
       "sequence": 4,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M019",
+      "id": "S01",
+      "title": "S01",
+      "status": "complete",
+      "risk": "high",
+      "depends": [],
+      "demo": "Theme selector switches between Evolved layout (sidebar) and placeholder shells for Novatouch/Minimal. CSS variables change colors/spacing per theme.",
+      "created_at": "2026-05-03T07:37:48.488Z",
+      "completed_at": "2026-05-03T09:09:15.257Z",
+      "full_summary_md": "---\nid: S01\nparent: M019\nmilestone: M019\nprovides:\n  - [\"ThemeProvider context with useTheme hook\", \"CSS variable system (--mc-* tokens on :root)\", \"3 layout shells (Evolved/Novatouch/Minimal)\", \"Theme selector in Settings page\", \"localStorage theme persistence\"]\nrequires:\n  []\naffects:\n  - [\"All UI components now consume CSS variables instead of hardcoded Tailwind colors\", \"AppShell delegates to shell components — no longer a single monolithic layout\", \"Settings page has new Appearance section\"]\nkey_files:\n  - [\"musicode-ui/src/themes/types.ts\", \"musicode-ui/src/themes/ThemeProvider.tsx\", \"musicode-ui/src/themes/useTheme.ts\", \"musicode-ui/src/themes/tokens/evolved.ts\", \"musicode-ui/src/themes/tokens/novatouch.ts\", \"musicode-ui/src/themes/tokens/minimal.ts\", \"musicode-ui/src/components/layout/AppShell.tsx\", \"musicode-ui/src/components/layout/shells/EvolvedShell.tsx\", \"musicode-ui/src/components/layout/shells/NovatouchShell.tsx\", \"musicode-ui/src/components/layout/shells/MinimalShell.tsx\", \"musicode-ui/src/components/common/ThemeSelector.tsx\", \"musicode-ui/src/pages/SettingsPage.tsx\", \"musicode-ui/src/index.css\"]\nkey_decisions:\n  - [\"CSS variable naming: --mc-{camelCase} prefix to avoid Tailwind collisions\", \"ThemeProvider wraps entire app (outside AuthProvider) — themes work on login page too\", \"Theme selector lives exclusively in Settings page, not inline in shells\", \"All 3 themes share indigo accent palette (V1) — palette differentiation deferred\", \"Tailwind arbitrary value syntax bg-[var(--mc-*)] preserves utility-first approach\"]\npatterns_established:\n  - [\"CSS variable consumption via Tailwind arbitrary values: bg-[var(--mc-bgBase)]\", \"Shell architecture: AppShell → {Evolved,Novatouch,Minimal}Shell delegation\", \"Theme token sets as TypeScript objects converted to CSS vars at runtime\"]\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-05-03T09:09:15.258Z\nblocker_discovered: false\n---\n\n# S01: Theme Architecture + Evolved Shell\n\n**Built complete CSS variable theming system with 3 switchable layout shells (Evolved/Novatouch/Minimal) and migrated all components to CSS custom properties**\n\n## What Happened\n\nS01 delivered the full theming foundation for Musicode in 4 tasks:\n\n**T01** — Created ThemeProvider context, TypeScript types (ThemeName, ShellLayout, ThemeTokens with 40+ tokens, ThemeConfig), useTheme hook, and token sets for all 3 themes. ThemeProvider injects --mc-* CSS variables on :root, persists to localStorage, and sets data-theme attribute.\n\n**T02** — Refactored AppShell into a theme-aware shell architecture. Created EvolvedShell (sidebar + topbar), NovatouchShell (56px icon sidebar), and MinimalShell (horizontal nav). AppShell delegates to the active shell based on ThemeContext. Keyboard shortcuts shared across all shells.\n\n**T03** — Migrated ~40 component files from hardcoded Tailwind zinc/indigo classes to CSS variable equivalents using arbitrary value syntax (bg-[var(--mc-bgBase)]). Added glassmorphism utilities to index.css. Visual no-op — Evolved theme renders identically to pre-migration.\n\n**T04** — Built ThemeSelector segmented control. Iterated on placement through user testing: started in TopBar, tried popover in Novatouch sidebar, ultimately settled in Settings page (Appearance section) as the canonical home. Unified accent colors to indigo across all 3 themes per user feedback.\n\nAll subsequent slices (S02-S08) build on this foundation — every component now consumes CSS variables that the theme system controls.\n\n## Verification\n\nTypeScript compiles clean (tsc --noEmit). Vite production build passes. All 3 themes verified in browser: layout shells switch correctly, CSS variables apply, accent colors are consistent indigo, localStorage persists theme choice across reload. User confirmed all themes working correctly and approved closure.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nT03 expanded from 7 planned files to ~40 files to ensure complete migration. T04 iterated on theme selector placement (TopBar → popover → Settings page) based on user testing.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nS02 (Home Page) is next in the roadmap. S07/S08 will flesh out Novatouch and Minimal shells beyond the current placeholders.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S01: Theme Architecture + Evolved Shell — UAT\n\n**Milestone:** M019\n**Written:** 2026-05-03T09:09:15.258Z\n\n## UAT: S01 — Theme Architecture + Evolved Shell\n\n### Prerequisites\n- Musicode running at localhost:5173\n- Logged in as any user\n\n### Test Cases\n\n| # | Step | Expected | Pass |\n|---|------|----------|------|\n| 1 | Open app → default theme is Evolved | Sidebar + TopBar layout, indigo accents | ✅ |\n| 2 | Navigate to Settings → Appearance section visible | Theme selector shows Evolved/Novatouch/Minimal | ✅ |\n| 3 | Select Novatouch | Layout switches to 56px icon-only sidebar, indigo accents | ✅ |\n| 4 | Select Minimal | Layout switches to horizontal nav bar, indigo accents | ✅ |\n| 5 | Select Evolved | Layout returns to sidebar + TopBar | ✅ |\n| 6 | Reload page | Theme persists (same shell renders) | ✅ |\n| 7 | Navigate all pages in Evolved | All pages render correctly, no hardcoded colors | ✅ |\n| 8 | Navigate all pages in Novatouch | All nav links work, pages render | ✅ |\n| 9 | Navigate all pages in Minimal | All nav links work, pages render | ✅ |\n| 10 | Inspect :root in DevTools | --mc-* CSS variables present | ✅ |\n| 11 | npm run build | Zero errors | ✅ |\n",
+      "goal": "ThemeProvider architecture that injects CSS variables + layout shell per theme. Theme selector switches between Evolved (fully styled), Novatouch (placeholder icon sidebar), and Minimal (placeholder horizontal nav). Evolved theme uses indigo accent palette from mockup-B. All shared components consume CSS variables instead of hardcoded Tailwind zinc-* classes.",
+      "success_criteria": "- Theme selector visible in UI, persists choice across page reloads (localStorage)\n- Switching to Evolved renders sidebar+topbar layout with indigo accent colors\n- Switching to Novatouch renders icon-only sidebar placeholder (functional nav)\n- Switching to Minimal renders horizontal nav placeholder (functional nav)\n- No hardcoded zinc-950/900/800 in AppShell, Sidebar, TopBar — all via CSS variables\n- All existing pages render correctly under Evolved theme (no visual regressions)\n- `npm run build` passes with zero errors",
+      "proof_level": "integration — real runtime required, visual verification in browser",
+      "integration_closure": "Upstream: existing AppShell, Sidebar, TopBar, PlayerBar, all page components. New wiring: ThemeProvider wraps app in App.tsx, AppShell delegates to shell components. After S01, every subsequent slice builds on theme architecture — S02-S08 all depend on S01.",
+      "observability_impact": "Active theme stored in localStorage key `musicode-theme`. ThemeProvider logs theme switch to console in dev mode. CSS variables visible in browser DevTools on :root.",
+      "sequence": 1,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M019",
+      "id": "S02",
+      "title": "Home Page",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Home page con saludo dinámico, carruseles de recently played/albums/artists con datos reales, stats de librería, glassmorphism cards con hover lift.",
+      "created_at": "2026-05-03T07:37:48.489Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Home page with dynamic greeting, horizontal scroll carousels (recently played, top albums, top artists), library stats mini-cards, and glassmorphism card styling — all using existing API endpoints.",
+      "success_criteria": "HomePage renders at / with time-based greeting, 3 carousels with real data, 4 stats cards, glassmorphism styling. Visual parity across all 3 themes. No new backend endpoints needed.",
+      "proof_level": "Not provided.",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
+      "sequence": 2,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M019",
+      "id": "S03",
+      "title": "Play Bar Redesign",
+      "status": "pending",
+      "risk": "high",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Play bar con 3 secciones (now playing / controles+waveform / utilidades), badges técnicos FMT|BIT|KHZ, volumen numérico, marquee en títulos largos.",
+      "created_at": "2026-05-03T07:37:48.489Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Rediseñar el play bar como componente de 3 secciones manteniendo toda la funcionalidad de playback existente.",
+      "success_criteria": "Play/pause/seek/shuffle/repeat funcionan, waveform prominente con 3 estados de color, badges técnicos visibles, volumen muestra porcentaje, marquee anima títulos largos",
+      "proof_level": "browser verification — full playback cycle with all controls",
+      "integration_closure": "Scrobbling, cassette deck toggle, y activity feed siguen funcionando con el nuevo play bar",
+      "observability_impact": "None — existing playback observability preserved",
+      "sequence": 3,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M019",
+      "id": "S04",
+      "title": "Library Enhancement",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Library con tabs TRACKS|ALBUMS|ARTISTS con contadores, tabla de tracks enriquecida con codec badges y miniaturas, artist avatares circulares.",
+      "created_at": "2026-05-03T07:37:48.489Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Mejorar la vista de librería con tabs unificados, tabla enriquecida y avatares de artista.",
+      "success_criteria": "Tabs switchean entre vistas, contadores muestran counts correctos, tabla muestra codec badges, artistas tienen avatar circular",
+      "proof_level": "browser verification",
+      "integration_closure": "Navegación a detalle de album/artist sigue funcionando desde las nuevas vistas",
+      "observability_impact": "None",
+      "sequence": 4,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M019",
+      "id": "S05",
+      "title": "Favorites",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01",
+        "S03"
+      ],
+      "demo": "Corazón en play bar y track list togglea favorito. Vista de favoritos en librería. Persistencia por usuario.",
+      "created_at": "2026-05-03T07:37:48.489Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Implementar sistema de favoritos end-to-end: entidad BD, API REST, y UI con toggle en play bar y lista de tracks.",
+      "success_criteria": "POST/DELETE /api/favorites/{trackId} funciona, corazón se rellena/vacía en UI, vista favoritos muestra solo tracks marcados, datos persisten entre sesiones",
+      "proof_level": "backend integration test + browser verification",
+      "integration_closure": "Favorite entity con FK a User y Track, Flyway migration limpia, no conflictos con PlaybackEvent u otras entidades",
+      "observability_impact": "Favorite count in stats endpoints",
+      "sequence": 5,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M019",
+      "id": "S06",
+      "title": "Panels — Queue + Now Playing + Lyrics",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S03"
+      ],
+      "demo": "Queue panel con drag-reorder y clear. Now Playing panel lateral con tabs INFO/LYRICS. Lyrics slide-up desde play bar.",
+      "created_at": "2026-05-03T07:37:48.489Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Implementar los tres paneles complementarios al play bar: cola de reproducción, now playing con info detallada, y lyrics.",
+      "success_criteria": "Queue muestra tracks con drag-reorder funcional, Now Playing muestra carátula grande + tabs INFO/LYRICS, lyrics slide-up funciona, paneles se togglean desde play bar",
+      "proof_level": "browser verification — open/close panels, reorder queue, view lyrics",
+      "integration_closure": "Panels se integran con el estado de reproducción existente (usePlayer)",
+      "observability_impact": "None",
+      "sequence": 6,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M019",
+      "id": "S07",
+      "title": "Novatouch Theme",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Theme Novatouch activo con sidebar de iconos 56px, hero con saludo dinámico, estética fría purple, glassmorphism pronunciado.",
+      "created_at": "2026-05-03T07:37:48.489Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Implementar el theme Novatouch como variación sobre la arquitectura de themes establecida en S01.",
+      "success_criteria": "Sidebar colapsa a iconos, hero renderiza con saludo y stats, colores fríos con purple como acento, glassmorphism más pronunciado que Evolved",
+      "proof_level": "browser verification — visual inspection",
+      "integration_closure": "Todos los componentes compartidos (player, cards, tables) renderizan correctamente con las CSS vars de Novatouch",
+      "observability_impact": "None",
+      "sequence": 7,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M019",
+      "id": "S08",
+      "title": "Minimal Theme",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Theme Minimal con navegación horizontal (sin sidebar), tipografía mono, spacing ultra limpio.",
+      "created_at": "2026-05-03T07:37:48.489Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Implementar el theme Minimal como variación sobre la arquitectura de themes establecida en S01.",
+      "success_criteria": "Navegación horizontal funcional, tipografía JetBrains Mono para datos técnicos, layout limpio sin sidebar, todas las features accesibles",
+      "proof_level": "browser verification — visual inspection + navigation test",
+      "integration_closure": "Sin sidebar, activity feed no es visible — verificar que no hay errores por componentes ausentes",
+      "observability_impact": "None",
+      "sequence": 8,
       "replan_triggered_at": null
     }
   ],
@@ -8376,6 +8617,347 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M019",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "Created ThemeProvider context, types, useTheme hook, and token sets for all 3 themes (Evolved/Novatouch/Minimal)",
+      "status": "complete",
+      "one_liner": "Created ThemeProvider context, types, useTheme hook, and token sets for all 3 themes (Evolved/Novatouch/Minimal)",
+      "narrative": "Built the complete theme architecture foundation:\n\n1. Created `src/themes/types.ts` with ThemeName, ShellLayout, ThemeTokens (40+ tokens), ThemeConfig, and ThemeContextValue types.\n2. Created token sets for all 3 themes: evolved (zinc+indigo, sidebar-expanded), novatouch (cool violet, sidebar-icons), minimal (soft purple, horizontal nav, mono typography).\n3. Created ThemeProvider that converts camelCase token keys to CSS custom properties (--mc-*), applies them to :root, persists selection to localStorage, and sets data-theme attribute.\n4. Created useTheme hook with proper context guard.\n5. Integrated ThemeProvider into App.tsx wrapping the entire app tree (outside AuthProvider/PlayerProvider so themes work even on login page).\n6. Barrel export from src/themes/index.ts.",
+      "verification_result": "TypeScript compilation passed with zero errors (npx tsc --noEmit). Vite dev server started and served the app successfully at localhost:5173.",
+      "duration": "",
+      "completed_at": "2026-05-03T07:51:38.168Z",
+      "blocker_discovered": false,
+      "deviations": "None — implemented as planned.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/themes/types.ts",
+        "musicode-ui/src/themes/tokens/evolved.ts",
+        "musicode-ui/src/themes/tokens/novatouch.ts",
+        "musicode-ui/src/themes/tokens/minimal.ts",
+        "musicode-ui/src/themes/ThemeProvider.tsx",
+        "musicode-ui/src/themes/useTheme.ts",
+        "musicode-ui/src/themes/index.ts",
+        "musicode-ui/src/App.tsx"
+      ],
+      "key_decisions": [
+        "CSS variable naming convention: --mc-{camelToKebab} prefix to avoid collisions with Tailwind",
+        "ThemeProvider sits outside AuthProvider — themes apply globally including login page",
+        "All 3 token sets defined upfront (not just Evolved) to validate the type system handles all layouts",
+        "localStorage persistence with 'musicode-theme' key, defaults to 'evolved'"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S01\nmilestone: M019\nkey_files:\n  - musicode-ui/src/themes/types.ts\n  - musicode-ui/src/themes/tokens/evolved.ts\n  - musicode-ui/src/themes/tokens/novatouch.ts\n  - musicode-ui/src/themes/tokens/minimal.ts\n  - musicode-ui/src/themes/ThemeProvider.tsx\n  - musicode-ui/src/themes/useTheme.ts\n  - musicode-ui/src/themes/index.ts\n  - musicode-ui/src/App.tsx\nkey_decisions:\n  - CSS variable naming convention: --mc-{camelToKebab} prefix to avoid collisions with Tailwind\n  - ThemeProvider sits outside AuthProvider — themes apply globally including login page\n  - All 3 token sets defined upfront (not just Evolved) to validate the type system handles all layouts\n  - localStorage persistence with 'musicode-theme' key, defaults to 'evolved'\nduration: \nverification_result: passed\ncompleted_at: 2026-05-03T07:51:38.166Z\nblocker_discovered: false\n---\n\n# T01: Created ThemeProvider context, types, useTheme hook, and token sets for all 3 themes (Evolved/Novatouch/Minimal)\n\n**Created ThemeProvider context, types, useTheme hook, and token sets for all 3 themes (Evolved/Novatouch/Minimal)**\n\n## What Happened\n\nBuilt the complete theme architecture foundation:\n\n1. Created `src/themes/types.ts` with ThemeName, ShellLayout, ThemeTokens (40+ tokens), ThemeConfig, and ThemeContextValue types.\n2. Created token sets for all 3 themes: evolved (zinc+indigo, sidebar-expanded), novatouch (cool violet, sidebar-icons), minimal (soft purple, horizontal nav, mono typography).\n3. Created ThemeProvider that converts camelCase token keys to CSS custom properties (--mc-*), applies them to :root, persists selection to localStorage, and sets data-theme attribute.\n4. Created useTheme hook with proper context guard.\n5. Integrated ThemeProvider into App.tsx wrapping the entire app tree (outside AuthProvider/PlayerProvider so themes work even on login page).\n6. Barrel export from src/themes/index.ts.\n\n## Verification\n\nTypeScript compilation passed with zero errors (npx tsc --noEmit). Vite dev server started and served the app successfully at localhost:5173.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npx tsc --noEmit` | 0 | pass | 8000ms |\n| 2 | `npx vite --port 5173 (curl check)` | 0 | pass | 3000ms |\n\n## Deviations\n\nNone — implemented as planned.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/themes/types.ts`\n- `musicode-ui/src/themes/tokens/evolved.ts`\n- `musicode-ui/src/themes/tokens/novatouch.ts`\n- `musicode-ui/src/themes/tokens/minimal.ts`\n- `musicode-ui/src/themes/ThemeProvider.tsx`\n- `musicode-ui/src/themes/useTheme.ts`\n- `musicode-ui/src/themes/index.ts`\n- `musicode-ui/src/App.tsx`\n",
+      "description": "Define the ThemeConfig type with id, name, cssVars record, and layoutType enum (evolved|novatouch|minimal). Create Evolved theme tokens from mockup-B CSS variables (--bg-base, --bg-surface, --bg-elevated, --border, --text, --text-2, --text-3, --accent, --accent-dim, --accent-glow, --glass-bg, --glass-border, --radius-sm/md/lg, --wf-played/unplayed/buffered). Create ThemeContext with provider that: (1) reads initial theme from localStorage, (2) injects CSS variables on document.documentElement, (3) exposes activeTheme + setTheme. Create stub token sets for Novatouch (purple-cold palette) and Minimal (neutral). Export useTheme hook.",
+      "estimate": "45m",
+      "files": [
+        "musicode-ui/src/types/theme.ts",
+        "musicode-ui/src/context/ThemeContext.tsx",
+        "musicode-ui/src/themes/evolved.ts",
+        "musicode-ui/src/themes/novatouch.ts",
+        "musicode-ui/src/themes/minimal.ts",
+        "musicode-ui/src/themes/index.ts"
+      ],
+      "verify": "npm run build passes. ThemeProvider renders without errors. useTheme returns evolved as default.",
+      "inputs": [
+        "reference/mockups/mockup-B-musicode-evolved.html",
+        "reference/mockups/mockup-A-astra-clone.html",
+        "reference/mockups/mockup-C-minimal-premium.html"
+      ],
+      "expected_output": [
+        "musicode-ui/src/types/theme.ts",
+        "musicode-ui/src/context/ThemeContext.tsx",
+        "musicode-ui/src/themes/evolved.ts",
+        "musicode-ui/src/themes/novatouch.ts",
+        "musicode-ui/src/themes/minimal.ts",
+        "musicode-ui/src/themes/index.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M019",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "Refactored AppShell into theme-aware shell dispatcher with 3 layout shells (Evolved, Novatouch, Minimal)",
+      "status": "complete",
+      "one_liner": "Refactored AppShell into theme-aware shell dispatcher with 3 layout shells (Evolved, Novatouch, Minimal)",
+      "narrative": "Extracted the current AppShell layout into EvolvedShell (sidebar-expanded + TopBar + Outlet + PlayerBar). Created NovatouchShell with 56px icon-only sidebar using CSS variables from theme tokens, functional NavLinks with active state styling. Created MinimalShell with horizontal nav bar at top, inline search, user info, and text-only nav links. Refactored AppShell to be a dispatcher: reads `theme.layout` from useTheme and delegates to the matching shell via a `shellByLayout` map. Keyboard shortcuts (space, arrows, mute) remain in AppShell shared across all shells. Each shell is self-contained with its own nav items, admin items, and logout handling.",
+      "verification_result": "TypeScript type-check (tsc --noEmit) passed with zero errors. Vite production build passed in 500ms. Dev server serves the app correctly at localhost:5173.",
+      "duration": "",
+      "completed_at": "2026-05-03T07:56:25.588Z",
+      "blocker_discovered": false,
+      "deviations": "None — implemented as planned.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/layout/AppShell.tsx",
+        "musicode-ui/src/components/layout/shells/EvolvedShell.tsx",
+        "musicode-ui/src/components/layout/shells/NovatouchShell.tsx",
+        "musicode-ui/src/components/layout/shells/MinimalShell.tsx"
+      ],
+      "key_decisions": [
+        "Keyboard shortcuts stay in AppShell (shared) rather than duplicated in each shell",
+        "NovatouchShell and MinimalShell use inline CSS variables (var(--mc-*)) for theme-aware styling rather than hardcoded Tailwind classes",
+        "Each shell owns its own nav items and logout logic to stay self-contained"
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S01\nmilestone: M019\nkey_files:\n  - musicode-ui/src/components/layout/AppShell.tsx\n  - musicode-ui/src/components/layout/shells/EvolvedShell.tsx\n  - musicode-ui/src/components/layout/shells/NovatouchShell.tsx\n  - musicode-ui/src/components/layout/shells/MinimalShell.tsx\nkey_decisions:\n  - Keyboard shortcuts stay in AppShell (shared) rather than duplicated in each shell\n  - NovatouchShell and MinimalShell use inline CSS variables (var(--mc-*)) for theme-aware styling rather than hardcoded Tailwind classes\n  - Each shell owns its own nav items and logout logic to stay self-contained\nduration: \nverification_result: passed\ncompleted_at: 2026-05-03T07:56:25.586Z\nblocker_discovered: false\n---\n\n# T02: Refactored AppShell into theme-aware shell dispatcher with 3 layout shells (Evolved, Novatouch, Minimal)\n\n**Refactored AppShell into theme-aware shell dispatcher with 3 layout shells (Evolved, Novatouch, Minimal)**\n\n## What Happened\n\nExtracted the current AppShell layout into EvolvedShell (sidebar-expanded + TopBar + Outlet + PlayerBar). Created NovatouchShell with 56px icon-only sidebar using CSS variables from theme tokens, functional NavLinks with active state styling. Created MinimalShell with horizontal nav bar at top, inline search, user info, and text-only nav links. Refactored AppShell to be a dispatcher: reads `theme.layout` from useTheme and delegates to the matching shell via a `shellByLayout` map. Keyboard shortcuts (space, arrows, mute) remain in AppShell shared across all shells. Each shell is self-contained with its own nav items, admin items, and logout handling.\n\n## Verification\n\nTypeScript type-check (tsc --noEmit) passed with zero errors. Vite production build passed in 500ms. Dev server serves the app correctly at localhost:5173.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npx tsc --noEmit` | 0 | pass | 3000ms |\n| 2 | `npm run build` | 0 | pass | 500ms |\n\n## Deviations\n\nNone — implemented as planned.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/layout/AppShell.tsx`\n- `musicode-ui/src/components/layout/shells/EvolvedShell.tsx`\n- `musicode-ui/src/components/layout/shells/NovatouchShell.tsx`\n- `musicode-ui/src/components/layout/shells/MinimalShell.tsx`\n",
+      "description": "Wire ThemeProvider into App.tsx (wrap inside PlayerProvider). Refactor AppShell to read activeTheme from useTheme and delegate to a shell component based on layoutType. Create EvolvedShell that renders current Sidebar+TopBar+Outlet+PlayerBar layout (extract from AppShell). Create NovatouchShell placeholder with 56px icon-only sidebar + content + PlayerBar — icons only, no labels, functional NavLinks. Create MinimalShell placeholder with horizontal nav bar at top + content + PlayerBar — horizontal tabs, functional NavLinks. Move keyboard shortcut logic to AppShell (shared across all shells). Each shell is a standalone layout component that receives children via Outlet.",
+      "estimate": "1h",
+      "files": [
+        "musicode-ui/src/App.tsx",
+        "musicode-ui/src/components/layout/AppShell.tsx",
+        "musicode-ui/src/components/layout/shells/EvolvedShell.tsx",
+        "musicode-ui/src/components/layout/shells/NovatouchShell.tsx",
+        "musicode-ui/src/components/layout/shells/MinimalShell.tsx"
+      ],
+      "verify": "npm run build passes. App renders EvolvedShell by default. All nav links work. Keyboard shortcuts work.",
+      "inputs": [
+        "musicode-ui/src/App.tsx",
+        "musicode-ui/src/components/layout/AppShell.tsx",
+        "musicode-ui/src/components/layout/Sidebar.tsx",
+        "musicode-ui/src/components/layout/TopBar.tsx",
+        "musicode-ui/src/context/ThemeContext.tsx"
+      ],
+      "expected_output": [
+        "musicode-ui/src/App.tsx",
+        "musicode-ui/src/components/layout/AppShell.tsx",
+        "musicode-ui/src/components/layout/shells/EvolvedShell.tsx",
+        "musicode-ui/src/components/layout/shells/NovatouchShell.tsx",
+        "musicode-ui/src/components/layout/shells/MinimalShell.tsx"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M019",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "Migrated all shared component colors from hardcoded Tailwind classes to CSS custom properties (--mc-* variables)",
+      "status": "complete",
+      "one_liner": "Migrated all shared component colors from hardcoded Tailwind classes to CSS custom properties (--mc-* variables)",
+      "narrative": "Replaced hardcoded zinc-950/900/800/700/500/400 and indigo-400/500 Tailwind classes across ~40 component files with CSS variable equivalents using Tailwind arbitrary values (e.g. bg-[var(--mc-bgBase)], text-[var(--mc-textPrimary)], border-[var(--mc-borderSubtle)]). This covered layout components (Sidebar, TopBar, AppShell shells), player components (PlayerBar, ProgressBar, VolumeControl, TransportControls, etc.), page components (all pages), and common components (ErrorBoundary, Spinner, ErrorMessage). Added glassmorphism utility classes to index.css. The Evolved theme renders identically to the pre-migration appearance — this was a pure refactor with zero visual changes.",
+      "verification_result": "npm run build passes with zero errors. Visual comparison in browser confirmed Evolved theme looks identical to pre-migration. All three shells (Evolved/Novatouch/Minimal) pick up their respective CSS variable values.",
+      "duration": "",
+      "completed_at": "2026-05-03T09:08:19.265Z",
+      "blocker_discovered": false,
+      "deviations": "Scope expanded beyond the 7 files listed in the plan to ~40 files — every component with hardcoded colors was migrated to ensure consistency.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/index.css",
+        "musicode-ui/src/components/layout/Sidebar.tsx",
+        "musicode-ui/src/components/layout/TopBar.tsx",
+        "musicode-ui/src/components/player/PlayerBar.tsx",
+        "musicode-ui/src/components/player/ProgressBar.tsx",
+        "musicode-ui/src/components/player/VolumeControl.tsx",
+        "musicode-ui/src/components/player/TransportControls.tsx",
+        "musicode-ui/src/pages/SettingsPage.tsx",
+        "musicode-ui/src/pages/AlbumsPage.tsx",
+        "musicode-ui/src/pages/TracksPage.tsx"
+      ],
+      "key_decisions": [
+        "Used Tailwind arbitrary value syntax bg-[var(--mc-*)] rather than @apply or inline styles — keeps Tailwind's utility-first approach",
+        "Migrated ~40 files in one pass rather than incremental to avoid mixed hardcoded/variable state",
+        "Kept zinc/indigo as the single palette for all 3 themes (V1) — palette differentiation deferred"
+      ],
+      "full_summary_md": "---\nid: T03\nparent: S01\nmilestone: M019\nkey_files:\n  - musicode-ui/src/index.css\n  - musicode-ui/src/components/layout/Sidebar.tsx\n  - musicode-ui/src/components/layout/TopBar.tsx\n  - musicode-ui/src/components/player/PlayerBar.tsx\n  - musicode-ui/src/components/player/ProgressBar.tsx\n  - musicode-ui/src/components/player/VolumeControl.tsx\n  - musicode-ui/src/components/player/TransportControls.tsx\n  - musicode-ui/src/pages/SettingsPage.tsx\n  - musicode-ui/src/pages/AlbumsPage.tsx\n  - musicode-ui/src/pages/TracksPage.tsx\nkey_decisions:\n  - Used Tailwind arbitrary value syntax bg-[var(--mc-*)] rather than @apply or inline styles — keeps Tailwind's utility-first approach\n  - Migrated ~40 files in one pass rather than incremental to avoid mixed hardcoded/variable state\n  - Kept zinc/indigo as the single palette for all 3 themes (V1) — palette differentiation deferred\nduration: \nverification_result: passed\ncompleted_at: 2026-05-03T09:08:19.264Z\nblocker_discovered: false\n---\n\n# T03: Migrated all shared component colors from hardcoded Tailwind classes to CSS custom properties (--mc-* variables)\n\n**Migrated all shared component colors from hardcoded Tailwind classes to CSS custom properties (--mc-* variables)**\n\n## What Happened\n\nReplaced hardcoded zinc-950/900/800/700/500/400 and indigo-400/500 Tailwind classes across ~40 component files with CSS variable equivalents using Tailwind arbitrary values (e.g. bg-[var(--mc-bgBase)], text-[var(--mc-textPrimary)], border-[var(--mc-borderSubtle)]). This covered layout components (Sidebar, TopBar, AppShell shells), player components (PlayerBar, ProgressBar, VolumeControl, TransportControls, etc.), page components (all pages), and common components (ErrorBoundary, Spinner, ErrorMessage). Added glassmorphism utility classes to index.css. The Evolved theme renders identically to the pre-migration appearance — this was a pure refactor with zero visual changes.\n\n## Verification\n\nnpm run build passes with zero errors. Visual comparison in browser confirmed Evolved theme looks identical to pre-migration. All three shells (Evolved/Novatouch/Minimal) pick up their respective CSS variable values.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npx tsc --noEmit` | 0 | pass | 8000ms |\n| 2 | `npx vite build` | 0 | pass | 12000ms |\n\n## Deviations\n\nScope expanded beyond the 7 files listed in the plan to ~40 files — every component with hardcoded colors was migrated to ensure consistency.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/index.css`\n- `musicode-ui/src/components/layout/Sidebar.tsx`\n- `musicode-ui/src/components/layout/TopBar.tsx`\n- `musicode-ui/src/components/player/PlayerBar.tsx`\n- `musicode-ui/src/components/player/ProgressBar.tsx`\n- `musicode-ui/src/components/player/VolumeControl.tsx`\n- `musicode-ui/src/components/player/TransportControls.tsx`\n- `musicode-ui/src/pages/SettingsPage.tsx`\n- `musicode-ui/src/pages/AlbumsPage.tsx`\n- `musicode-ui/src/pages/TracksPage.tsx`\n",
+      "description": "Replace hardcoded zinc-950, zinc-900, zinc-800, zinc-700, zinc-500, zinc-400, zinc-300, zinc-100 Tailwind classes in layout and shared components with CSS variable equivalents using Tailwind arbitrary values (e.g. bg-[var(--bg-base)], text-[var(--text)], border-[var(--border)]). Target files: Sidebar, TopBar, PlayerBar wrapper, page container backgrounds, card borders. Add glassmorphism utility classes to index.css (.glass-card, .glass-panel) using theme CSS variables. Ensure Evolved theme looks identical to current app — this is a refactor, not a visual change.",
+      "estimate": "1h30m",
+      "files": [
+        "musicode-ui/src/index.css",
+        "musicode-ui/src/components/layout/Sidebar.tsx",
+        "musicode-ui/src/components/layout/TopBar.tsx",
+        "musicode-ui/src/components/player/PlayerBar.tsx",
+        "musicode-ui/src/components/layout/shells/EvolvedShell.tsx",
+        "musicode-ui/src/components/layout/shells/NovatouchShell.tsx",
+        "musicode-ui/src/components/layout/shells/MinimalShell.tsx"
+      ],
+      "verify": "npm run build passes. Visual comparison in browser: Evolved theme looks identical to current app. Novatouch/Minimal shells pick up their respective color tokens.",
+      "inputs": [
+        "musicode-ui/src/context/ThemeContext.tsx",
+        "musicode-ui/src/themes/evolved.ts",
+        "musicode-ui/src/components/layout/Sidebar.tsx",
+        "musicode-ui/src/components/layout/TopBar.tsx",
+        "musicode-ui/src/components/player/PlayerBar.tsx"
+      ],
+      "expected_output": [
+        "musicode-ui/src/index.css",
+        "musicode-ui/src/components/layout/Sidebar.tsx",
+        "musicode-ui/src/components/layout/TopBar.tsx",
+        "musicode-ui/src/components/player/PlayerBar.tsx",
+        "musicode-ui/src/components/layout/shells/EvolvedShell.tsx",
+        "musicode-ui/src/components/layout/shells/NovatouchShell.tsx",
+        "musicode-ui/src/components/layout/shells/MinimalShell.tsx"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M019",
+      "slice_id": "S01",
+      "id": "T04",
+      "title": "Built ThemeSelector component and wired end-to-end theme switching across all 3 shells, settled in Settings page",
+      "status": "complete",
+      "one_liner": "Built ThemeSelector component and wired end-to-end theme switching across all 3 shells, settled in Settings page",
+      "narrative": "Created ThemeSelector as a segmented control with Evolved/Novatouch/Minimal buttons. Initially placed in TopBar (Evolved), MinimalShell header, and as a popover in NovatouchShell sidebar. After user testing, iterated on placement: unified accent colors to indigo across all themes, repositioned the Novatouch popover. Ultimately moved the theme selector exclusively to the Settings page (Appearance section) per user feedback — this is where music apps typically place theme controls. Removed all inline/popover theme selectors from shells. End-to-end flow works: clicking a theme in Settings updates ThemeContext → CSS variables swap on :root → layout shell switches → choice persists in localStorage across reloads.",
+      "verification_result": "npm run build passes. Verified in browser: all 3 themes switch correctly from Settings, accent colors are consistent indigo, layout shells swap, localStorage persists choice across reload. User confirmed all themes working correctly.",
+      "duration": "",
+      "completed_at": "2026-05-03T09:08:39.698Z",
+      "blocker_discovered": false,
+      "deviations": "Plan specified TopBar placement. After iterating with user feedback (popover too intrusive in Novatouch, accent colors inconsistent), settled on Settings page as the single location for theme selection.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/common/ThemeSelector.tsx",
+        "musicode-ui/src/pages/SettingsPage.tsx",
+        "musicode-ui/src/components/layout/shells/EvolvedShell.tsx",
+        "musicode-ui/src/components/layout/shells/NovatouchShell.tsx",
+        "musicode-ui/src/components/layout/shells/MinimalShell.tsx",
+        "musicode-ui/src/themes/tokens/novatouch.ts",
+        "musicode-ui/src/themes/tokens/minimal.ts"
+      ],
+      "key_decisions": [
+        "Theme selector lives exclusively in Settings page — not in TopBar or sidebar",
+        "All 3 themes share the same indigo accent palette (no purple/violet differentiation)",
+        "Novatouch popover approach discarded in favor of Settings-only placement after user testing"
+      ],
+      "full_summary_md": "---\nid: T04\nparent: S01\nmilestone: M019\nkey_files:\n  - musicode-ui/src/components/common/ThemeSelector.tsx\n  - musicode-ui/src/pages/SettingsPage.tsx\n  - musicode-ui/src/components/layout/shells/EvolvedShell.tsx\n  - musicode-ui/src/components/layout/shells/NovatouchShell.tsx\n  - musicode-ui/src/components/layout/shells/MinimalShell.tsx\n  - musicode-ui/src/themes/tokens/novatouch.ts\n  - musicode-ui/src/themes/tokens/minimal.ts\nkey_decisions:\n  - Theme selector lives exclusively in Settings page — not in TopBar or sidebar\n  - All 3 themes share the same indigo accent palette (no purple/violet differentiation)\n  - Novatouch popover approach discarded in favor of Settings-only placement after user testing\nduration: \nverification_result: passed\ncompleted_at: 2026-05-03T09:08:39.697Z\nblocker_discovered: false\n---\n\n# T04: Built ThemeSelector component and wired end-to-end theme switching across all 3 shells, settled in Settings page\n\n**Built ThemeSelector component and wired end-to-end theme switching across all 3 shells, settled in Settings page**\n\n## What Happened\n\nCreated ThemeSelector as a segmented control with Evolved/Novatouch/Minimal buttons. Initially placed in TopBar (Evolved), MinimalShell header, and as a popover in NovatouchShell sidebar. After user testing, iterated on placement: unified accent colors to indigo across all themes, repositioned the Novatouch popover. Ultimately moved the theme selector exclusively to the Settings page (Appearance section) per user feedback — this is where music apps typically place theme controls. Removed all inline/popover theme selectors from shells. End-to-end flow works: clicking a theme in Settings updates ThemeContext → CSS variables swap on :root → layout shell switches → choice persists in localStorage across reloads.\n\n## Verification\n\nnpm run build passes. Verified in browser: all 3 themes switch correctly from Settings, accent colors are consistent indigo, layout shells swap, localStorage persists choice across reload. User confirmed all themes working correctly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npx tsc --noEmit` | 0 | pass | 8000ms |\n| 2 | `npx vite build` | 0 | pass | 12000ms |\n\n## Deviations\n\nPlan specified TopBar placement. After iterating with user feedback (popover too intrusive in Novatouch, accent colors inconsistent), settled on Settings page as the single location for theme selection.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/common/ThemeSelector.tsx`\n- `musicode-ui/src/pages/SettingsPage.tsx`\n- `musicode-ui/src/components/layout/shells/EvolvedShell.tsx`\n- `musicode-ui/src/components/layout/shells/NovatouchShell.tsx`\n- `musicode-ui/src/components/layout/shells/MinimalShell.tsx`\n- `musicode-ui/src/themes/tokens/novatouch.ts`\n- `musicode-ui/src/themes/tokens/minimal.ts`\n",
+      "description": "Create ThemeSelector component — segmented control showing three theme names with active indicator (indigo highlight). Place it in TopBar (right side, before user menu). Clicking a theme: updates ThemeContext, CSS variables swap on :root, layout shell switches. Verify in browser: (1) Evolved renders current sidebar layout with indigo accents, (2) Novatouch renders icon sidebar with purple-cold palette, (3) Minimal renders horizontal nav with neutral palette, (4) choice persists across page reload, (5) all navigation links work in all three shells, (6) PlayerBar renders correctly in all shells, (7) keyboard shortcuts work in all shells. Run npm run build to confirm zero errors.",
+      "estimate": "45m",
+      "files": [
+        "musicode-ui/src/components/common/ThemeSelector.tsx",
+        "musicode-ui/src/components/layout/TopBar.tsx"
+      ],
+      "verify": "npm run build passes. Theme selector visible in TopBar. Switching themes changes layout and colors. localStorage musicode-theme persists across reload.",
+      "inputs": [
+        "musicode-ui/src/context/ThemeContext.tsx",
+        "musicode-ui/src/components/layout/TopBar.tsx",
+        "musicode-ui/src/components/layout/AppShell.tsx"
+      ],
+      "expected_output": [
+        "musicode-ui/src/components/common/ThemeSelector.tsx",
+        "musicode-ui/src/components/layout/TopBar.tsx"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M019",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "HomePage scaffold — route, greeting, stats cards",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Create HomePage component with time-of-day greeting (Good morning/afternoon/evening, {username}), 4 stats summary cards (total plays, listening time, unique artists, unique albums) using /stats/summary endpoint, and wire the / route to HomePage instead of AlbumsPage. Stats cards use glassmorphism tokens (glass background, border, blur). Responsive grid: 2 cols mobile, 4 cols desktop.",
+      "estimate": "25min",
+      "files": [
+        "musicode-ui/src/pages/HomePage.tsx",
+        "musicode-ui/src/App.tsx"
+      ],
+      "verify": "Page loads at /, greeting reflects time of day, 4 stats cards render with real data, CSS variables used throughout, TypeScript compiles clean.",
+      "inputs": [
+        "musicode-ui/src/api/stats.ts (getSummary)",
+        "musicode-ui/src/pages/StatsPage.tsx (card pattern reference)",
+        "musicode-ui/src/index.css (glassmorphism tokens)"
+      ],
+      "expected_output": [
+        "HomePage.tsx with greeting + stats grid",
+        "/ route points to HomePage"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M019",
+      "slice_id": "S02",
+      "id": "T02",
+      "title": "Horizontal scroll carousels — recently played, top albums, top artists",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Build a reusable Carousel component with horizontal scroll, snap behavior, and optional scroll arrows. Wire up 3 carousels on HomePage: (1) Recently Played using /activity/recent with album cover art, (2) Top Albums using /stats/top-albums with cover art, (3) Top Artists using /stats/top-artists. Each carousel item is a glassmorphism card with cover image, title, subtitle, and click navigation to detail page.",
+      "estimate": "40min",
+      "files": [
+        "musicode-ui/src/components/home/Carousel.tsx",
+        "musicode-ui/src/components/home/CarouselCard.tsx",
+        "musicode-ui/src/pages/HomePage.tsx"
+      ],
+      "verify": "3 carousels render with real data, horizontal scroll works with snap, cards show cover art, clicking navigates to detail page, responsive sizing, TypeScript compiles clean.",
+      "inputs": [
+        "musicode-ui/src/api/stats.ts (getTopAlbums, getTopArtists)",
+        "musicode-ui/src/api/activity.ts (getRecentActivity)",
+        "musicode-ui/src/components/library/AlbumCard.tsx (card pattern reference)"
+      ],
+      "expected_output": [
+        "Carousel.tsx reusable component",
+        "CarouselCard.tsx glassmorphism card",
+        "HomePage updated with 3 data-driven carousels"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M019",
+      "slice_id": "S02",
+      "id": "T03",
+      "title": "Polish — hover effects, empty states, loading skeletons",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Add hover lift effect to carousel cards (translateY + shadow), loading skeleton placeholders while data fetches, empty state messages when no data (new user with no plays). Add Home link to Sidebar navigation. Final visual verification across all 3 themes.",
+      "estimate": "20min",
+      "files": [
+        "musicode-ui/src/pages/HomePage.tsx",
+        "musicode-ui/src/components/home/Carousel.tsx",
+        "musicode-ui/src/components/home/CarouselCard.tsx",
+        "musicode-ui/src/components/layout/Sidebar.tsx"
+      ],
+      "verify": "Hover lift animates smoothly, skeletons show during load, empty states display gracefully, Home link in sidebar navigates to /, visual check in all 3 themes.",
+      "inputs": [
+        "musicode-ui/src/components/layout/Sidebar.tsx (nav items pattern)",
+        "musicode-ui/src/index.css (animation utilities)"
+      ],
+      "expected_output": [
+        "Polished HomePage with loading/empty states",
+        "Home nav item in Sidebar",
+        "Visual parity across 3 themes confirmed"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -8797,6 +9379,54 @@
       "rationale": "Full-screen is scope creep. The expand panel covers the UX need. Full-screen can be trivially added later if desired.",
       "revisable": "Yes",
       "made_by": "collaborative",
+      "superseded_by": null
+    },
+    {
+      "seq": 36,
+      "id": "D036",
+      "when_context": "Pre-publication review",
+      "scope": "roadmap",
+      "decision": "M015 Filesystem Watcher milestone",
+      "choice": "Discarded — not implemented",
+      "rationale": "Filesystem watcher (inotify/WatchService) adds complexity for marginal value in a personal single-user app. Manual rescan from the UI is sufficient. The milestone slot was skipped; numbering jumps from M014 to M016 intentionally.",
+      "revisable": "Yes — if automatic library updates become a pain point",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 37,
+      "id": "D037",
+      "when_context": "2026-05-02, after evaluating Astra Music and 4 strategic options",
+      "scope": "roadmap",
+      "decision": "Musicode distribution and deployment model",
+      "choice": "VPS deployment with URL access — no Electron/Tauri/exe packaging",
+      "rationale": "David will control the server and create user accounts as admin. Users access Musicode via browser URL. This eliminates distribution friction without abandoning the web architecture (multi-user, Docker Compose, Caddy reverse proxy). Evaluated alternatives: Electron wrapper (heavy, loses multi-device), Astra fork (foreign codebase, single-user architecture), new Tauri project (months of rewrite). The web stack is the right choice when the server is centrally hosted.",
+      "revisable": "No — deployment model is settled",
+      "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 38,
+      "id": "D038",
+      "when_context": "2026-05-02, after creating and reviewing 3 interactive mockups",
+      "scope": "design",
+      "decision": "UX overhaul approach — three selectable layout themes",
+      "choice": "Three themes with structurally different layouts: Novatouch (icon sidebar, Astra-inspired), Evolved (labeled sidebar, Musicode identity + Astra polish), Minimal (horizontal nav, Spotify-style). ThemeProvider with interchangeable layout components, not just CSS variables.",
+      "rationale": "Each theme has a fundamentally different navigation structure (56px icon sidebar vs expanded sidebar with labels vs no sidebar). CSS-only theming cannot achieve this — layout components must be swappable. Inspired by Astra Music analysis but maintaining Musicode identity. Starting with Evolved as the base theme since it preserves existing functionality while adding polish.",
+      "revisable": "Yes — theme count and specifics may change",
+      "made_by": "collaborative",
+      "superseded_by": null
+    },
+    {
+      "seq": 39,
+      "id": "D039",
+      "when_context": "2026-05-02, David discovered and installed Astra, compared with Musicode",
+      "scope": "design",
+      "decision": "UX reference project for Musicode polish",
+      "choice": "Astra Music (astramusic.dev) as design reference — cloned to reference/astra-music/, screenshots in reference/screenshots/, but no code reuse or fork",
+      "rationale": "Astra has superior visual polish (glassmorphism, hover effects, play bar layout, data density) but is architecturally incompatible (Electron single-user vs web multi-user). Using it as design inspiration only. Key elements to adopt: glassmorphism, home page with curated sections, library tabs, enriched track table, redesigned 3-section play bar, queue panel, now playing panel, favorites, technical codec/bitdepth/samplerate badges.",
+      "revisable": "Yes",
+      "made_by": "human",
       "superseded_by": null
     }
   ],
@@ -10307,6 +10937,94 @@
       "verdict": "pass",
       "duration_ms": 0,
       "created_at": "2026-04-25T19:17:52.531Z"
+    },
+    {
+      "id": 138,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M019",
+      "command": "npx tsc --noEmit",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 8000,
+      "created_at": "2026-05-03T07:51:38.168Z"
+    },
+    {
+      "id": 139,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M019",
+      "command": "npx vite --port 5173 (curl check)",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 3000,
+      "created_at": "2026-05-03T07:51:38.168Z"
+    },
+    {
+      "id": 140,
+      "task_id": "T02",
+      "slice_id": "S01",
+      "milestone_id": "M019",
+      "command": "npx tsc --noEmit",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 3000,
+      "created_at": "2026-05-03T07:56:25.588Z"
+    },
+    {
+      "id": 141,
+      "task_id": "T02",
+      "slice_id": "S01",
+      "milestone_id": "M019",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 500,
+      "created_at": "2026-05-03T07:56:25.588Z"
+    },
+    {
+      "id": 142,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M019",
+      "command": "npx tsc --noEmit",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 8000,
+      "created_at": "2026-05-03T09:08:19.266Z"
+    },
+    {
+      "id": 143,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M019",
+      "command": "npx vite build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 12000,
+      "created_at": "2026-05-03T09:08:19.266Z"
+    },
+    {
+      "id": 144,
+      "task_id": "T04",
+      "slice_id": "S01",
+      "milestone_id": "M019",
+      "command": "npx tsc --noEmit",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 8000,
+      "created_at": "2026-05-03T09:08:39.698Z"
+    },
+    {
+      "id": 145,
+      "task_id": "T04",
+      "slice_id": "S01",
+      "milestone_id": "M019",
+      "command": "npx vite build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 12000,
+      "created_at": "2026-05-03T09:08:39.698Z"
     }
   ]
 }
