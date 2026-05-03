@@ -31,7 +31,7 @@ function TransportControls({
         onClick={onToggleShuffle}
         aria-label="Shuffle"
         aria-pressed={shuffle}
-        className={`hidden md:flex transition-colors ${shuffle ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+        className={`hidden md:flex transition-colors ${shuffle ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
       >
         <Shuffle className="w-4 h-4" />
       </button>
@@ -39,14 +39,15 @@ function TransportControls({
         onClick={onPrev}
         disabled={!hasPrev}
         aria-label="Previous track"
-        className="text-zinc-400 hover:text-zinc-100 disabled:text-zinc-700 transition-colors"
+        className="mc-interactive-muted transition-colors disabled:opacity-30"
       >
         <SkipBack className="w-4 h-4" />
       </button>
       <button
         onClick={onPlayPause}
         aria-label={isPlaying ? 'Pause' : 'Play'}
-        className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 text-zinc-900 hover:bg-white transition-colors"
+        className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:opacity-85 active:scale-95"
+        style={{ backgroundColor: 'var(--mc-text-primary)', color: 'var(--mc-text-inverse)' }}
       >
         {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
       </button>
@@ -54,7 +55,7 @@ function TransportControls({
         onClick={onNext}
         disabled={!hasNext}
         aria-label="Next track"
-        className="text-zinc-400 hover:text-zinc-100 disabled:text-zinc-700 transition-colors"
+        className="mc-interactive-muted transition-colors disabled:opacity-30"
       >
         <SkipForward className="w-4 h-4" />
       </button>
@@ -62,7 +63,7 @@ function TransportControls({
         onClick={onToggleRepeat}
         aria-label={`Repeat: ${repeatMode}`}
         aria-pressed={repeatMode !== 'off'}
-        className={`hidden md:flex transition-colors ${repeatMode !== 'off' ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+        className={`hidden md:flex transition-colors ${repeatMode !== 'off' ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
       >
         <RepeatIcon className="w-4 h-4" />
       </button>

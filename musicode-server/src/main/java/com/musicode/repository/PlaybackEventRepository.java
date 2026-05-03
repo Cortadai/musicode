@@ -57,6 +57,16 @@ public interface PlaybackEventRepository extends JpaRepository<PlaybackEvent, Lo
             """)
     List<Object[]> findSummary(User user, Instant since);
 
+    // --- Recent plays (user-scoped) ---
+    @Query("""
+            SELECT t.title, t.artist.name, t.album.title, t.album.id, t.album.coverArtPath, pe.playedAt
+            FROM PlaybackEvent pe JOIN pe.track t
+            WHERE pe.user = :user
+            ORDER BY pe.playedAt DESC
+            LIMIT :limit
+            """)
+    List<Object[]> findRecentPlays(User user, int limit);
+
     // --- Daily play counts (for charting) ---
     @Query("""
             SELECT CAST(pe.playedAt AS DATE) AS day, COUNT(pe)

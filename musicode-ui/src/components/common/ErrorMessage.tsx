@@ -13,15 +13,15 @@ interface Props {
 export default function ErrorMessage({ message, detail, onRetry }: Props) {
   return (
     <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <AlertTriangle className="w-10 h-10 text-red-400" />
-      <p className="text-zinc-200 font-medium">{message}</p>
+      <AlertTriangle className="w-10 h-10" style={{ color: 'var(--mc-text-error)' }} />
+      <p className="font-medium" style={{ color: 'var(--mc-text-primary)' }}>{message}</p>
       {detail && (
-        <p className="text-sm text-zinc-500 max-w-md">{detail}</p>
+        <p className="text-sm max-w-md" style={{ color: 'var(--mc-text-muted)' }}>{detail}</p>
       )}
       {onRetry && (
         <button
           onClick={onRetry}
-          className="flex items-center gap-2 mt-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-sm rounded-lg transition-colors"
+          className="flex items-center gap-2 mt-2 px-4 py-2 text-sm rounded-lg transition-colors mc-nav-item"
         >
           <RefreshCw className="w-4 h-4" />
           Try again

@@ -94,7 +94,7 @@ export default function LyricsPanel({ trackId, currentTime }: Props) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full text-zinc-500">
+      <div className="flex items-center justify-center h-full" style={{ color: 'var(--mc-text-muted)' }}>
         <Music2 className="w-5 h-5 animate-pulse" />
       </div>
     );
@@ -102,13 +102,13 @@ export default function LyricsPanel({ trackId, currentTime }: Props) {
 
   if (!lyrics || lyrics.status === 'NOT_FOUND' || lyrics.status === 'NOT_SEARCHED') {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-zinc-500">
+      <div className="flex flex-col items-center justify-center h-full gap-3" style={{ color: 'var(--mc-text-muted)' }}>
         <Music2 className="w-8 h-8" />
         <p className="text-sm">No lyrics found</p>
         <button
           onClick={handleRetry}
           disabled={retrying}
-          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 text-xs mc-interactive-muted transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${retrying ? 'animate-spin' : ''}`} />
           {retrying ? 'Searching…' : 'Search again'}
@@ -119,7 +119,7 @@ export default function LyricsPanel({ trackId, currentTime }: Props) {
 
   if (lyrics.status === 'INSTRUMENTAL') {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-zinc-500">
+      <div className="flex flex-col items-center justify-center h-full gap-3" style={{ color: 'var(--mc-text-muted)' }}>
         <Mic2 className="w-8 h-8" />
         <p className="text-sm">Instrumental</p>
       </div>
@@ -141,9 +141,10 @@ export default function LyricsPanel({ trackId, currentTime }: Props) {
                 ref={(el) => setLineRef(i, el)}
                 className={`text-lg font-medium leading-relaxed transition-all duration-300 ${
                   i === activeLine
-                    ? 'text-zinc-100 scale-[1.02] origin-left'
-                    : 'text-zinc-600'
+                    ? 'scale-[1.02] origin-left'
+                    : ''
                 }`}
+                style={{ color: i === activeLine ? 'var(--mc-text-primary)' : 'var(--mc-text-muted)' }}
               >
                 {line.text}
               </p>
@@ -158,7 +159,7 @@ export default function LyricsPanel({ trackId, currentTime }: Props) {
     return (
       <div className="h-full flex flex-col py-12">
         <div className="flex-1 overflow-y-auto px-6 min-h-0">
-          <div className="whitespace-pre-wrap text-sm text-zinc-400 leading-relaxed">
+          <div className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: 'var(--mc-text-secondary)' }}>
             {lyrics.plainLyrics}
           </div>
         </div>

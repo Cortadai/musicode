@@ -46,34 +46,39 @@ const TrackRow = memo(function TrackRow({
       aria-label={`Play ${track.title} by ${artistName}`}
       aria-current={isCurrent ? 'true' : undefined}
       className={`flex items-center gap-4 px-4 py-2.5 rounded-lg cursor-pointer transition-colors group
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-900 ${
-        isCurrent ? 'bg-zinc-800' : 'hover:bg-zinc-800/50'
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${
+        isCurrent ? '' : 'mc-nav-item'
       }`}
+      style={{
+        ...(isCurrent ? { backgroundColor: 'var(--mc-bg-surface-hover)' } : {}),
+        ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
+        ['--tw-ring-offset-color' as string]: 'var(--mc-bg-surface)',
+      }}
     >
       <span className="w-8 text-right text-xs tabular-nums relative">
         {isCurrent && isPlaying ? (
-          <span className="text-indigo-400 text-sm">♪</span>
+          <span className="text-sm" style={{ color: 'var(--mc-accent-primary)' }}>♪</span>
         ) : (
           <>
-            <span className="group-hover:hidden text-zinc-500">
+            <span className="group-hover:hidden" style={{ color: 'var(--mc-text-muted)' }}>
               {track.trackNumber ?? '—'}
             </span>
-            <span className="hidden group-hover:inline text-zinc-300">
+            <span className="hidden group-hover:inline" style={{ color: 'var(--mc-text-primary)' }}>
               <Play className="w-3.5 h-3.5 inline" />
             </span>
           </>
         )}
       </span>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm truncate ${isCurrent ? 'text-indigo-400 font-medium' : 'text-zinc-100'}`}>
+        <p className="text-sm truncate" style={{ color: isCurrent ? 'var(--mc-accent-primary)' : 'var(--mc-text-primary)', fontWeight: isCurrent ? 500 : undefined }}>
           {track.title}
         </p>
-        <p className="text-xs text-zinc-500 truncate">
+        <p className="text-xs truncate" style={{ color: 'var(--mc-text-muted)' }}>
           {track.artist?.name ?? 'Unknown'}
           {showAlbum && track.album && ` · ${track.album.title}`}
         </p>
       </div>
-      <span className="text-xs text-zinc-500 tabular-nums">
+      <span className="text-xs tabular-nums" style={{ color: 'var(--mc-text-muted)' }}>
         {formatDuration(track.duration)}
       </span>
     </div>

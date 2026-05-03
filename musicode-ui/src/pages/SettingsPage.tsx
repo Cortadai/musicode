@@ -3,9 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus, resetLibrary } from '../api/library';
 import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette } from 'lucide-react';
+import ThemeSelector from '../components/layout/ThemeSelector';
+import { useAuth } from '../context/AuthContext';
 
 export default function SettingsPage() {
+  const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [newPath, setNewPath] = useState('');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -84,137 +87,153 @@ export default function SettingsPage() {
     <div className="max-w-2xl">
       <h2 className="text-xl font-semibold mb-6">Settings</h2>
 
-      {/* Library Folders */}
+      {/* Appearance */}
       <section className="mb-8">
-        <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">Library Folders</h3>
-
-        {foldersLoading ? (
-          <p className="text-zinc-500 text-sm">Loading…</p>
-        ) : folders && folders.length > 0 ? (
-          <div className="space-y-2 mb-4">
-            {folders.map((folder) => (
-              <div key={folder.id} className="flex items-center gap-3 px-4 py-3 bg-zinc-900 rounded-lg">
-                <FolderOpen className="w-4 h-4 text-zinc-500 shrink-0" />
-                <span className="text-sm text-zinc-200 flex-1 truncate">{folder.path}</span>
-                <button
-                  onClick={() => removeMutation.mutate(folder.id)}
-                  className="text-zinc-500 hover:text-red-400 transition-colors"
-                  title="Remove folder"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+        <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Appearance</h3>
+        <div className="flex items-center gap-4 px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+          <div className="flex items-center gap-2">
+            <Palette className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+            <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Theme</span>
           </div>
-        ) : (
-          <p className="text-zinc-500 text-sm mb-4">No folders added yet.</p>
-        )}
-
-        <form onSubmit={handleAdd} className="flex gap-2">
-          <input
-            type="text"
-            value={newPath}
-            onChange={(e) => setNewPath(e.target.value)}
-            placeholder="C:\Users\you\Music"
-            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-          />
-          <button
-            type="submit"
-            disabled={addMutation.isPending}
-            className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
-          >
-            <Plus className="w-4 h-4" /> Add
-          </button>
-        </form>
-        {addMutation.isError && (
-          <p className="text-red-400 text-sm mt-2">
-            {getErrorMessage(addMutation.error, 'Failed to add folder')}
-          </p>
-        )}
-      </section>
-
-      {/* Scan */}
-      <section>
-        <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">Library Scan</h3>
-
-        <button
-          onClick={() => scanMutation.mutate()}
-          disabled={scanStatus?.scanning || scanMutation.isPending}
-          className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${scanStatus?.scanning ? 'animate-spin' : ''}`} />
-          {scanStatus?.scanning ? 'Scanning…' : 'Start Scan'}
-        </button>
-
-        {scanStatus && (scanStatus.scanning || scanStatus.completedAt) && (
-          <div className="mt-4 p-4 bg-zinc-900 rounded-lg text-sm space-y-1">
-            <p className="text-zinc-300">
-              {scanStatus.scanning ? 'Scanning in progress…' : '✓ Scan complete'}
-            </p>
-            <p className="text-zinc-500">Files found: {scanStatus.filesFound}</p>
-            <p className="text-zinc-500">Processed: {scanStatus.filesProcessed}</p>
-            <p className="text-zinc-500">New tracks: {scanStatus.newTracks}</p>
-            <p className="text-zinc-500">Updated: {scanStatus.updatedTracks}</p>
-            {scanStatus.errors > 0 && (
-              <p className="text-red-400">Errors: {scanStatus.errors}</p>
-            )}
-          </div>
-        )}
-      </section>
-
-      {/* Danger Zone */}
-      <section className="mt-8">
-        <h3 className="text-sm font-medium text-red-400/80 uppercase tracking-wider mb-3">Danger Zone</h3>
-
-        <div className="p-4 bg-zinc-900 border border-red-500/20 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-zinc-200">Reset Library</p>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                Remove all tracks, albums, artists, covers, folders, and play history. Audio files on disk are not affected.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowResetConfirm(true)}
-              disabled={scanStatus?.scanning || resetMutation.isPending}
-              className="shrink-0 px-4 py-2 bg-red-600/20 hover:bg-red-600/40 text-red-400 text-sm font-medium rounded-lg border border-red-500/30 transition-colors disabled:opacity-50"
-            >
-              Reset
-            </button>
-          </div>
-
-          {showResetConfirm && (
-            <div className="mt-4 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="w-4 h-4 text-red-400" />
-                <span className="text-sm text-red-300 font-medium">This action cannot be undone</span>
-              </div>
-              <p className="text-xs text-zinc-400 mb-3">
-                All library data will be permanently deleted. You will need to re-add folders and re-scan.
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => resetMutation.mutate()}
-                  disabled={resetMutation.isPending}
-                  className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-medium rounded transition-colors disabled:opacity-50"
-                >
-                  {resetMutation.isPending ? 'Resetting…' : 'Yes, reset everything'}
-                </button>
-                <button
-                  onClick={() => setShowResetConfirm(false)}
-                  className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium rounded transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-
-          {resetMutation.isError && (
-            <p className="text-red-400 text-sm mt-2">{getErrorMessage(resetMutation.error, 'Reset failed')}</p>
-          )}
+          <ThemeSelector />
         </div>
       </section>
+
+      {isAdmin && (
+        <>
+          {/* Library Folders */}
+          <section className="mb-8">
+            <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Library Folders</h3>
+
+            {foldersLoading ? (
+              <p className="text-sm" style={{ color: 'var(--mc-text-muted)' }}>Loading…</p>
+            ) : folders && folders.length > 0 ? (
+              <div className="space-y-2 mb-4">
+                {folders.map((folder) => (
+                  <div key={folder.id} className="flex items-center gap-3 px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+                    <FolderOpen className="w-4 h-4 shrink-0" style={{ color: 'var(--mc-text-muted)' }} />
+                    <span className="text-sm flex-1 truncate" style={{ color: 'var(--mc-text-primary)' }}>{folder.path}</span>
+                    <button
+                      onClick={() => removeMutation.mutate(folder.id)}
+                      className="mc-interactive-danger transition-colors"
+                      title="Remove folder"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm mb-4" style={{ color: 'var(--mc-text-muted)' }}>No folders added yet.</p>
+            )}
+
+            <form onSubmit={handleAdd} className="flex gap-2">
+              <input
+                type="text"
+                value={newPath}
+                onChange={(e) => setNewPath(e.target.value)}
+                placeholder="C:\Users\you\Music"
+                className="flex-1 mc-input border rounded-lg px-4 py-2 text-sm focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={addMutation.isPending}
+                className="flex items-center gap-1.5 px-4 py-2 mc-btn-primary text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                <Plus className="w-4 h-4" /> Add
+              </button>
+            </form>
+            {addMutation.isError && (
+              <p className="text-sm mt-2" style={{ color: 'var(--mc-text-error)' }}>
+                {getErrorMessage(addMutation.error, 'Failed to add folder')}
+              </p>
+            )}
+          </section>
+
+          {/* Scan */}
+          <section>
+            <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Library Scan</h3>
+
+            <button
+              onClick={() => scanMutation.mutate()}
+              disabled={scanStatus?.scanning || scanMutation.isPending}
+              className="flex items-center gap-2 px-4 py-2 mc-btn-secondary text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${scanStatus?.scanning ? 'animate-spin' : ''}`} />
+              {scanStatus?.scanning ? 'Scanning…' : 'Start Scan'}
+            </button>
+
+            {scanStatus && (scanStatus.scanning || scanStatus.completedAt) && (
+              <div className="mt-4 p-4 rounded-lg text-sm space-y-1" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+                <p style={{ color: 'var(--mc-text-secondary)' }}>
+                  {scanStatus.scanning ? 'Scanning in progress…' : '✓ Scan complete'}
+                </p>
+                <p style={{ color: 'var(--mc-text-muted)' }}>Files found: {scanStatus.filesFound}</p>
+                <p style={{ color: 'var(--mc-text-muted)' }}>Processed: {scanStatus.filesProcessed}</p>
+                <p style={{ color: 'var(--mc-text-muted)' }}>New tracks: {scanStatus.newTracks}</p>
+                <p style={{ color: 'var(--mc-text-muted)' }}>Updated: {scanStatus.updatedTracks}</p>
+                {scanStatus.errors > 0 && (
+                  <p style={{ color: 'var(--mc-text-error)' }}>Errors: {scanStatus.errors}</p>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* Danger Zone */}
+          <section className="mt-8">
+            <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-error)', opacity: 0.8 }}>Danger Zone</h3>
+
+            <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--mc-bg-surface)', borderColor: 'color-mix(in srgb, var(--mc-text-error) 20%, transparent)' }}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--mc-text-primary)' }}>Reset Library</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--mc-text-muted)' }}>
+                    Remove all tracks, albums, artists, covers, folders, and play history. Audio files on disk are not affected.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  disabled={scanStatus?.scanning || resetMutation.isPending}
+                  className="shrink-0 px-4 py-2 mc-btn-danger-outline text-sm font-medium rounded-lg border transition-colors disabled:opacity-50"
+                >
+                  Reset
+                </button>
+              </div>
+
+              {showResetConfirm && (
+                <div className="mt-4 p-3 rounded-lg border" style={{ backgroundColor: 'color-mix(in srgb, var(--mc-text-error) 8%, transparent)', borderColor: 'color-mix(in srgb, var(--mc-text-error) 20%, transparent)' }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="w-4 h-4" style={{ color: 'var(--mc-text-error)' }} />
+                    <span className="text-sm font-medium" style={{ color: 'var(--mc-text-error)' }}>This action cannot be undone</span>
+                  </div>
+                  <p className="text-xs mb-3" style={{ color: 'var(--mc-text-secondary)' }}>
+                    All library data will be permanently deleted. You will need to re-add folders and re-scan.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => resetMutation.mutate()}
+                      disabled={resetMutation.isPending}
+                      className="px-3 py-1.5 mc-btn-danger text-xs font-medium rounded transition-colors disabled:opacity-50"
+                    >
+                      {resetMutation.isPending ? 'Resetting…' : 'Yes, reset everything'}
+                    </button>
+                    <button
+                      onClick={() => setShowResetConfirm(false)}
+                      className="px-3 py-1.5 mc-btn-secondary text-xs font-medium rounded transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {resetMutation.isError && (
+                <p className="text-sm mt-2" style={{ color: 'var(--mc-text-error)' }}>{getErrorMessage(resetMutation.error, 'Reset failed')}</p>
+              )}
+            </div>
+          </section>
+        </>
+      )}
 
       {/* Scrobbling */}
       <ScrobbleSection />
@@ -255,25 +274,25 @@ function ScrobbleSection() {
 
   return (
     <section className="mt-8">
-      <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">Scrobbling</h3>
+      <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Scrobbling</h3>
 
       {/* ListenBrainz */}
-      <div className="p-4 bg-zinc-900 rounded-lg mb-3">
+      <div className="p-4 rounded-lg mb-3" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Radio className="w-4 h-4 text-orange-400" />
-            <span className="text-sm font-medium text-zinc-200">ListenBrainz</span>
+            <Radio className="w-4 h-4" style={{ color: '#fb923c' }} />
+            <span className="text-sm font-medium" style={{ color: 'var(--mc-text-primary)' }}>ListenBrainz</span>
           </div>
           {settings?.listenbrainzConnected && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-300">Connected</span>
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--mc-text-success) 20%, transparent)', color: 'var(--mc-text-success)' }}>Connected</span>
           )}
         </div>
         {settings?.listenbrainzConnected ? (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-500">Token: {settings.listenbrainzTokenMasked}</span>
+            <span className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>Token: {settings.listenbrainzTokenMasked}</span>
             <button
               onClick={() => disconnectLbMutation.mutate()}
-              className="flex items-center gap-1 text-xs text-zinc-500 hover:text-red-400 transition-colors"
+              className="flex items-center gap-1 text-xs mc-interactive-danger transition-colors"
             >
               <Unlink className="w-3 h-3" /> Disconnect
             </button>
@@ -285,7 +304,7 @@ function ScrobbleSection() {
               value={lbToken}
               onChange={(e) => setLbToken(e.target.value)}
               placeholder="Paste your ListenBrainz token"
-              className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
+              className="flex-1 mc-input border rounded px-3 py-1.5 text-xs focus:outline-none"
             />
             <button type="submit" disabled={!lbToken.trim() || connectMutation.isPending}
               className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium rounded transition-colors disabled:opacity-50">
@@ -296,22 +315,22 @@ function ScrobbleSection() {
       </div>
 
       {/* Last.fm */}
-      <div className="p-4 bg-zinc-900 rounded-lg">
+      <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Radio className="w-4 h-4 text-red-400" />
-            <span className="text-sm font-medium text-zinc-200">Last.fm</span>
+            <Radio className="w-4 h-4" style={{ color: '#f87171' }} />
+            <span className="text-sm font-medium" style={{ color: 'var(--mc-text-primary)' }}>Last.fm</span>
           </div>
           {settings?.lastfmConnected && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-300">Connected</span>
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--mc-text-success) 20%, transparent)', color: 'var(--mc-text-success)' }}>Connected</span>
           )}
         </div>
         {settings?.lastfmConnected ? (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-500">Session: {settings.lastfmSessionKeyMasked}</span>
+            <span className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>Session: {settings.lastfmSessionKeyMasked}</span>
             <button
               onClick={() => disconnectLfmMutation.mutate()}
-              className="flex items-center gap-1 text-xs text-zinc-500 hover:text-red-400 transition-colors"
+              className="flex items-center gap-1 text-xs mc-interactive-danger transition-colors"
             >
               <Unlink className="w-3 h-3" /> Disconnect
             </button>
@@ -321,10 +340,10 @@ function ScrobbleSection() {
             <div className="flex gap-2">
               <input type="text" value={lfmUsername} onChange={(e) => setLfmUsername(e.target.value)}
                 placeholder="Last.fm username"
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600" />
+                className="flex-1 mc-input border rounded px-3 py-1.5 text-xs focus:outline-none" />
               <input type="password" value={lfmPassword} onChange={(e) => setLfmPassword(e.target.value)}
                 placeholder="Last.fm password"
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600" />
+                className="flex-1 mc-input border rounded px-3 py-1.5 text-xs focus:outline-none" />
             </div>
             <button type="submit" disabled={!lfmUsername.trim() || !lfmPassword.trim() || connectMutation.isPending}
               className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-medium rounded transition-colors disabled:opacity-50">
@@ -335,7 +354,7 @@ function ScrobbleSection() {
       </div>
 
       {connectMutation.isError && (
-        <p className="text-red-400 text-sm mt-2">{getErrorMessage(connectMutation.error, 'Connection failed')}</p>
+        <p className="text-sm mt-2" style={{ color: 'var(--mc-text-error)' }}>{getErrorMessage(connectMutation.error, 'Connection failed')}</p>
       )}
     </section>
   );

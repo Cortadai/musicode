@@ -1,9 +1,10 @@
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import audioGraph from '../../audio/audioGraph';
 import { useCurrentTrackInfo } from '../../context/PlayerContext';
 import type { VisualizerMode } from '../../audio/audioPreferences';
 import type { ColorPalette } from '../../audio/colorExtraction';
 import { BarChart3, AudioWaveform, Disc3 } from 'lucide-react';
+import { useTheme } from '../../themes/useTheme';
 
 interface Props {
   visible: boolean;
@@ -22,12 +23,6 @@ const MODE_ICONS: { mode: VisualizerMode; Icon: typeof BarChart3; label: string 
 
 /** Smoothing factor for waveform — lower = smoother/slower (0..1) */
 const WAVEFORM_SMOOTHING = 0.25;
-
-const DEFAULT_HUE = 240;
-const DEFAULT_SAT = 70;
-const DEFAULT_HEX = '#818cf8';
-const DEFAULT_RGBA = 'rgba(129, 140, 248,';
-const DEFAULT_GLOW = 'rgba(99, 102, 241,';
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -59,6 +54,20 @@ function hexToRgba(hex: string, alpha: number): string {
  * not playing, or page is hidden.
  */
 export default function Visualizer({ visible, mode, onModeChange, fullSize, hideControls, dynamicColors }: Props) {
+  const { theme } = useTheme();
+  const defaults = useMemo(() => {
+    const accent = theme.tokens.accentPrimary;
+    const accentHover = theme.tokens.accentPrimaryHover;
+    const hsl = hexToHsl(accent);
+    return {
+      hue: hsl.h,
+      sat: hsl.s,
+      hex: accent,
+      rgba: hexToRgba(accent, 1).replace(/, 1\)$/, ','),
+      glow: hexToRgba(accentHover, 1).replace(/, 1\)$/, ','),
+    };
+  }, [theme.tokens.accentPrimary, theme.tokens.accentPrimaryHover]);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(audioGraph.getAnalyser());
@@ -94,8 +103,8 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
       const gap = 1;
 
       const hsl = dynamicColors ? hexToHsl(dynamicColors.primary) : null;
-      const hue = hsl?.h ?? DEFAULT_HUE;
-      const saturation = hsl?.s ?? DEFAULT_SAT;
+      const hue = hsl?.h ?? defaults.hue;
+      const saturation = hsl?.s ?? defaults.sat;
 
       for (let i = 0; i < usableBins; i++) {
         const value = dataArray[i] / 255;
@@ -134,8 +143,8 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
 
       ctx.clearRect(0, 0, width, height);
 
-      const mainColor = dynamicColors?.primary ?? DEFAULT_HEX;
-      const glowColor = dynamicColors ? hexToRgba(dynamicColors.primary, 0.15) : `${DEFAULT_RGBA} 0.15)`;
+      const mainColor = dynamicColors?.primary ?? defaults.hex;
+      const glowColor = dynamicColors ? hexToRgba(dynamicColors.primary, 0.15) : `${defaults.rgba} 0.15)`;
 
       // Main line
       ctx.lineWidth = 2;
@@ -192,8 +201,8 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
       const binsPerBar = Math.floor(usableBins / barCount);
 
       const hsl = dynamicColors ? hexToHsl(dynamicColors.primary) : null;
-      const hue = hsl?.h ?? DEFAULT_HUE;
-      const saturation = hsl?.s ?? DEFAULT_SAT;
+      const hue = hsl?.h ?? defaults.hue;
+      const saturation = hsl?.s ?? defaults.sat;
 
       for (let i = 0; i < barCount; i++) {
         // Average the frequency bins for this bar
@@ -224,8 +233,8 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
       }
 
       // Inner circle glow
-      const glowInner = dynamicColors ? hexToRgba(dynamicColors.secondary, 0.08) : `${DEFAULT_GLOW} 0.08)`;
-      const glowOuter = dynamicColors ? hexToRgba(dynamicColors.secondary, 0) : `${DEFAULT_GLOW} 0)`;
+      const glowInner = dynamicColors ? hexToRgba(dynamicColors.secondary, 0.08) : `${defaults.glow} 0.08)`;
+      const glowOuter = dynamicColors ? hexToRgba(dynamicColors.secondary, 0) : `${defaults.glow} 0)`;
       const gradient = ctx.createRadialGradient(
         centerX, centerY, innerRadius * 0.5,
         centerX, centerY, innerRadius
@@ -359,7 +368,7 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
           style={{ imageRendering: mode === 'bars' ? 'pixelated' : 'auto' }}
         />
         {!hideControls && (
-          <div className="absolute top-1.5 right-1.5 flex gap-0.5 bg-zinc-900/80 backdrop-blur-sm rounded-md p-0.5" role="group" aria-label="Visualizer mode">
+          <div className="absolute top-1.5 right-1.5 flex gap-0.5 backdrop-blur-sm rounded-md p-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--mc-bg-surface) 80%, transparent)' }} role="group" aria-label="Visualizer mode">
             {MODE_ICONS.map(({ mode: m, Icon, label }) => (
               <button
                 key={m}
@@ -368,9 +377,10 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
                 aria-pressed={mode === m}
                 className={`p-1 rounded transition-colors ${
                   mode === m
-                    ? 'text-indigo-400 bg-zinc-800'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'mc-toggle-accent'
+                    : 'mc-interactive-muted'
                 }`}
+                style={mode === m ? { backgroundColor: 'var(--mc-bg-surface-hover)' } : undefined}
               >
                 <Icon className="w-3.5 h-3.5" />
               </button>
@@ -389,11 +399,12 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
             ref={canvasRef}
             aria-label="Audio visualizer"
             role="img"
-            className="w-full h-24 rounded-t-lg bg-zinc-950/50"
+            className="w-full h-24 rounded-t-lg"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--mc-bg-base) 50%, transparent)' }}
             style={{ imageRendering: mode === 'bars' ? 'pixelated' : 'auto' }}
           />
           {/* Mode selector — overlaid top-right */}
-          <div className="absolute top-1.5 right-1.5 flex gap-0.5 bg-zinc-900/80 backdrop-blur-sm rounded-md p-0.5" role="group" aria-label="Visualizer mode">
+          <div className="absolute top-1.5 right-1.5 flex gap-0.5 backdrop-blur-sm rounded-md p-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--mc-bg-surface) 80%, transparent)' }} role="group" aria-label="Visualizer mode">
             {MODE_ICONS.map(({ mode: m, Icon, label }) => (
               <button
                 key={m}
@@ -402,9 +413,10 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
                 aria-pressed={mode === m}
                 className={`p-1 rounded transition-colors ${
                   mode === m
-                    ? 'text-indigo-400 bg-zinc-800'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'mc-toggle-accent'
+                    : 'mc-interactive-muted'
                 }`}
+                style={mode === m ? { backgroundColor: 'var(--mc-bg-surface-hover)' } : undefined}
               >
                 <Icon className="w-3.5 h-3.5" />
               </button>

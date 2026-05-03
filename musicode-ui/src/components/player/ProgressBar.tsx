@@ -33,7 +33,7 @@ export default function ProgressBar({ currentTime, duration, onSeek, trackId, wa
 
   return (
     <div className="flex items-center gap-2 w-full">
-      <span className="text-[11px] text-zinc-500 tabular-nums w-10 text-right">
+      <span className="text-[11px] tabular-nums w-12 text-right shrink-0" style={{ color: 'var(--mc-text-muted)' }}>
         {formatDuration(Math.floor(currentTime))}
       </span>
       {peaks ? (
@@ -52,7 +52,7 @@ export default function ProgressBar({ currentTime, duration, onSeek, trackId, wa
           onChange={handleChange}
           aria-label="Seek position"
           aria-valuetext={`${formatDuration(Math.floor(currentTime))} of ${formatDuration(Math.floor(duration))}`}
-          className="flex-1 h-1 appearance-none bg-zinc-700 rounded-full cursor-pointer
+          className="flex-1 h-1 appearance-none rounded-full cursor-pointer
             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white
             [&::-webkit-slider-thumb]:opacity-0 [&::-webkit-slider-thumb]:hover:opacity-100
@@ -60,13 +60,15 @@ export default function ProgressBar({ currentTime, duration, onSeek, trackId, wa
             [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full
             [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0
             hover:[&::-webkit-slider-thumb]:opacity-100
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-900"
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
           style={{
-            background: `linear-gradient(to right, rgb(244 244 245) ${progress}%, rgb(63 63 70) ${progress}%)`,
+            background: `linear-gradient(to right, var(--mc-text-primary) ${progress}%, var(--mc-waveform-buffered) ${progress}%)`,
+            ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
+            ['--tw-ring-offset-color' as string]: 'var(--mc-player-background)',
           }}
         />
       )}
-      <span className="text-[11px] text-zinc-500 tabular-nums w-10">
+      <span className="text-[11px] tabular-nums w-12 shrink-0" style={{ color: 'var(--mc-text-muted)' }}>
         {formatDuration(Math.floor(duration))}
       </span>
     </div>

@@ -7,6 +7,7 @@ import { Music, Disc3, Users, Clock, TrendingUp } from 'lucide-react';
 import Spinner from '../components/common/Spinner';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
+import { useTheme } from '../themes/useTheme';
 
 const PERIODS: { value: Period; label: string }[] = [
   { value: 'week', label: 'Week' },
@@ -24,6 +25,8 @@ function formatDuration(totalSec: number): string {
 }
 
 export default function StatsPage() {
+  const { theme } = useTheme();
+  const t = theme.tokens;
   const [period, setPeriod] = useState<Period>('month');
 
   const summary = useQuery({
@@ -63,18 +66,18 @@ export default function StatsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-indigo-400" />
+          <TrendingUp className="w-5 h-5" style={{ color: 'var(--mc-accent-primary)' }} />
           Stats
         </h2>
-        <div className="flex gap-1 bg-zinc-900 rounded-lg p-0.5">
+        <div className="flex gap-1 rounded-lg p-0.5" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
           {PERIODS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => setPeriod(value)}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                 period === value
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'mc-btn-primary'
+                  : 'mc-interactive-muted'
               }`}
             >
               {label}
@@ -95,18 +98,18 @@ export default function StatsPage() {
 
       {/* Daily plays chart */}
       {history.data && history.data.length > 0 && (
-        <div className="bg-zinc-900 rounded-xl p-4 mb-8">
-          <h3 className="text-sm font-medium text-zinc-300 mb-3">Plays per Day</h3>
+        <div className="rounded-xl p-4 mb-8" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+          <h3 className="text-sm font-medium mb-3" style={{ color: 'var(--mc-text-primary)' }}>Plays per Day</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={history.data.map(d => ({ ...d, date: d.date.substring(5) }))}>
-              <XAxis dataKey="date" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <XAxis dataKey="date" tick={{ fill: t.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: t.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
-                labelStyle={{ color: '#a1a1aa' }}
-                itemStyle={{ color: '#818cf8' }}
+                contentStyle={{ backgroundColor: t.bgSurface, border: `1px solid ${t.borderDefault}`, borderRadius: '8px' }}
+                labelStyle={{ color: t.textSecondary }}
+                itemStyle={{ color: t.accentPrimary }}
               />
-              <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} name="Plays" />
+              <Bar dataKey="count" fill={t.accentPrimaryHover} radius={[4, 4, 0, 0]} name="Plays" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -124,12 +127,12 @@ export default function StatsPage() {
 
 function SummaryCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
-    <div className="bg-zinc-900 rounded-xl p-4">
+    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
       <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-4 h-4 text-indigo-400" />
-        <span className="text-xs text-zinc-500">{label}</span>
+        <Icon className="w-4 h-4" style={{ color: 'var(--mc-accent-primary)' }} />
+        <span className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>{label}</span>
       </div>
-      <p className="text-2xl font-bold text-zinc-100">{value}</p>
+      <p className="text-2xl font-bold" style={{ color: 'var(--mc-text-primary)' }}>{value}</p>
     </div>
   );
 }
@@ -145,31 +148,31 @@ interface TopListProps<T extends { playCount: number }> {
 function TopList<T extends { playCount: number }>({ title, icon: Icon, items, nameKey, subKey }: TopListProps<T>) {
   if (!items || items.length === 0) {
     return (
-      <div className="bg-zinc-900 rounded-xl p-4">
-        <h3 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
-          <Icon className="w-4 h-4 text-indigo-400" /> {title}
+      <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+        <h3 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--mc-text-primary)' }}>
+          <Icon className="w-4 h-4" style={{ color: 'var(--mc-accent-primary)' }} /> {title}
         </h3>
-        <p className="text-xs text-zinc-500">No data yet</p>
+        <p className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>No data yet</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-zinc-900 rounded-xl p-4">
-      <h3 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
-        <Icon className="w-4 h-4 text-indigo-400" /> {title}
+    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+      <h3 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--mc-text-primary)' }}>
+        <Icon className="w-4 h-4" style={{ color: 'var(--mc-accent-primary)' }} /> {title}
       </h3>
       <div className="space-y-2">
         {items.map((item, i) => (
           <div key={i} className="flex items-center gap-3">
-            <span className="text-xs text-zinc-600 w-5 text-right tabular-nums">{i + 1}</span>
+            <span className="text-xs w-5 text-right tabular-nums" style={{ color: 'var(--mc-text-muted)' }}>{i + 1}</span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-zinc-200 truncate">{String(item[nameKey])}</p>
+              <p className="text-sm truncate" style={{ color: 'var(--mc-text-primary)' }}>{String(item[nameKey])}</p>
               {subKey && item[subKey] && (
-                <p className="text-xs text-zinc-500 truncate">{String(item[subKey])}</p>
+                <p className="text-xs truncate" style={{ color: 'var(--mc-text-muted)' }}>{String(item[subKey])}</p>
               )}
             </div>
-            <span className="text-xs text-indigo-400 tabular-nums">{item.playCount} plays</span>
+            <span className="text-xs tabular-nums" style={{ color: 'var(--mc-accent-primary)' }}>{item.playCount} plays</span>
           </div>
         ))}
       </div>

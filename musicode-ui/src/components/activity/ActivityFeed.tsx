@@ -69,25 +69,25 @@ export default function ActivityFeed() {
   return (
     <div className="px-3 pb-3">
       <div className="flex items-center gap-2 px-3 mb-2">
-        <p className="text-xs text-zinc-600 uppercase tracking-wider">Activity</p>
+        <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--mc-text-muted)' }}>Activity</p>
         {reconnecting && (
-          <span className="text-[10px] text-amber-500/70">reconnecting…</span>
+          <span className="text-[10px]" style={{ color: 'var(--mc-text-warning)', opacity: 0.7 }}>reconnecting…</span>
         )}
       </div>
       {loadError && events.length === 0 && (
-        <p className="text-xs text-zinc-600 px-3">Could not load activity</p>
+        <p className="text-xs px-3" style={{ color: 'var(--mc-text-muted)' }}>Could not load activity</p>
       )}
       <div className="space-y-1 max-h-40 overflow-y-auto">
         {events.slice(0, 5).map((event, i) => (
           <div key={`${event.timestamp}-${i}`} className="flex items-start gap-2 px-3 py-1.5 rounded text-xs">
-            <Music className="w-3 h-3 text-indigo-400 mt-0.5 shrink-0" />
+            <Music className="w-3 h-3 mt-0.5 shrink-0" style={{ color: 'var(--mc-accent-primary)' }} />
             <div className="min-w-0">
-              <p className="text-zinc-400 truncate">
-                <span className="text-zinc-300">{event.username}</span>
+              <p className="truncate" style={{ color: 'var(--mc-text-secondary)' }}>
+                <span style={{ color: 'var(--mc-text-primary)' }}>{event.username}</span>
                 {' · '}
-                <span className="text-zinc-200">{event.trackTitle}</span>
+                <span style={{ color: 'var(--mc-text-primary)' }}>{event.trackTitle}</span>
               </p>
-              <p className="text-zinc-600 truncate">
+              <p className="truncate" style={{ color: 'var(--mc-text-muted)' }}>
                 {event.artistName} · {formatTime(event.timestamp)}
               </p>
             </div>

@@ -18,7 +18,7 @@ export default function AlbumsPage() {
     return (
       <div>
         <h2 className="text-xl font-semibold mb-4">Albums</h2>
-        <p className="text-zinc-500">No albums found. Add a music folder in Settings and scan your library.</p>
+        <p style={{ color: 'var(--mc-text-muted)' }}>No albums found. Add a music folder in Settings and scan your library.</p>
       </div>
     );
   }

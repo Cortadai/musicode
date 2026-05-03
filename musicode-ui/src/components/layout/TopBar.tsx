@@ -14,16 +14,16 @@ export default function TopBar() {
   }
 
   return (
-    <header className="h-14 bg-zinc-950 border-b border-zinc-800 flex items-center px-6 gap-4">
+    <header className="h-14 flex items-center px-6 gap-4" style={{ backgroundColor: 'var(--mc-bg-base)', borderBottom: '1px solid var(--mc-border-default)' }}>
       <form onSubmit={handleSubmit} className="flex-1 max-w-md">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search tracks, albums, artists…"
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors"
+            className="w-full border rounded-lg pl-10 pr-4 py-1.5 text-sm mc-input focus:outline-none transition-colors"
           />
         </div>
       </form>

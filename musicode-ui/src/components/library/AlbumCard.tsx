@@ -19,9 +19,10 @@ function AlbumCard({ album }: Props) {
     <Link
       to={`/albums/${album.id}`}
       aria-label={`${album.title} by ${album.artist?.name ?? 'Unknown Artist'}`}
-      className="group block bg-zinc-900 rounded-xl overflow-hidden hover:bg-zinc-800/80 transition-colors"
+      className="group block rounded-xl overflow-hidden transition-colors mc-nav-item"
+      style={{ backgroundColor: 'var(--mc-bg-surface)' }}
     >
-      <div className="aspect-square bg-zinc-800 relative overflow-hidden">
+      <div className="aspect-square relative overflow-hidden" style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}>
         {album.hasCoverArt ? (
           <img
             ref={imgRef}
@@ -33,13 +34,13 @@ function AlbumCard({ album }: Props) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Disc3 className="w-12 h-12 text-zinc-600" />
+            <Disc3 className="w-12 h-12" style={{ color: 'var(--mc-text-muted)' }} />
           </div>
         )}
       </div>
       <div className="p-3">
-        <p className="text-sm font-medium text-zinc-100 truncate">{album.title}</p>
-        <p className="text-xs text-zinc-500 truncate mt-0.5">
+        <p className="text-sm font-medium truncate" style={{ color: 'var(--mc-text-primary)' }}>{album.title}</p>
+        <p className="text-xs truncate mt-0.5" style={{ color: 'var(--mc-text-muted)' }}>
           {album.artist?.name ?? 'Unknown Artist'}
           {album.year && ` · ${album.year}`}
         </p>

@@ -44,16 +44,16 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--mc-bg-base)' }}>
           <div className="text-center space-y-4">
-            <AlertTriangle className="w-12 h-12 text-red-400 mx-auto" />
-            <h2 className="text-xl font-semibold text-zinc-100">Something went wrong</h2>
-            <p className="text-sm text-zinc-500 max-w-md">
+            <AlertTriangle className="w-12 h-12 mx-auto" style={{ color: 'var(--mc-text-error)' }} />
+            <h2 className="text-xl font-semibold" style={{ color: 'var(--mc-text-primary)' }}>Something went wrong</h2>
+            <p className="text-sm max-w-md" style={{ color: 'var(--mc-text-muted)' }}>
               {this.state.error?.message || 'An unexpected error occurred'}
             </p>
             <button
               onClick={this.handleReload}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 mc-btn-primary text-sm font-medium rounded-lg transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
               Reload

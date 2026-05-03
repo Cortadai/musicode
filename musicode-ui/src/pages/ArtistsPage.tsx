@@ -19,7 +19,7 @@ export default function ArtistsPage() {
     return (
       <div>
         <h2 className="text-xl font-semibold mb-4">Artists</h2>
-        <p className="text-zinc-500">No artists found. Scan a music folder in Settings.</p>
+        <p style={{ color: 'var(--mc-text-muted)' }}>No artists found. Scan a music folder in Settings.</p>
       </div>
     );
   }
@@ -32,12 +32,13 @@ export default function ArtistsPage() {
           <Link
             key={artist.id}
             to={`/artists/${artist.id}`}
-            className="flex flex-col items-center gap-3 p-4 rounded-xl bg-zinc-900 hover:bg-zinc-800/80 transition-colors"
+            className="flex flex-col items-center gap-3 p-4 rounded-xl transition-colors mc-nav-item"
+            style={{ backgroundColor: 'var(--mc-bg-surface)' }}
           >
-            <div className="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center">
-              <User className="w-8 h-8 text-zinc-600" />
+            <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}>
+              <User className="w-8 h-8" style={{ color: 'var(--mc-text-muted)' }} />
             </div>
-            <p className="text-sm font-medium text-zinc-100 text-center truncate w-full">
+            <p className="text-sm font-medium text-center truncate w-full" style={{ color: 'var(--mc-text-primary)' }}>
               {artist.name}
             </p>
           </Link>

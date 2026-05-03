@@ -3,14 +3,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router';
 import { AuthProvider } from './context/AuthContext';
 import { PlayerProvider } from './context/PlayerContext';
+import { ThemeProvider } from './themes';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AppShell from './components/layout/AppShell';
 import Spinner from './components/common/Spinner';
-import AlbumsPage from './pages/AlbumsPage';
+import HomePage from './pages/HomePage';
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 
+const AlbumsPage = lazy(() => import('./pages/AlbumsPage'));
 const AlbumDetailPage = lazy(() => import('./pages/AlbumDetailPage'));
 const ArtistsPage = lazy(() => import('./pages/ArtistsPage'));
 const ArtistDetailPage = lazy(() => import('./pages/ArtistDetailPage'));
@@ -34,9 +36,10 @@ export default function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <PlayerProvider>
-            <BrowserRouter>
+        <ThemeProvider>
+          <AuthProvider>
+            <PlayerProvider>
+              <BrowserRouter>
             <Routes>
               {/* Public route */}
               <Route path="/login" element={<Suspense fallback={<Spinner />}><LoginPage /></Suspense>} />
@@ -44,13 +47,15 @@ export default function App() {
               {/* Protected routes — any authenticated user */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<AppShell />}>
-                  <Route index element={<AlbumsPage />} />
+                  <Route index element={<HomePage />} />
+                  <Route path="/albums" element={<Suspense fallback={<Spinner />}><AlbumsPage /></Suspense>} />
                   <Route path="/albums/:id" element={<Suspense fallback={<Spinner />}><AlbumDetailPage /></Suspense>} />
                   <Route path="/artists" element={<Suspense fallback={<Spinner />}><ArtistsPage /></Suspense>} />
                   <Route path="/artists/:id" element={<Suspense fallback={<Spinner />}><ArtistDetailPage /></Suspense>} />
                   <Route path="/tracks" element={<Suspense fallback={<Spinner />}><TracksPage /></Suspense>} />
                   <Route path="/search" element={<Suspense fallback={<Spinner />}><SearchPage /></Suspense>} />
                   <Route path="/stats" element={<Suspense fallback={<Spinner />}><StatsPage /></Suspense>} />
+                  <Route path="/settings" element={<Suspense fallback={<Spinner />}><SettingsPage /></Suspense>} />
 
                 </Route>
               </Route>
@@ -58,15 +63,15 @@ export default function App() {
               {/* Admin-only routes */}
               <Route element={<ProtectedRoute requiredRole="ADMIN" />}>
                 <Route element={<AppShell />}>
-                  <Route path="/settings" element={<Suspense fallback={<Spinner />}><SettingsPage /></Suspense>} />
                   <Route path="/settings/health" element={<Suspense fallback={<Spinner />}><LibraryHealthPage /></Suspense>} />
                   <Route path="/users" element={<Suspense fallback={<Spinner />}><UsersPage /></Suspense>} />
                 </Route>
               </Route>
             </Routes>
-          </BrowserRouter>
-        </PlayerProvider>
-      </AuthProvider>
+            </BrowserRouter>
+          </PlayerProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
     </ErrorBoundary>
   );

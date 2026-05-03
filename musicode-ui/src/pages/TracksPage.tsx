@@ -66,7 +66,7 @@ export default function TracksPage() {
     return (
       <div>
         <h2 className="text-xl font-semibold mb-4">Tracks</h2>
-        <p className="text-zinc-500">No tracks found. Scan a folder in Settings.</p>
+        <p style={{ color: 'var(--mc-text-muted)' }}>No tracks found. Scan a folder in Settings.</p>
       </div>
     );
   }
@@ -74,7 +74,7 @@ export default function TracksPage() {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">
-        Tracks <span className="text-sm font-normal text-zinc-500">({totalElements})</span>
+        Tracks <span className="text-sm font-normal" style={{ color: 'var(--mc-text-muted)' }}>({totalElements})</span>
       </h2>
       <TrackList
         tracks={allTracks}

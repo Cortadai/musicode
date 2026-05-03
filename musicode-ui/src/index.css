@@ -1,9 +1,127 @@
 @import "tailwindcss";
 
-/* Custom scrollbar — dark theme */
+/* === Theme-aware interactive utilities === */
+
+/* Nav items — muted text, brighter on hover, with subtle bg hover */
+.mc-nav-item {
+  color: var(--mc-text-secondary);
+}
+.mc-nav-item:hover {
+  color: var(--mc-text-primary);
+  background-color: color-mix(in srgb, var(--mc-bg-surface-hover) 50%, transparent);
+}
+
+/* Active nav state */
+.mc-nav-active {
+  background-color: var(--mc-sidebar-active-background);
+  color: var(--mc-sidebar-active-text);
+}
+
+/* Muted interactive — muted text, brighter on hover (no bg) */
+.mc-interactive-muted {
+  color: var(--mc-text-muted);
+}
+.mc-interactive-muted:hover {
+  color: var(--mc-text-primary);
+}
+
+/* Accent toggle — active = accent, inactive = muted with hover */
+.mc-toggle-accent {
+  color: var(--mc-accent-primary);
+}
+.mc-toggle-accent:hover {
+  color: var(--mc-accent-primary-hover);
+}
+
+/* Link — primary text, accent on hover */
+.mc-link-accent {
+  color: var(--mc-text-primary);
+}
+.mc-link-accent:hover {
+  color: var(--mc-accent-primary);
+}
+
+/* Muted → warning on hover (cassette button, etc.) */
+.mc-interactive-warning {
+  color: var(--mc-text-muted);
+}
+.mc-interactive-warning:hover {
+  color: var(--mc-text-warning);
+}
+
+/* Muted → error/danger on hover (delete buttons) */
+.mc-interactive-danger {
+  color: var(--mc-text-muted);
+}
+.mc-interactive-danger:hover {
+  color: var(--mc-text-error);
+}
+
+/* Primary button */
+.mc-btn-primary {
+  background-color: var(--mc-accent-primary-hover);
+  color: var(--mc-text-primary);
+}
+.mc-btn-primary:hover {
+  background-color: var(--mc-accent-primary);
+}
+
+/* Secondary button — surface bg with hover */
+.mc-btn-secondary {
+  background-color: var(--mc-bg-surface-hover);
+  color: var(--mc-text-primary);
+}
+.mc-btn-secondary:hover {
+  background-color: var(--mc-border-default);
+}
+
+/* Danger outline button */
+.mc-btn-danger-outline {
+  background-color: color-mix(in srgb, var(--mc-text-error) 15%, transparent);
+  color: var(--mc-text-error);
+  border-color: color-mix(in srgb, var(--mc-text-error) 25%, transparent);
+}
+.mc-btn-danger-outline:hover {
+  background-color: color-mix(in srgb, var(--mc-text-error) 30%, transparent);
+}
+
+/* Danger solid button */
+.mc-btn-danger {
+  background-color: color-mix(in srgb, var(--mc-text-error) 80%, black);
+  color: white;
+}
+.mc-btn-danger:hover {
+  background-color: var(--mc-text-error);
+}
+
+/* Input fields */
+.mc-input {
+  background-color: var(--mc-bg-surface);
+  border-color: var(--mc-border-default);
+  color: var(--mc-text-primary);
+}
+.mc-input::placeholder {
+  color: var(--mc-text-muted);
+}
+.mc-input:focus {
+  border-color: var(--mc-border-accent);
+}
+
+/* Badge — role pill, count pill */
+.mc-badge {
+  background-color: var(--mc-badge-background);
+  color: var(--mc-badge-text);
+}
+
+.mc-badge-muted {
+  background-color: var(--mc-bg-surface-hover);
+  color: var(--mc-text-muted);
+}
+
+/* Custom scrollbar — theme-aware */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #3f3f46 transparent; /* zinc-700 thumb, transparent track */
+  scrollbar-color: var(--mc-scrollbar-thumb) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -16,12 +134,40 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46; /* zinc-700 */
+  background: var(--mc-scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b; /* zinc-600 */
+  background: var(--mc-scrollbar-thumb-hover);
+}
+
+/* Card hover lift effect */
+.mc-card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.mc-card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Skeleton loading pulse */
+@keyframes mc-skeleton-pulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.25; }
+}
+.mc-skeleton {
+  background-color: var(--mc-text-muted);
+  animation: mc-skeleton-pulse 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+/* Hidden scrollbar utility for carousels */
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* PlayerBar slide-up animation on first appearance */
@@ -148,10 +294,23 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes marquee-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-scroll {
+  animation: marquee-scroll 12s linear infinite;
+}
+
+.marquee-scroll:hover {
+  animation-play-state: paused;
+}
+
 /* EQ vertical slider styling */
 .eq-slider::-webkit-slider-runnable-track {
   width: 4px;
-  background: #3f3f46; /* zinc-700 */
+  background: var(--mc-waveform-buffered);
   border-radius: 2px;
 }
 
@@ -159,20 +318,20 @@
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
-  background: #818cf8; /* indigo-400 */
+  background: var(--mc-accent-primary);
   border-radius: 50%;
   cursor: pointer;
-  margin-left: -4px; /* center 12px thumb on 4px track */
+  margin-left: -4px;
 }
 
 .eq-slider:disabled::-webkit-slider-thumb {
-  background: #52525b; /* zinc-600 */
+  background: var(--mc-scrollbar-thumb-hover);
   cursor: default;
 }
 
 .eq-slider::-moz-range-track {
   width: 4px;
-  background: #3f3f46; /* zinc-700 */
+  background: var(--mc-waveform-buffered);
   border-radius: 2px;
   border: none;
 }
@@ -180,14 +339,14 @@
 .eq-slider::-moz-range-thumb {
   width: 12px;
   height: 12px;
-  background: #818cf8; /* indigo-400 */
+  background: var(--mc-accent-primary);
   border-radius: 50%;
   border: none;
   cursor: pointer;
 }
 
 .eq-slider:disabled::-moz-range-thumb {
-  background: #52525b; /* zinc-600 */
+  background: var(--mc-scrollbar-thumb-hover);
   cursor: default;
 }
 
@@ -215,7 +374,7 @@
   z-index: 50;
   display: flex;
   flex-direction: column;
-  background: #09090b; /* zinc-950 */
+  background: var(--mc-bg-base);
   outline: none;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
 }

@@ -22,10 +22,10 @@ const SEVERITY_ORDER: HealthIssueType[] = [
   'MISSING_GENRE',
 ];
 
-const SEVERITY_STYLES = {
-  high: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', icon: AlertTriangle },
-  medium: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', text: 'text-amber-400', icon: AlertCircle },
-  low: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', icon: Info },
+const SEVERITY_STYLES: Record<string, { colorVar: string; icon: typeof AlertTriangle }> = {
+  high: { colorVar: 'var(--mc-text-error)', icon: AlertTriangle },
+  medium: { colorVar: 'var(--mc-text-warning)', icon: AlertCircle },
+  low: { colorVar: 'var(--mc-text-info)', icon: Info },
 };
 
 export default function LibraryHealthPage() {
@@ -52,23 +52,23 @@ export default function LibraryHealthPage() {
   return (
     <div>
       <div className="flex items-center gap-2 mb-6">
-        <HeartPulse className="w-5 h-5 text-indigo-400" />
+        <HeartPulse className="w-5 h-5" style={{ color: 'var(--mc-accent-primary)' }} />
         <h2 className="text-xl font-semibold">Library Health</h2>
       </div>
 
       {/* Overview */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-zinc-900 rounded-xl p-4">
-          <p className="text-xs text-zinc-500 mb-1">Tracks</p>
-          <p className="text-2xl font-bold text-zinc-100">{s.totalTracks.toLocaleString()}</p>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+          <p className="text-xs mb-1" style={{ color: 'var(--mc-text-muted)' }}>Tracks</p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--mc-text-primary)' }}>{s.totalTracks.toLocaleString()}</p>
         </div>
-        <div className="bg-zinc-900 rounded-xl p-4">
-          <p className="text-xs text-zinc-500 mb-1">Albums</p>
-          <p className="text-2xl font-bold text-zinc-100">{s.totalAlbums.toLocaleString()}</p>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+          <p className="text-xs mb-1" style={{ color: 'var(--mc-text-muted)' }}>Albums</p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--mc-text-primary)' }}>{s.totalAlbums.toLocaleString()}</p>
         </div>
-        <div className="bg-zinc-900 rounded-xl p-4">
-          <p className="text-xs text-zinc-500 mb-1">Issues Found</p>
-          <p className={`text-2xl font-bold ${s.totalIssues > 0 ? 'text-amber-400' : 'text-green-400'}`}>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+          <p className="text-xs mb-1" style={{ color: 'var(--mc-text-muted)' }}>Issues Found</p>
+          <p className="text-2xl font-bold" style={{ color: s.totalIssues > 0 ? 'var(--mc-text-warning)' : 'var(--mc-text-success)' }}>
             {s.totalIssues.toLocaleString()}
           </p>
         </div>
@@ -76,11 +76,11 @@ export default function LibraryHealthPage() {
 
       {/* Clean library state */}
       {s.totalIssues === 0 && (
-        <div className="flex items-center gap-3 p-6 bg-green-500/10 border border-green-500/20 rounded-xl">
-          <CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" />
+        <div className="flex items-center gap-3 p-6 rounded-xl border" style={{ backgroundColor: 'color-mix(in srgb, var(--mc-text-success) 8%, transparent)', borderColor: 'color-mix(in srgb, var(--mc-text-success) 20%, transparent)' }}>
+          <CheckCircle2 className="w-6 h-6 shrink-0" style={{ color: 'var(--mc-text-success)' }} />
           <div>
-            <p className="text-sm font-medium text-green-300">Your library metadata looks good!</p>
-            <p className="text-xs text-zinc-500 mt-1">All tracks have the essential metadata fields populated.</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--mc-text-success)' }}>Your library metadata looks good!</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--mc-text-muted)' }}>All tracks have the essential metadata fields populated.</p>
           </div>
         </div>
       )}
@@ -99,15 +99,15 @@ export default function LibraryHealthPage() {
               <button
                 key={type}
                 onClick={() => { setSelectedType(isSelected ? null : type); setPage(0); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors text-left ${
-                  isSelected
-                    ? `${styles.bg} ${styles.border}`
-                    : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
-                }`}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors text-left"
+                style={isSelected
+                  ? { backgroundColor: `color-mix(in srgb, ${styles.colorVar} 8%, transparent)`, borderColor: `color-mix(in srgb, ${styles.colorVar} 20%, transparent)` }
+                  : { backgroundColor: 'var(--mc-bg-surface)', borderColor: 'var(--mc-border-default)' }
+                }
               >
-                <Icon className={`w-4 h-4 shrink-0 ${styles.text}`} />
-                <span className="text-sm text-zinc-200 flex-1">{ISSUE_LABELS[type]}</span>
-                <span className={`text-sm font-medium tabular-nums ${styles.text}`}>{count}</span>
+                <Icon className="w-4 h-4 shrink-0" style={{ color: styles.colorVar }} />
+                <span className="text-sm flex-1" style={{ color: 'var(--mc-text-primary)' }}>{ISSUE_LABELS[type]}</span>
+                <span className="text-sm font-medium tabular-nums" style={{ color: styles.colorVar }}>{count}</span>
               </button>
             );
           })}
@@ -116,12 +116,12 @@ export default function LibraryHealthPage() {
 
       {/* Issue detail table */}
       {selectedType && (
-        <div className="bg-zinc-900 rounded-xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-zinc-800">
-            <h3 className="text-sm font-medium text-zinc-300">
+        <div className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--mc-border-default)' }}>
+            <h3 className="text-sm font-medium" style={{ color: 'var(--mc-text-secondary)' }}>
               {ISSUE_LABELS[selectedType]}
               {issues.data && (
-                <span className="text-zinc-500 ml-2">
+                <span className="ml-2" style={{ color: 'var(--mc-text-muted)' }}>
                   ({issues.data.totalElements} total)
                 </span>
               )}
@@ -138,37 +138,37 @@ export default function LibraryHealthPage() {
             </div>
           ) : issues.data && issues.data.content.length > 0 ? (
             <>
-              <div className="divide-y divide-zinc-800">
+              <div>
                 {issues.data.content.map((issue, i) => (
-                  <div key={`${issue.entityId}-${i}`} className="px-4 py-3">
+                  <div key={`${issue.entityId}-${i}`} className="px-4 py-3" style={{ borderBottom: '1px solid var(--mc-border-default)' }}>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm text-zinc-200">{issue.entityName}</span>
+                      <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>{issue.entityName}</span>
                     </div>
                     {issue.detail && (
-                      <p className="text-xs text-zinc-500">{issue.detail}</p>
+                      <p className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>{issue.detail}</p>
                     )}
-                    <p className="text-xs text-zinc-600 mt-1 font-mono truncate">{issue.filePath}</p>
+                    <p className="text-xs mt-1 font-mono truncate" style={{ color: 'var(--mc-text-muted)', opacity: 0.6 }}>{issue.filePath}</p>
                   </div>
                 ))}
               </div>
 
               {/* Pagination */}
               {issues.data.totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800">
+                <div className="flex items-center justify-between px-4 py-3" style={{ borderTop: '1px solid var(--mc-border-default)' }}>
                   <button
                     onClick={() => setPage(p => p - 1)}
                     disabled={issues.data.first}
-                    className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 disabled:opacity-30 disabled:hover:text-zinc-400"
+                    className="flex items-center gap-1 text-xs mc-interactive-muted transition-colors disabled:opacity-30"
                   >
                     <ChevronLeft className="w-3 h-3" /> Previous
                   </button>
-                  <span className="text-xs text-zinc-500">
+                  <span className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>
                     Page {issues.data.number + 1} of {issues.data.totalPages}
                   </span>
                   <button
                     onClick={() => setPage(p => p + 1)}
                     disabled={issues.data.last}
-                    className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 disabled:opacity-30 disabled:hover:text-zinc-400"
+                    className="flex items-center gap-1 text-xs mc-interactive-muted transition-colors disabled:opacity-30"
                   >
                     Next <ChevronRight className="w-3 h-3" />
                   </button>
@@ -176,16 +176,16 @@ export default function LibraryHealthPage() {
               )}
             </>
           ) : (
-            <p className="p-4 text-sm text-zinc-500">No issues found.</p>
+            <p className="p-4 text-sm" style={{ color: 'var(--mc-text-muted)' }}>No issues found.</p>
           )}
         </div>
       )}
 
       {/* Picard hint */}
       {s.totalIssues > 0 && (
-        <div className="mt-6 p-4 bg-zinc-900 rounded-lg border border-zinc-800">
-          <p className="text-xs text-zinc-400">
-            Use <span className="text-zinc-300 font-medium">MusicBrainz Picard</span> to fix metadata issues, then re-scan your library in Settings.
+        <div className="mt-6 p-4 rounded-lg border" style={{ backgroundColor: 'var(--mc-bg-surface)', borderColor: 'var(--mc-border-default)' }}>
+          <p className="text-xs" style={{ color: 'var(--mc-text-secondary)' }}>
+            Use <span className="font-medium" style={{ color: 'var(--mc-text-primary)' }}>MusicBrainz Picard</span> to fix metadata issues, then re-scan your library in Settings.
           </p>
         </div>
       )}

@@ -43,8 +43,14 @@ function EqPresetDropdown({ preset, onSelect }: { preset: string; onSelect: (nam
         aria-haspopup="listbox"
         aria-expanded={listOpen}
         aria-label="EQ preset"
-        className="flex items-center justify-between gap-1 text-[11px] bg-zinc-700 text-zinc-300 border border-zinc-600 rounded px-1.5 py-0.5 outline-none
-          hover:border-zinc-500 focus-visible:border-indigo-500 focus-visible:ring-1 focus-visible:ring-indigo-400 w-[100px]"
+        className="flex items-center justify-between gap-1 text-[11px] border rounded px-1.5 py-0.5 outline-none
+          focus-visible:ring-1 w-[100px]"
+        style={{
+          backgroundColor: 'var(--mc-waveform-buffered)',
+          color: 'var(--mc-text-primary)',
+          borderColor: 'var(--mc-scrollbar-thumb-hover)',
+          ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
+        }}
       >
         {currentLabel}
         <ChevronDown className="w-3 h-3" />
@@ -53,7 +59,8 @@ function EqPresetDropdown({ preset, onSelect }: { preset: string; onSelect: (nam
         <ul
           role="listbox"
           aria-label="EQ presets"
-          className="absolute right-0 top-full mt-1 bg-zinc-800 border border-zinc-700 rounded shadow-xl z-50 py-0.5 w-[100px]"
+          className="absolute right-0 top-full mt-1 border rounded shadow-xl z-50 py-0.5 w-[100px]"
+          style={{ backgroundColor: 'var(--mc-bg-surface-hover)', borderColor: 'var(--mc-waveform-buffered)' }}
         >
           {options.map((o) => (
             <li
@@ -61,10 +68,10 @@ function EqPresetDropdown({ preset, onSelect }: { preset: string; onSelect: (nam
               role="option"
               aria-selected={o.value === preset}
               onClick={() => { onSelect(o.value); setListOpen(false); }}
-              className={`text-[11px] px-2 py-1 cursor-pointer transition-colors
-                ${o.value === preset
-                  ? 'bg-indigo-500 text-white'
-                  : 'text-zinc-300 hover:bg-indigo-500/20 hover:text-white'}`}
+              className="text-[11px] px-2 py-1 cursor-pointer transition-colors"
+              style={o.value === preset
+                ? { backgroundColor: 'var(--mc-accent-primary-hover)', color: 'var(--mc-text-primary)' }
+                : { color: 'var(--mc-text-primary)' }}
             >
               {o.label}
             </li>
@@ -157,7 +164,7 @@ export default function EqPopover() {
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label={enabled ? `Equalizer: ${preset}` : 'Equalizer: Off'}
-        className={`flex items-center justify-center transition-colors ${enabled ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+        className={`flex items-center justify-center transition-colors ${enabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
       >
         <SlidersHorizontal className="w-4 h-4" />
       </button>
@@ -166,19 +173,24 @@ export default function EqPopover() {
           ref={dialogRef}
           role="dialog"
           aria-label="Equalizer settings"
-          className="absolute bottom-8 right-0 bg-zinc-800 border border-zinc-700 rounded-lg p-3 shadow-xl z-50 w-64"
+          className="absolute bottom-8 right-0 border rounded-lg p-3 shadow-xl z-50 w-64"
+          style={{ backgroundColor: 'var(--mc-bg-surface-hover)', borderColor: 'var(--mc-waveform-buffered)' }}
         >
           {/* Header: toggle + preset selector */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-400" id="eq-toggle-label">Equalizer</span>
+              <span className="text-xs" style={{ color: 'var(--mc-text-secondary)' }} id="eq-toggle-label">Equalizer</span>
               <button
                 onClick={handleToggle}
                 role="switch"
                 aria-checked={enabled}
                 aria-labelledby="eq-toggle-label"
-                className={`w-8 h-4 rounded-full transition-colors relative ${enabled ? 'bg-indigo-500' : 'bg-zinc-600'}
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400`}
+                className="w-8 h-4 rounded-full transition-colors relative
+                  focus-visible:outline-none focus-visible:ring-2"
+                style={{
+                  backgroundColor: enabled ? 'var(--mc-accent-primary-hover)' : 'var(--mc-scrollbar-thumb-hover)',
+                  ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
+                }}
               >
                 <span
                   className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${enabled ? 'left-4' : 'left-0.5'}`}
@@ -195,7 +207,7 @@ export default function EqPopover() {
           <div className="flex items-end justify-between gap-1 h-28">
             {eqProcessor.BAND_DEFS.map((band, i) => (
               <div key={band.frequency} className="flex flex-col items-center gap-1 flex-1">
-                <span className="text-[10px] text-zinc-500 tabular-nums" aria-hidden="true">
+                <span className="text-[10px] tabular-nums" style={{ color: 'var(--mc-text-muted)' }} aria-hidden="true">
                   {bands[i] > 0 ? '+' : ''}{bands[i]}
                 </span>
                 <input
@@ -208,8 +220,9 @@ export default function EqPopover() {
                   disabled={!enabled}
                   aria-label={`${band.label} band`}
                   aria-valuetext={`${bands[i] > 0 ? '+' : ''}${bands[i]} dB`}
-                  className="eq-slider appearance-none cursor-pointer accent-indigo-500 disabled:opacity-40
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                  className="eq-slider appearance-none cursor-pointer disabled:opacity-40
+                    focus-visible:outline-none focus-visible:ring-2"
+                  style={{ accentColor: 'var(--mc-accent-primary)', ['--tw-ring-color' as string]: 'var(--mc-accent-primary)' } as React.CSSProperties}
                   style={{
                     writingMode: 'vertical-lr',
                     direction: 'rtl',
@@ -217,15 +230,15 @@ export default function EqPopover() {
                     width: '20px',
                   }}
                 />
-                <span className="text-[10px] text-zinc-500" aria-hidden="true">{band.label}</span>
+                <span className="text-[10px]" style={{ color: 'var(--mc-text-muted)' }} aria-hidden="true">{band.label}</span>
               </div>
             ))}
           </div>
 
           {/* dB range labels */}
           <div className="flex justify-between mt-1">
-            <span className="text-[9px] text-zinc-600">-12 dB</span>
-            <span className="text-[9px] text-zinc-600">+12 dB</span>
+            <span className="text-[9px]" style={{ color: 'var(--mc-text-muted)' }}>-12 dB</span>
+            <span className="text-[9px]" style={{ color: 'var(--mc-text-muted)' }}>+12 dB</span>
           </div>
         </div>
       )}

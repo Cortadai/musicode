@@ -61,7 +61,7 @@ export default function PlayerBar() {
   const hasPrev = queueIndex > 0 || currentTime > 3 || repeatMode === 'all';
 
   return (
-    <div role="region" aria-label="Music player" className="bg-zinc-900 border-t border-zinc-800 shrink-0 animate-slide-up">
+    <div role="region" aria-label="Music player" className="shrink-0 animate-slide-up" style={{ backgroundColor: 'var(--mc-player-background)', borderTop: '1px solid var(--mc-player-border)' }}>
       <Visualizer visible={showVisualizer} mode={visualizerMode} onModeChange={handleVisualizerModeChange} />
 
       <div className={`${waveformEnabled ? 'h-24' : 'h-20'} flex items-center px-4 gap-4 transition-[height] duration-200`}>
@@ -72,6 +72,10 @@ export default function PlayerBar() {
           hasCover={currentTrack.album?.hasCoverArt}
           isPlaying={isPlaying}
           onArtworkClick={() => setShowNowPlaying(true)}
+          filePath={currentTrack.filePath}
+          bitRate={currentTrack.bitRate}
+          sampleRate={currentTrack.sampleRate}
+          bitsPerSample={currentTrack.bitsPerSample}
         />
 
         <div className="flex-1 flex flex-col items-center gap-1 min-w-0 md:max-w-2xl md:mx-auto">
@@ -90,13 +94,13 @@ export default function PlayerBar() {
           <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} trackId={currentTrack.id} waveformEnabled={waveformEnabled} />
         </div>
 
-        <div className="flex items-center gap-2 w-auto md:w-48 shrink-0 md:shrink justify-end">
+        <div className="flex items-center gap-2 w-auto md:w-48 shrink-0 justify-end">
           <ScrobbleIndicator status={scrobbleStatus} />
           <button
             onClick={handleToggleWaveform}
             aria-label={waveformEnabled ? 'Switch to flat progress bar' : 'Switch to waveform'}
             aria-pressed={waveformEnabled}
-            className={`hidden md:flex items-center justify-center transition-colors ${waveformEnabled ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`hidden md:flex items-center justify-center transition-colors ${waveformEnabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
           >
             <Activity className="w-4 h-4" />
           </button>
@@ -108,14 +112,14 @@ export default function PlayerBar() {
             onClick={handleToggleVisualizer}
             aria-label={showVisualizer ? 'Hide visualizer' : 'Show visualizer'}
             aria-pressed={showVisualizer}
-            className={`hidden md:flex items-center justify-center transition-colors ${showVisualizer ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`hidden md:flex items-center justify-center transition-colors ${showVisualizer ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
           >
             <BarChart3 className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowRetroMode(true)}
             aria-label="Retro cassette mode"
-            className="hidden md:flex items-center justify-center transition-colors text-zinc-500 hover:text-amber-400"
+            className="hidden md:flex items-center justify-center transition-colors mc-interactive-warning"
           >
             <CassetteTape className="w-4 h-4" />
           </button>

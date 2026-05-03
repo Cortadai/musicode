@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { UserInfo } from '../types';
 import * as authApi from '../api/auth';
 
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const REFRESH_MARGIN_MS = 60_000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -71,11 +73,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [scheduleRefresh, clearRefreshTimer]);
 
   const login = useCallback(async (username: string, password: string) => {
+    queryClient.clear();
     const { user: loggedInUser, accessTokenExpiresIn } = await authApi.login({ username, password });
     console.debug('[auth] Login success:', loggedInUser.username, loggedInUser.role);
     setUser(loggedInUser);
     scheduleRefresh(accessTokenExpiresIn);
-  }, [scheduleRefresh]);
+  }, [scheduleRefresh, queryClient]);
 
   const logout = useCallback(async () => {
     console.debug('[auth] Logging out');
@@ -85,8 +88,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Ignore — clear local state regardless
     }
+    queryClient.clear();
     setUser(null);
-  }, [clearRefreshTimer]);
+  }, [clearRefreshTimer, queryClient]);
 
   return (
     <AuthContext.Provider

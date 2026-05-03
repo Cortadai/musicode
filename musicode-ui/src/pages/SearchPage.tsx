@@ -26,14 +26,14 @@ export default function SearchPage() {
 
   if (!query) {
     return (
-      <div className="text-zinc-500">
-        <h2 className="text-xl font-semibold text-zinc-100 mb-4">Search</h2>
+      <div style={{ color: 'var(--mc-text-muted)' }}>
+        <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--mc-text-primary)' }}>Search</h2>
         <p>Type something in the search bar above.</p>
       </div>
     );
   }
 
-  if (isLoading) return <p className="text-zinc-500">Searching…</p>;
+  if (isLoading) return <p style={{ color: 'var(--mc-text-muted)' }}>Searching…</p>;
 
   if (!data) return null;
 
@@ -42,23 +42,24 @@ export default function SearchPage() {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-6">
-        Results for "<span className="text-indigo-400">{query}</span>"
+        Results for "<span style={{ color: 'var(--mc-accent-primary)' }}>{query}</span>"
       </h2>
 
-      {!hasResults && <p className="text-zinc-500">No results found.</p>}
+      {!hasResults && <p style={{ color: 'var(--mc-text-muted)' }}>No results found.</p>}
 
       {data.artists.length > 0 && (
         <section className="mb-8">
-          <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">Artists</h3>
+          <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Artists</h3>
           <div className="flex gap-4 flex-wrap">
             {data.artists.map((artist) => (
               <Link
                 key={artist.id}
                 to={`/artists/${artist.id}`}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-zinc-900 hover:bg-zinc-800/80 transition-colors"
+                className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors mc-nav-item"
+                style={{ backgroundColor: 'var(--mc-bg-surface)' }}
               >
-                <User className="w-5 h-5 text-zinc-500" />
-                <span className="text-sm text-zinc-100">{artist.name}</span>
+                <User className="w-5 h-5" style={{ color: 'var(--mc-text-muted)' }} />
+                <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>{artist.name}</span>
               </Link>
             ))}
           </div>
@@ -67,7 +68,7 @@ export default function SearchPage() {
 
       {data.albums.length > 0 && (
         <section className="mb-8">
-          <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">Albums</h3>
+          <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Albums</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {data.albums.map((album) => (
               <AlbumCard key={album.id} album={album} />
@@ -78,7 +79,7 @@ export default function SearchPage() {
 
       {data.tracks.length > 0 && (
         <section>
-          <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3">Tracks</h3>
+          <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Tracks</h3>
           <TrackList
             tracks={data.tracks}
             showAlbum

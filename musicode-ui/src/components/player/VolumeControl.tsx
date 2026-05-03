@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume1, Volume2, VolumeX } from 'lucide-react';
 
 interface Props {
   volume: number;
@@ -20,15 +20,16 @@ function VolumeControl({ volume, onVolumeChange }: Props) {
   );
 
   const pct = volume * 100;
+  const VolumeIcon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
   return (
     <>
       <button
         onClick={handleMuteToggle}
         aria-label={volume === 0 ? 'Unmute' : 'Mute'}
-        className="text-zinc-400 hover:text-zinc-100 transition-colors"
+        className="mc-interactive-muted transition-colors hidden md:block"
       >
-        {volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        <VolumeIcon className="w-4 h-4" />
       </button>
       <input
         type="range"
@@ -39,16 +40,26 @@ function VolumeControl({ volume, onVolumeChange }: Props) {
         onChange={handleChange}
         aria-label="Volume"
         aria-valuetext={`${Math.round(pct)}%`}
-        className="w-28 h-1 appearance-none bg-zinc-700 rounded-full cursor-pointer
+        className="w-20 md:w-28 shrink-0 h-1 appearance-none rounded-full cursor-pointer
           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5
-          [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-200
+          [&::-webkit-slider-thumb]:rounded-full
           [&::-moz-range-thumb]:w-2.5 [&::-moz-range-thumb]:h-2.5 [&::-moz-range-thumb]:rounded-full
-          [&::-moz-range-thumb]:bg-zinc-200 [&::-moz-range-thumb]:border-0
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-900"
+          [&::-moz-range-thumb]:border-0
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
         style={{
-          background: `linear-gradient(to right, rgb(161 161 170) ${pct}%, rgb(63 63 70) ${pct}%)`,
+          background: `linear-gradient(to right, var(--mc-text-secondary) ${pct}%, var(--mc-waveform-buffered) ${pct}%)`,
+          ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
+          ['--tw-ring-offset-color' as string]: 'var(--mc-player-background)',
         }}
       />
+      <button
+        onClick={() => onVolumeChange(0.8)}
+        aria-label={`Volume ${Math.round(pct)}% — click to reset`}
+        className="hidden md:inline-block w-8 shrink-0 -ml-1 text-right text-xs font-mono tabular-nums cursor-pointer select-none hover:opacity-75 transition-opacity"
+        style={{ color: 'var(--mc-accent-primary)', background: 'none', border: 'none', padding: 0 }}
+      >
+        {Math.round(pct)}
+      </button>
     </>
   );
 }

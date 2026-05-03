@@ -7,10 +7,10 @@ interface Props {
   status: ScrobbleStatus;
 }
 
-const STATUS_CONFIG = {
-  idle: { color: 'text-zinc-600', tooltip: 'Scrobble: waiting for 50% playback' },
-  reported: { color: 'text-indigo-400', tooltip: 'Scrobble: play reported' },
-  error: { color: 'text-amber-500', tooltip: 'Scrobble: failed to report play' },
+const STATUS_STYLES = {
+  idle: { color: 'var(--mc-text-muted)', tooltip: 'Scrobble: waiting for 50% playback' },
+  reported: { color: 'var(--mc-accent-primary)', tooltip: 'Scrobble: play reported' },
+  error: { color: 'var(--mc-text-warning)', tooltip: 'Scrobble: failed to report play' },
 } as const;
 
 function ScrobbleIndicator({ status }: Props) {
@@ -24,10 +24,10 @@ function ScrobbleIndicator({ status }: Props) {
 
   if (configured === null || configured === false) return null;
 
-  const { color, tooltip } = STATUS_CONFIG[status];
+  const { color, tooltip } = STATUS_STYLES[status];
 
   return (
-    <span title={tooltip} className={`flex items-center transition-colors ${color}`}>
+    <span title={tooltip} className="flex items-center transition-colors" style={{ color }}>
       <Radio className="w-3.5 h-3.5" />
     </span>
   );

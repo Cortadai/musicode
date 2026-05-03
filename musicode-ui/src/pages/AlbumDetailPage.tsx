@@ -43,24 +43,24 @@ export default function AlbumDetailPage() {
 
   return (
     <div>
-      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-200 mb-6">
+      <Link to="/" className="inline-flex items-center gap-1.5 text-sm mc-interactive-muted mb-6">
         <ArrowLeft className="w-4 h-4" /> Back to albums
       </Link>
 
       <div className="flex gap-8 mb-8">
-        <div className="w-48 h-48 rounded-xl overflow-hidden bg-zinc-800 shrink-0">
+        <div className="w-48 h-48 rounded-xl overflow-hidden shrink-0" style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}>
           {album.hasCoverArt ? (
             <img src={getCoverUrl(album.id)} alt={album.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Disc3 className="w-16 h-16 text-zinc-600" />
+              <Disc3 className="w-16 h-16" style={{ color: 'var(--mc-text-muted)' }} />
             </div>
           )}
         </div>
         <div className="flex flex-col justify-end">
-          <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Album</p>
-          <h2 className="text-3xl font-bold text-white mb-2">{album.title}</h2>
-          <p className="text-sm text-zinc-400">
+          <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--mc-text-muted)' }}>Album</p>
+          <h2 className="text-3xl font-bold mb-2" style={{ color: 'var(--mc-text-primary)' }}>{album.title}</h2>
+          <p className="text-sm" style={{ color: 'var(--mc-text-secondary)' }}>
             {album.artist?.name ?? 'Unknown Artist'}
             {album.year && ` · ${album.year}`}
             {` · ${tracks.length} tracks`}

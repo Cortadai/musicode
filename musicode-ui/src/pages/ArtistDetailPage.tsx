@@ -25,18 +25,18 @@ export default function ArtistDetailPage() {
 
   return (
     <div>
-      <Link to="/artists" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-200 mb-6">
+      <Link to="/artists" className="inline-flex items-center gap-1.5 text-sm mc-interactive-muted mb-6">
         <ArrowLeft className="w-4 h-4" /> Back to artists
       </Link>
 
       <div className="flex items-center gap-6 mb-8">
-        <div className="w-24 h-24 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
-          <User className="w-10 h-10 text-zinc-600" />
+        <div className="w-24 h-24 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}>
+          <User className="w-10 h-10" style={{ color: 'var(--mc-text-muted)' }} />
         </div>
         <div>
-          <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Artist</p>
-          <h2 className="text-3xl font-bold text-white">{artist.name}</h2>
-          <p className="text-sm text-zinc-400 mt-1">{albums.length} album{albums.length !== 1 ? 's' : ''}</p>
+          <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--mc-text-muted)' }}>Artist</p>
+          <h2 className="text-3xl font-bold" style={{ color: 'var(--mc-text-primary)' }}>{artist.name}</h2>
+          <p className="text-sm mt-1" style={{ color: 'var(--mc-text-secondary)' }}>{albums.length} album{albums.length !== 1 ? 's' : ''}</p>
         </div>
       </div>
 
@@ -47,7 +47,7 @@ export default function ArtistDetailPage() {
           ))}
         </div>
       ) : (
-        <p className="text-zinc-500">No albums found for this artist.</p>
+        <p style={{ color: 'var(--mc-text-muted)' }}>No albums found for this artist.</p>
       )}
     </div>
   );

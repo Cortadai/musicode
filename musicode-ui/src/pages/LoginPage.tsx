@@ -27,16 +27,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--mc-bg-base)' }}>
       <div className="w-full max-w-sm p-8">
         <div className="flex items-center justify-center gap-2 mb-8">
-          <Music className="w-8 h-8 text-indigo-400" />
-          <h1 className="text-2xl font-bold text-white">Musicode</h1>
+          <Music className="w-8 h-8" style={{ color: 'var(--mc-accent-primary)' }} />
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--mc-text-primary)' }}>Musicode</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-zinc-400 mb-1">
+            <label htmlFor="username" className="block text-sm font-medium mb-1" style={{ color: 'var(--mc-text-secondary)' }}>
               Username
             </label>
             <input
@@ -47,13 +47,13 @@ export default function LoginPage() {
               autoComplete="username"
               autoFocus
               required
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="w-full border rounded-lg px-4 py-2.5 text-sm mc-input focus:outline-none focus:ring-1"
               placeholder="Enter your username"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-zinc-400 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium mb-1" style={{ color: 'var(--mc-text-secondary)' }}>
               Password
             </label>
             <input
@@ -63,19 +63,19 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="w-full border rounded-lg px-4 py-2.5 text-sm mc-input focus:outline-none focus:ring-1"
               placeholder="Enter your password"
             />
           </div>
 
           {error && (
-            <p className="text-red-400 text-sm">{error}</p>
+            <p className="text-sm" style={{ color: 'var(--mc-text-error)' }}>{error}</p>
           )}
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            className="w-full py-2.5 mc-btn-primary text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
           >
             {submitting ? 'Signing in…' : 'Sign in'}
           </button>

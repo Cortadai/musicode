@@ -1,4 +1,5 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useMemo } from 'react';
+import { useTheme } from '../../themes/useTheme';
 
 interface Props {
   peaks: number[];
@@ -10,11 +11,20 @@ const BAR_WIDTH = 2;
 const BAR_GAP = 1;
 const MIN_HEIGHT_RATIO = 0.05;
 
-const COLOR_PLAYED = 'rgba(244, 244, 245, 0.9)';
-const COLOR_UNPLAYED = 'rgba(113, 113, 122, 0.5)';
-const COLOR_PLAYED_OVERLAY = 'rgba(129, 140, 248, 0.15)';
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 export default function WaveformBar({ peaks, progress, onSeek }: Props) {
+  const { theme } = useTheme();
+  const colors = useMemo(() => ({
+    played: hexToRgba(theme.tokens.textPrimary, 0.9),
+    unplayed: hexToRgba(theme.tokens.textMuted, 0.5),
+    overlay: hexToRgba(theme.tokens.accentPrimary, 0.15),
+  }), [theme.tokens.textPrimary, theme.tokens.textMuted, theme.tokens.accentPrimary]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
@@ -49,16 +59,16 @@ export default function WaveformBar({ peaks, progress, onSeek }: Props) {
       const x = i * barStep;
       const y = (h - barH) / 2;
 
-      ctx.fillStyle = x + BAR_WIDTH <= progressX ? COLOR_PLAYED : COLOR_UNPLAYED;
+      ctx.fillStyle = x + BAR_WIDTH <= progressX ? colors.played : colors.unplayed;
       ctx.fillRect(x, y, BAR_WIDTH, barH);
     }
 
     // Subtle glow overlay on played portion
     if (progressX > 0) {
-      ctx.fillStyle = COLOR_PLAYED_OVERLAY;
+      ctx.fillStyle = colors.overlay;
       ctx.fillRect(0, 0, progressX, h);
     }
-  }, [peaks, progress]);
+  }, [peaks, progress, colors]);
 
   useEffect(() => {
     draw();

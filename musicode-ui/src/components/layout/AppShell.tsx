@@ -1,19 +1,22 @@
 import { useEffect } from 'react';
-import { Outlet } from 'react-router';
-import Sidebar from './Sidebar';
-import TopBar from './TopBar';
-import PlayerBar from '../player/PlayerBar';
 import { usePlayer } from '../../hooks/usePlayer';
-import { useSidebarCollapse } from '../../hooks/useSidebarCollapse';
+import { useTheme } from '../../themes';
+import EvolvedShell from './shells/EvolvedShell';
+import NovatouchShell from './shells/NovatouchShell';
+import MinimalShell from './shells/MinimalShell';
+
+const shellByLayout = {
+  'sidebar-expanded': EvolvedShell,
+  'sidebar-icons': NovatouchShell,
+  'horizontal': MinimalShell,
+} as const;
 
 export default function AppShell() {
   const { isPlaying, currentTrack, pause, resume, next, prev, setVolume, volume } = usePlayer();
-  const { collapsed, toggle } = useSidebarCollapse();
+  const { theme } = useTheme();
 
-  // Global keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Don't capture keys when typing in inputs
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
@@ -43,16 +46,6 @@ export default function AppShell() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPlaying, currentTrack, pause, resume, next, prev, setVolume, volume]);
 
-  return (
-    <div className="h-screen flex overflow-hidden bg-zinc-950 text-zinc-100">
-      <Sidebar collapsed={collapsed} onToggle={toggle} />
-      <div className="flex-1 flex flex-col min-w-0">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
-        </main>
-        <PlayerBar />
-      </div>
-    </div>
-  );
+  const Shell = shellByLayout[theme.layout];
+  return <Shell />;
 }
