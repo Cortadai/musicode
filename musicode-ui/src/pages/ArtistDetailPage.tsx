@@ -5,7 +5,7 @@ import AlbumCard from '../components/library/AlbumCard';
 import { ArrowLeft } from 'lucide-react';
 import { artistGradient, artistInitials } from '../utils/artistAvatar';
 import type { Album } from '../types';
-import Spinner from '../components/common/Spinner';
+import { ArtistDetailSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 
@@ -19,7 +19,7 @@ export default function ArtistDetailPage() {
     enabled: !isNaN(artistId),
   });
 
-  if (isLoading) return <Spinner text="Loading artist…" />;
+  if (isLoading) return <ArtistDetailSkeleton />;
   if (error || !artist) return <ErrorMessage message="Artist not found" detail={getErrorMessage(error)} />;
 
   const albums: Album[] = artist.albums ? [...artist.albums] : [];

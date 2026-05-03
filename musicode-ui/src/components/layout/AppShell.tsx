@@ -42,8 +42,20 @@ export default function AppShell() {
       }
     }
 
+    function handleContextMenu(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      const tag = target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) return;
+      if (target.closest('.selectable')) return;
+      e.preventDefault();
+    }
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('contextmenu', handleContextMenu);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
   }, [isPlaying, currentTrack, pause, resume, next, prev, setVolume, volume]);
 
   const Shell = shellByLayout[theme.layout];

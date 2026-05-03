@@ -1,5 +1,41 @@
 @import "tailwindcss";
 
+/* === Native app feel === */
+
+/* Prevent text selection on UI chrome — inputs, textareas, and lyrics remain selectable */
+*:not(input):not(textarea):not([contenteditable="true"]):not(.selectable) {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Kill overscroll bounce/pull-to-refresh */
+html, body {
+  overscroll-behavior: none;
+}
+
+/* Default cursor everywhere — links and inputs keep their natural cursors */
+body {
+  cursor: default;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Only show focus rings on keyboard navigation, not mouse clicks */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--mc-accent-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Disable browser context menu styling hint — actual prevention is in JS */
+::selection {
+  background-color: var(--mc-accent-primary);
+  color: white;
+}
+
 /* === Theme-aware interactive utilities === */
 
 /* Nav items — muted text, brighter on hover, with subtle bg hover */

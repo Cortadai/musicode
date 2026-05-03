@@ -11,6 +11,7 @@ import TrackList from '../components/library/TrackList';
 import ArtistCard from '../components/library/ArtistCard';
 import { usePlayer } from '../hooks/usePlayer';
 import Spinner from '../components/common/Spinner';
+import { TrackListSkeleton, AlbumGridSkeleton, ArtistGridSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 import type { Track } from '../types';
@@ -148,7 +149,7 @@ function TracksTab() {
     [playTrack, allTracks]
   );
 
-  if (isLoading) return <Spinner text="Loading tracks…" />;
+  if (isLoading) return <TrackListSkeleton />;
   if (error) return <ErrorMessage message="Failed to load tracks" detail={getErrorMessage(error)} />;
 
   if (allTracks.length === 0) {
@@ -170,7 +171,7 @@ function AlbumsTab() {
     queryFn: () => getAlbums(0, 200),
   });
 
-  if (isLoading) return <Spinner text="Loading albums…" />;
+  if (isLoading) return <AlbumGridSkeleton />;
   if (error) return <ErrorMessage message="Failed to load albums" detail={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   if (!data?.content.length) {
@@ -192,7 +193,7 @@ function ArtistsTab() {
     queryFn: () => getArtists(0, 200),
   });
 
-  if (isLoading) return <Spinner text="Loading artists…" />;
+  if (isLoading) return <ArtistGridSkeleton />;
   if (error) return <ErrorMessage message="Failed to load artists" detail={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   if (!data?.content.length) {
@@ -255,7 +256,7 @@ function FavoritesTab() {
     [playTrack, allTracks]
   );
 
-  if (isLoading) return <Spinner text="Loading favorites…" />;
+  if (isLoading) return <TrackListSkeleton />;
   if (error) return <ErrorMessage message="Failed to load favorites" detail={getErrorMessage(error)} />;
 
   if (allTracks.length === 0) {

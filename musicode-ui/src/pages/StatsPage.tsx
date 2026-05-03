@@ -4,7 +4,7 @@ import { getTopArtists, getTopAlbums, getTopTracks, getSummary, getHistory } fro
 import type { Period } from '../api/stats';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Music, Disc3, Users, Clock, TrendingUp } from 'lucide-react';
-import Spinner from '../components/common/Spinner';
+import { StatsSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 import { useTheme } from '../themes/useTheme';
@@ -57,7 +57,7 @@ export default function StatsPage() {
   const isLoading = summary.isLoading;
   const error = summary.error || topArtists.error;
 
-  if (isLoading) return <Spinner text="Loading stats…" />;
+  if (isLoading) return <StatsSkeleton />;
   if (error) return <ErrorMessage message="Failed to load stats" detail={getErrorMessage(error)} onRetry={() => summary.refetch()} />;
 
   const s = summary.data;

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAlbums } from '../api/albums';
 import AlbumCard from '../components/library/AlbumCard';
-import Spinner from '../components/common/Spinner';
+import { AlbumGridSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 
@@ -11,7 +11,7 @@ export default function AlbumsPage() {
     queryFn: () => getAlbums(0, 100),
   });
 
-  if (isLoading) return <Spinner text="Loading albums…" />;
+  if (isLoading) return <AlbumGridSkeleton />;
   if (error) return <ErrorMessage message="Failed to load albums" detail={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   if (!data?.content.length) {

@@ -3,6 +3,7 @@ import { getTracks } from '../api/tracks';
 import TrackList from '../components/library/TrackList';
 import { usePlayer } from '../hooks/usePlayer';
 import Spinner from '../components/common/Spinner';
+import { TrackListSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 import { useEffect, useRef, useCallback, useMemo } from 'react';
@@ -59,7 +60,7 @@ export default function TracksPage() {
     [playTrack, allTracks]
   );
 
-  if (isLoading) return <Spinner text="Loading tracks…" />;
+  if (isLoading) return <TrackListSkeleton />;
   if (error) return <ErrorMessage message="Failed to load tracks" detail={getErrorMessage(error)} />;
 
   if (allTracks.length === 0) {

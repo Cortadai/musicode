@@ -6,7 +6,7 @@ import TrackList from '../components/library/TrackList';
 import { usePlayer } from '../hooks/usePlayer';
 import { useCurrentTrackInfo } from '../context/PlayerContext';
 import { ArrowLeft, Disc3 } from 'lucide-react';
-import Spinner from '../components/common/Spinner';
+import { AlbumDetailSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 
@@ -38,7 +38,7 @@ export default function AlbumDetailPage() {
     [playAlbum, tracks]
   );
 
-  if (isLoading) return <Spinner text="Loading album…" />;
+  if (isLoading) return <AlbumDetailSkeleton />;
   if (error || !album) return <ErrorMessage message="Album not found" detail={getErrorMessage(error)} />;
 
   return (

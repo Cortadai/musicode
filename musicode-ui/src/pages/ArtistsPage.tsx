@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getArtists } from '../api/artists';
 import { Link } from 'react-router';
 import { User } from 'lucide-react';
-import Spinner from '../components/common/Spinner';
+import { ArtistGridSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 
@@ -12,7 +12,7 @@ export default function ArtistsPage() {
     queryFn: () => getArtists(0, 100),
   });
 
-  if (isLoading) return <Spinner text="Loading artists…" />;
+  if (isLoading) return <ArtistGridSkeleton />;
   if (error) return <ErrorMessage message="Failed to load artists" detail={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   if (!data?.content.length) {
