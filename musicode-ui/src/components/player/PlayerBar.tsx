@@ -70,7 +70,7 @@ export default function PlayerBar() {
     <div role="region" aria-label="Music player" className="shrink-0 animate-slide-up" style={{ background: 'linear-gradient(to top, var(--mc-player-background), var(--mc-glass-background))', borderTop: '1px solid var(--mc-glass-border)', backdropFilter: 'blur(var(--mc-glass-blur))', WebkitBackdropFilter: 'blur(var(--mc-glass-blur))' }}>
       <Visualizer visible={showVisualizer} mode={visualizerMode} onModeChange={handleVisualizerModeChange} />
 
-      <div className={`${waveformEnabled ? 'h-24' : 'h-20'} flex items-center px-4 gap-4 transition-[height] duration-200`}>
+      <div className={`${waveformEnabled ? 'h-28' : 'h-20'} flex items-center px-4 gap-4 transition-[height] duration-200`}>
         <TrackInfo
           title={currentTrack.title}
           artistName={currentTrack.artist?.name ?? 'Unknown'}

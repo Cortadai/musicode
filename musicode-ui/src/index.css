@@ -43,7 +43,7 @@ body {
 
 /* === Theme-aware interactive utilities === */
 
-/* Nav items — muted text, brighter on hover, with subtle bg hover */
+/* Nav items — muted text, brighter on hover */
 .mc-nav-item {
   color: var(--mc-text-secondary);
 }
