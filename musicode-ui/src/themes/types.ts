@@ -52,6 +52,13 @@ export interface ThemeTokens {
   textSuccess: string;
   textInfo: string;
 
+  // Analyzer Deck
+  deckBg: string;
+  deckBorder: string;
+  deckLabel: string;
+  scopeGrid: string;
+  scopeLine: string;
+
   // Misc
   scrollbarThumb: string;
   scrollbarThumbHover: string;

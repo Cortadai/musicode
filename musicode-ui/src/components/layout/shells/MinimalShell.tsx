@@ -1,16 +1,19 @@
 import { NavLink, useNavigate } from 'react-router';
 import { Outlet } from 'react-router';
-import { useState } from 'react';
-import { Home, Library, Music, Search, Settings, UserCog, TrendingUp, HeartPulse, LogOut } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Home, Library, Music, Search, Settings, UserCog, TrendingUp, HeartPulse, LogOut, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import audioGraph from '../../../audio/audioGraph';
 import PlayerBar from '../../player/PlayerBar';
 import QueuePanel from '../../player/QueuePanel';
+import { AnalyzerDeck, useDeckStore, buildScopeMap } from '../../analyzer';
 
 export default function MinimalShell() {
   const { isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const { visible: deckVisible, toggleVisible: toggleDeck } = useDeckStore();
+  const scopeMap = useMemo(() => buildScopeMap(), []);
 
   const navItems = [
     { to: '/', icon: Home, label: 'Home', end: true },
@@ -91,7 +94,16 @@ export default function MinimalShell() {
           ))}
         </nav>
 
-        <form onSubmit={handleSearch} className="ml-auto flex items-center gap-3">
+        <button
+          onClick={toggleDeck}
+          title="Analyzer Deck"
+          className="ml-auto flex items-center justify-center w-7 h-7 rounded-md transition-colors mc-interactive-muted"
+          style={deckVisible ? { color: 'var(--mc-accent-primary)' } : undefined}
+        >
+          <BarChart3 className="w-3.5 h-3.5" />
+        </button>
+
+        <form onSubmit={handleSearch} className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--mc-text-muted)' }} />
             <input
@@ -120,6 +132,7 @@ export default function MinimalShell() {
         </form>
       </header>
 
+      <AnalyzerDeck scopeMap={scopeMap} />
       <div className="flex-1 flex min-h-0">
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />

@@ -32,6 +32,7 @@ import eqProcessor from './eqProcessor';
 // --- Singleton state ---
 
 let audioContext: AudioContext | null = null;
+let insertChainOutput: AudioNode | null = null;
 let gainA: GainNode | null = null;
 let gainB: GainNode | null = null;
 let masterGain: GainNode | null = null;
@@ -177,6 +178,7 @@ function init(): void {
   const eq = eqProcessor.init(audioContext);
   masterGain.connect(eq.input);
   eq.output.connect(analyserNode);
+  insertChainOutput = eq.output;
 
   analyserNode.connect(audioContext.destination);
 
@@ -470,6 +472,18 @@ function isInitialized(): boolean {
   return initialized;
 }
 
+function getAudioContext(): AudioContext | null {
+  return audioContext;
+}
+
+/**
+ * Returns the node after EQ processing — deck analyser connects here
+ * to tap the post-EQ signal without duplicating the chain.
+ */
+function getInsertChainOutput(): AudioNode | null {
+  return insertChainOutput;
+}
+
 /**
  * Get the remaining time (in seconds) on the active element.
  * Returns Infinity if duration is unknown.
@@ -524,6 +538,8 @@ const audioGraph = {
   getSourceGains,
   getMasterGain,
   isInitialized,
+  getAudioContext,
+  getInsertChainOutput,
   setOnTimeUpdate,
   setOnLoadedMetadata,
   setOnEnded,

@@ -54,6 +54,13 @@ export const novatouchTheme: ThemeConfig = {
     textSuccess: '#4ade80',      // green-400
     textInfo: '#60a5fa',          // blue-400
 
+    // Analyzer Deck — deep technical feel
+    deckBg: 'rgba(6, 6, 16, 0.92)',
+    deckBorder: '#1e1e2e',
+    deckLabel: 'rgba(129, 140, 248, 0.35)',
+    scopeGrid: 'rgba(129, 140, 248, 0.08)',
+    scopeLine: 'rgba(129, 140, 248, 0.8)',
+
     // Misc
     scrollbarThumb: '#2e2e40',
     scrollbarThumbHover: '#3d3d55',

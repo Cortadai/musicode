@@ -54,6 +54,13 @@ export const minimalTheme: ThemeConfig = {
     textSuccess: '#4ade80',      // green-400
     textInfo: '#60a5fa',          // blue-400
 
+    // Analyzer Deck — clean, understated
+    deckBg: 'rgba(10, 10, 12, 0.88)',
+    deckBorder: '#1f1f22',
+    deckLabel: 'rgba(161, 161, 170, 0.3)',
+    scopeGrid: 'rgba(255, 255, 255, 0.05)',
+    scopeLine: 'rgba(129, 140, 248, 0.7)',
+
     // Misc
     scrollbarThumb: '#2a2a30',
     scrollbarThumbHover: '#3a3a42',

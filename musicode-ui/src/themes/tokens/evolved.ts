@@ -54,6 +54,13 @@ export const evolvedTheme: ThemeConfig = {
     textSuccess: '#4ade80',      // green-400
     textInfo: '#60a5fa',          // blue-400
 
+    // Analyzer Deck
+    deckBg: 'rgba(9, 9, 11, 0.9)',
+    deckBorder: '#27272a',
+    deckLabel: 'rgba(161, 161, 170, 0.35)',
+    scopeGrid: 'rgba(255, 255, 255, 0.06)',
+    scopeLine: 'rgba(0, 200, 255, 0.75)',
+
     // Misc
     scrollbarThumb: '#3f3f46',   // zinc-700
     scrollbarThumbHover: '#52525b', // zinc-600

@@ -1,11 +1,12 @@
 import { NavLink, useNavigate } from 'react-router';
 import { Outlet } from 'react-router';
-import { Home, Library, Music, Search, Settings, UserCog, LogOut, TrendingUp, HeartPulse } from 'lucide-react';
+import { Home, Library, Music, Search, Settings, UserCog, LogOut, TrendingUp, HeartPulse, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import audioGraph from '../../../audio/audioGraph';
 import PlayerBar from '../../player/PlayerBar';
 import QueuePanel from '../../player/QueuePanel';
+import { AnalyzerDeck, useDeckStore, buildScopeMap } from '../../analyzer';
 
 export default function NovatouchShell() {
   const { isAdmin, logout } = useAuth();
@@ -14,6 +15,8 @@ export default function NovatouchShell() {
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const { visible: deckVisible, toggleVisible: toggleDeck } = useDeckStore();
+  const scopeMap = useMemo(() => buildScopeMap(), []);
 
   const navItems = [
     { to: '/', icon: Home, label: 'Home', end: true },
@@ -100,6 +103,18 @@ export default function NovatouchShell() {
             </NavLink>
           ))}
 
+          {/* Analyzer Deck toggle */}
+          <button
+            onClick={toggleDeck}
+            title="Analyzer Deck"
+            className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
+              deckVisible ? 'mc-nav-active' : 'mc-nav-item'
+            }`}
+            style={deckVisible ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
+          >
+            <BarChart3 className="w-4 h-4" />
+          </button>
+
           {/* Search with floating input */}
           <div className="relative" ref={searchContainerRef}>
             <button
@@ -169,6 +184,7 @@ export default function NovatouchShell() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
+        <AnalyzerDeck scopeMap={scopeMap} />
         <div className="flex-1 flex min-h-0">
           <main className="flex-1 overflow-y-auto p-6">
             <Outlet />

@@ -1,0 +1,33 @@
+.analyzer-deck {
+  display: flex;
+  gap: 1px;
+  background: var(--mc-deck-bg);
+  border-bottom: 1px solid var(--mc-deck-border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.analyzer-deck__scope {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.analyzer-deck__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.analyzer-deck__label {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--mc-deck-label);
+  pointer-events: none;
+  user-select: none;
+}

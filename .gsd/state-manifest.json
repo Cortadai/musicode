@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-05-03T09:16:59.781Z",
+  "exported_at": "2026-05-07T15:28:56.681Z",
   "milestones": [
     {
       "id": "M001",
@@ -819,6 +819,80 @@
       ],
       "requirement_coverage": "Not provided.",
       "boundary_map_markdown": "Not provided."
+    },
+    {
+      "id": "M020",
+      "title": "Prism Analyzer Deck",
+      "status": "active",
+      "depends_on": [],
+      "created_at": "2026-05-07T15:19:35.399Z",
+      "completed_at": null,
+      "vision": "A collapsible horizontal analyzer deck between TopBar and main content, hosting 7 audiophile-grade Canvas 2D visualizers (Spectrum Analyzer, Oscilloscope, Vectorscope, Spectrogram, Waveform, VU Meter, LUFS Meter) powered by Web Audio API. Each scope renders real-time audio data during playback, with an editor panel for activating/deactivating scopes, reordering, and resizing. Configuration auto-saves to localStorage. All three themes (Novatouch, Evolved, Minimal) get native-feeling styling via theme tokens.",
+      "success_criteria": [
+        "User can toggle the analyzer deck visible/hidden during playback and see real-time audio visualization",
+        "All 7 scopes render correctly with real FFT and time-domain data from the playing track",
+        "User can activate/deactivate individual scopes, reorder them, and resize their proportions",
+        "Deck configuration persists across browser sessions without manual save",
+        "Deck looks native and styled correctly in all three themes (Novatouch, Evolved, Minimal)",
+        "Deck shows flat/idle state when no track is playing, animates when playback starts",
+        "Existing NowPlaying visualizers (vinyl, bars, waveform, circular) continue working unchanged"
+      ],
+      "key_risks": [
+        {
+          "risk": "AnalyserNode FFT size and data pipeline performance with 7 simultaneous Canvas renders",
+          "whyItMatters": "Current AnalyserNode uses FFT 256. Spectrum and Spectrogram need 4096+. Running 7 rAF loops concurrently could cause frame drops on lower-end machines."
+        },
+        {
+          "risk": "Oscilloscope pitch-lock trigger detection without native C++",
+          "whyItMatters": "Prism uses native C++ for pitch-lock trigger. We need a pure JS implementation or graceful fallback to zero-crossing trigger."
+        },
+        {
+          "risk": "LUFS meter ITU-R BS.1770 algorithm complexity in JS",
+          "whyItMatters": "LUFS requires K-weighting filter chain and gated loudness integration. The Prism implementation is ~675 lines. Porting correctly requires understanding the standard."
+        },
+        {
+          "risk": "Deck layout responsive behavior across 3 themes with different sidebar widths",
+          "whyItMatters": "Evolved has a wide sidebar, Minimal is full-width, Novatouch is in between. The deck must resize gracefully and scopes must remain readable at narrow widths."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "FFT performance with multiple scopes",
+          "retireIn": "S01",
+          "whatWillBeProven": "Spectrum Analyzer renders smoothly at 60fps with FFT 4096 alongside normal playback, using a shared AnalyserNode with configurable FFT size"
+        },
+        {
+          "riskOrUnknown": "Pitch-lock trigger in JS",
+          "retireIn": "S02",
+          "whatWillBeProven": "Oscilloscope displays stable waveform using JS zero-crossing or autocorrelation trigger, visually comparable to Prism reference"
+        },
+        {
+          "riskOrUnknown": "LUFS algorithm correctness",
+          "retireIn": "S04",
+          "whatWillBeProven": "LUFS meter reads within ±1 LU of reference material with known loudness values"
+        },
+        {
+          "riskOrUnknown": "Responsive deck across themes",
+          "retireIn": "S05",
+          "whatWillBeProven": "Deck renders correctly in all 3 themes at viewport widths from 1024px to 1920px"
+        }
+      ],
+      "verification_contract": "Visual inspection of each scope against Prism reference screenshots. Canvas render loop verified via browser DevTools performance profiling.",
+      "verification_integration": "All 7 scopes running simultaneously during real audio playback with no audible glitches or frame drops below 30fps.",
+      "verification_operational": "Deck state persists in localStorage. Toggle, resize, reorder all survive page refresh.",
+      "verification_uat": "Visual comparison of deck in all 3 themes. Edit panel usability. Scope quality subjective assessment by David.",
+      "definition_of_done": [
+        "All 7 scopes implemented and rendering real audio data",
+        "Deck shell is collapsible and integrated into all 3 theme shells",
+        "Editor panel allows activate/deactivate, reorder, and resize of scopes",
+        "Configuration auto-saves to localStorage and restores on reload",
+        "Theme tokens applied — each theme has its own scope color palette",
+        "No regression in existing NowPlaying visualizers or player functionality",
+        "Performance: 7 active scopes maintain ≥30fps on a mid-range machine",
+        "Idle state (no playback) shows flat lines or static grid, no wasted CPU cycles"
+      ],
+      "requirement_coverage": "No formal requirements defined for this milestone — it's a new feature driven by user vision. Decisions D040 (integration model) and D041 (editor simplification) govern scope.",
+      "boundary_map_markdown": "### S01 → S02, S03, S04\nProduces:\n- `AnalyzerDeckDataSource` — shared wrapper around AnalyserNode providing FFT (configurable size) and time-domain Float32Arrays\n- `useFrameScheduler` hook — rAF loop gated on playback state, FPS cap, shared across all scopes\n- `AnalyzerDeck` container component with slot-based scope rendering\n- `ScopeRenderer` interface — `{ id, name, render(ctx, width, height, dataSource), dispose() }`\n\n### S05 → S06\nProduces:\n- `useDeckConfig` Zustand store — active scopes, order, proportions, persisted to localStorage\n- Edit panel UI with checkbox toggles, reorder arrows, resize handles\n- Theme token extensions for analyzer deck colors\n\n### S06 consumes all\nConsumes:\n- All 7 scope implementations from S01–S04\n- Deck editor and config from S05\n- Theme tokens from S05"
     }
   ],
   "slices": [
@@ -2291,6 +2365,139 @@
       "integration_closure": "Sin sidebar, activity feed no es visible — verificar que no hay errores por componentes ausentes",
       "observability_impact": "None",
       "sequence": 8,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M020",
+      "id": "S01",
+      "title": "Audio Pipeline + Deck Shell + Spectrum Analyzer",
+      "status": "pending",
+      "risk": "high",
+      "depends": [],
+      "demo": "User plays a track, toggles the analyzer deck visible via a button, and sees a Spectrum Analyzer rendering real-time FFT data with heatmap coloring. Deck collapses and expands. Flat lines when paused.",
+      "created_at": "2026-05-07T15:22:18.745Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Prove the full vertical: shared audio data source → collapsible deck container → Canvas 2D scope rendering with real FFT data. Spectrum Analyzer is the most complex scope and validates the entire pipeline.",
+      "success_criteria": "Spectrum Analyzer renders at ≥30fps with FFT 4096 during playback. Deck toggle works in all 3 shells. No audio glitches. DataSource API is stable for downstream scopes. Flat lines when paused.",
+      "proof_level": "Not provided.",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
+      "sequence": 1,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M020",
+      "id": "S02",
+      "title": "Oscilloscope + Vectorscope",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Three scopes visible in the deck simultaneously — Spectrum, Oscilloscope with stable triggered waveform, and Vectorscope in Lissajous mode. User can see stereo correlation in the vectorscope.",
+      "created_at": "2026-05-07T15:22:18.745Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Add two signal-analysis scopes. Oscilloscope requires JS pitch-lock trigger (the main technical unknown). Vectorscope needs 5 rendering modes.",
+      "success_criteria": "Oscilloscope shows pitch-stable waveform (not drifting). Vectorscope renders all 5 modes. Both run alongside Spectrum without dropping below 30fps.",
+      "proof_level": "Live in browser with real audio playback",
+      "integration_closure": "Both scopes implement ScopeRenderer interface. DataSource provides stereo channel data for Vectorscope.",
+      "observability_impact": "None beyond S01 frame budget warnings.",
+      "sequence": 2,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M020",
+      "id": "S03",
+      "title": "Spectrogram + Waveform",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Five scopes available. Spectrogram shows scrolling frequency-time heatmap with mel/log scale. Waveform shows scrolling amplitude over time.",
+      "created_at": "2026-05-07T15:22:18.746Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Add two time-domain scrolling scopes. Spectrogram is the visual showpiece (frequency×time heatmap). Waveform is a simpler scrolling time-domain view.",
+      "success_criteria": "Spectrogram scrolls smoothly with configurable color scale. Waveform renders cleanly. Both follow established ScopeRenderer pattern.",
+      "proof_level": "Live in browser with real audio playback",
+      "integration_closure": "Both scopes use shared DataSource FFT and time-domain data. No new audio infrastructure needed.",
+      "observability_impact": "None beyond S01.",
+      "sequence": 3,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M020",
+      "id": "S04",
+      "title": "VU Meter + LUFS Meter",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "All 7 scopes available in the deck. VU shows needle/bar with peak hold. LUFS shows integrated loudness value updating in real time.",
+      "created_at": "2026-05-07T15:22:18.746Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Add metering scopes. VU uses RMS/peak ballistics. LUFS implements ITU-R BS.1770 K-weighted gated loudness. These complete the full set of 7.",
+      "success_criteria": "VU meter ballistics feel natural (attack/release timing). LUFS reads within ±1 LU of known reference material. All 7 scopes can run simultaneously.",
+      "proof_level": "Live in browser with real audio playback and reference material comparison",
+      "integration_closure": "Both implement ScopeRenderer. VU needs RMS calculation from time-domain data. LUFS needs K-weighting filter chain (ported from Prism utilities).",
+      "observability_impact": "LUFS displays numeric readout — serves as its own observable output.",
+      "sequence": 4,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M020",
+      "id": "S05",
+      "title": "Deck Editor + Theme Integration",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "User opens edit mode, activates/deactivates scopes via checkboxes, reorders with arrow buttons, resizes scope proportions with drag handles. Changes persist after page reload. Deck looks styled correctly in all 3 themes.",
+      "created_at": "2026-05-07T15:22:18.746Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Build the edit panel for managing active scopes, reordering, resizing proportions. Integrate theme tokens so the deck feels native in Novatouch, Evolved, and Minimal.",
+      "success_criteria": "Editor panel opens/closes cleanly. Scope activation, ordering, and sizing all persist to localStorage. Theme tokens applied — each theme has distinct scope colors. Responsive from 1024px to 1920px viewport width.",
+      "proof_level": "Live in browser across all 3 themes with localStorage persistence verified",
+      "integration_closure": "useDeckConfig Zustand store manages all deck state. Theme token extensions added to all 3 token files. Resize handles use CSS flex-grow ratios.",
+      "observability_impact": "Deck config logged to console on save for debugging.",
+      "sequence": 5,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M020",
+      "id": "S06",
+      "title": "Integration Polish + Defaults",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S02",
+        "S03",
+        "S04",
+        "S05"
+      ],
+      "demo": "Fresh user sees 3 default scopes (Spectrum, Oscilloscope, VU Meter). All 7 work together smoothly. Deck is idle when not playing. Smooth experience across all themes.",
+      "created_at": "2026-05-07T15:22:18.746Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Final integration: sensible defaults per theme, performance tuning with FPS cap and idle detection, keyboard shortcuts, responsive edge cases, visual polish pass.",
+      "success_criteria": "Default config is appealing out of the box. 7 active scopes maintain ≥30fps. CPU usage drops to near-zero when deck is collapsed or playback stopped. No regressions in existing features.",
+      "proof_level": "Live end-to-end verification across all themes with performance profiling",
+      "integration_closure": "All scopes, editor, themes, and deck shell verified as a complete system. Existing NowPlaying visualizers unaffected.",
+      "observability_impact": "Frame budget warnings active. Performance profiling results documented in summary.",
+      "sequence": 6,
       "replan_triggered_at": null
     }
   ],
@@ -8958,6 +9165,161 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M020",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "AnalyzerDeckDataSource + useFrameScheduler",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Create the shared audio data abstraction that wraps AnalyserNode with configurable FFT size (default 4096), providing getFrequencyData() and getTimeDomainData() as Float32Arrays. Create a second AnalyserNode dedicated to the deck (higher FFT size than the existing 256 one). Build useFrameScheduler hook: rAF loop with FPS cap (default 60), gated on playback state from usePlayer, subscriber pattern for multiple scopes sharing one loop.",
+      "estimate": "30min",
+      "files": [
+        "musicode-ui/src/audio/analyzerDeckDataSource.ts",
+        "musicode-ui/src/hooks/useFrameScheduler.ts",
+        "musicode-ui/src/audio/audioGraph.ts"
+      ],
+      "verify": "Import and call in a test component — verify Float32Array data flows when playing, zeros when paused. Console.log FPS to confirm ~60fps cap.",
+      "inputs": [
+        "audioGraph.ts (existing AnalyserNode setup)",
+        "reference/prism/src/renderer/visualizers/frameScheduler.ts",
+        "reference/prism/src/renderer/visualizers/dataSource.ts"
+      ],
+      "expected_output": [
+        "analyzerDeckDataSource.ts with AnalyzerDeckDataSource class",
+        "useFrameScheduler.ts hook"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M020",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "ScopeRenderer types + AnalyzerDeck container component",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Define ScopeRenderer interface: { id, name, render(ctx, width, height, dataSource), dispose() }. Build AnalyzerDeck React component: collapsible horizontal bar (100px height), renders active scopes as Canvas elements in a CSS flex container with proportional widths. Includes collapse/expand toggle button. Shows flat state when not playing. Zustand store (useDeckStore) for deck state: visible, activeScopes, scopeOrder, scopeProportions — persisted to localStorage.",
+      "estimate": "45min",
+      "files": [
+        "musicode-ui/src/components/analyzer/types.ts",
+        "musicode-ui/src/components/analyzer/AnalyzerDeck.tsx",
+        "musicode-ui/src/components/analyzer/AnalyzerDeck.css",
+        "musicode-ui/src/stores/useDeckStore.ts"
+      ],
+      "verify": "Render AnalyzerDeck in isolation — verify collapse/expand animation, canvas elements resize on container resize, store persists to localStorage.",
+      "inputs": [
+        "T01 outputs",
+        "reference/screenshots/prism/home.jpg (layout reference)"
+      ],
+      "expected_output": [
+        "AnalyzerDeck.tsx component",
+        "useDeckStore.ts Zustand store",
+        "ScopeRenderer type definition"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M020",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "Spectrum Analyzer scope implementation",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Port the Spectrum Analyzer renderer from Prism reference. Implements ScopeRenderer interface. Features: logarithmic frequency scale (20Hz-20kHz), FFT 4096, dB range -90 to -10, heatmap fill with 256-entry color LUT, grid overlay with dB and frequency labels, tilt compensation (+3dB/octave default), exponential smoothing (0.85). Static layer caching on offscreen canvas for grid/labels. Theme-aware colors via CSS custom properties.",
+      "estimate": "60min",
+      "files": [
+        "musicode-ui/src/components/analyzer/scopes/SpectrumAnalyzer.ts",
+        "musicode-ui/src/components/analyzer/scopes/heatScale.ts",
+        "musicode-ui/src/components/analyzer/scopes/index.ts"
+      ],
+      "verify": "Play a track with deck open — Spectrum Analyzer shows frequency content with smooth heatmap coloring, grid labels readable, responsive to music dynamics. Flat line when paused. No visible jank.",
+      "inputs": [
+        "T01 AnalyzerDeckDataSource",
+        "T02 ScopeRenderer interface",
+        "reference/prism/src/renderer/visualizers/SpectrumAnalyzer.ts",
+        "reference/prism/src/renderer/visualizers/heatScale.ts"
+      ],
+      "expected_output": [
+        "SpectrumAnalyzer.ts implementing ScopeRenderer",
+        "heatScale.ts utility"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M020",
+      "slice_id": "S01",
+      "id": "T04",
+      "title": "Shell integration + deck toggle",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Insert AnalyzerDeck between TopBar/header and main content in all 3 shells (NovatouchShell, EvolvedShell, MinimalShell). Add a toggle button (Activity/BarChart3 icon from lucide) in each shell's chrome to show/hide the deck. Wire up the full pipeline: audioGraph creates deck AnalyserNode on init, AnalyzerDeck reads from dataSource, useFrameScheduler drives the render loop, Spectrum Analyzer renders. Add CSS custom properties for deck theming (--mc-deck-bg, --mc-deck-border, --mc-scope-grid, --mc-scope-line) to all 3 theme blocks in index.css.",
+      "estimate": "45min",
+      "files": [
+        "musicode-ui/src/components/layout/shells/NovatouchShell.tsx",
+        "musicode-ui/src/components/layout/shells/EvolvedShell.tsx",
+        "musicode-ui/src/components/layout/shells/MinimalShell.tsx",
+        "musicode-ui/src/index.css"
+      ],
+      "verify": "In browser: switch between all 3 themes, toggle deck on/off, play a track — Spectrum Analyzer renders correctly in each theme. Deck collapses smoothly. No layout shift in main content area. No audio glitches from adding the second AnalyserNode.",
+      "inputs": [
+        "T01-T03 outputs",
+        "All 3 shell components",
+        "index.css theme tokens"
+      ],
+      "expected_output": [
+        "Updated shell components with AnalyzerDeck",
+        "Theme CSS tokens for deck"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -9427,6 +9789,30 @@
       "rationale": "Astra has superior visual polish (glassmorphism, hover effects, play bar layout, data density) but is architecturally incompatible (Electron single-user vs web multi-user). Using it as design inspiration only. Key elements to adopt: glassmorphism, home page with curated sections, library tabs, enriched track table, redesigned 3-section play bar, queue panel, now playing panel, favorites, technical codec/bitdepth/samplerate badges.",
       "revisable": "Yes",
       "made_by": "human",
+      "superseded_by": null
+    },
+    {
+      "seq": 40,
+      "id": "D040",
+      "when_context": "",
+      "scope": "architecture",
+      "decision": "Prism visualizers integration model",
+      "choice": "Analyzer Deck como componente horizontal colapsable independiente del NowPlayingOverlay. Los visualizadores actuales (vinyl, bars, waveform, circular) se mantienen como decorativos. El deck vive entre TopBar y contenido principal.",
+      "rationale": "Los scopes audiophile (spectrum, oscilloscope, vectorscope...) cumplen un rol distinto a los visualizadores decorativos. Separar ambos evita contaminar la UX existente y permite que el deck exista en todos los themes con tokens propios.",
+      "revisable": "Yes",
+      "made_by": "collaborative",
+      "superseded_by": null
+    },
+    {
+      "seq": 41,
+      "id": "D041",
+      "when_context": "",
+      "scope": "ux",
+      "decision": "Simplificación del editor de deck vs. Astra",
+      "choice": "Sin perfiles (auto-save único en localStorage), sin drag-and-drop (checkboxes + flechas para reordenar), 1-2 toggles por scope en lugar de 5-8 knobs, resize proporcional con drag handles sí se mantiene.",
+      "rationale": "Astra es un player standalone para power-users. Musicode necesita la estética audiófila sin enterrarse en un editor de scopes que duplique la complejidad del reproductor. Drag-and-drop se puede añadir después si se necesita.",
+      "revisable": "Yes",
+      "made_by": "collaborative",
       "superseded_by": null
     }
   ],
