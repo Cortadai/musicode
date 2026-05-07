@@ -3,20 +3,19 @@ import audioGraph from '../../audio/audioGraph';
 import { useCallback, useState } from 'react';
 import { BarChart3, Activity, CassetteTape, ListMusic } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
-import type { VisualizerMode } from '../../audio/audioPreferences';
 import TrackInfo from './TrackInfo';
 import TransportControls from './TransportControls';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
 import CrossfadePopover from './CrossfadePopover';
 import EqPopover from './EqPopover';
-import Visualizer from './Visualizer';
 import NowPlayingOverlay from './NowPlayingOverlay';
 import RetroMode from './RetroMode';
 import ScrobbleIndicator from './ScrobbleIndicator';
 import HeartButton from '../common/HeartButton';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useQueuePanel } from '../../context/QueuePanelContext';
+import { useDeckStore } from '../analyzer/useDeckStore';
 
 export default function PlayerBar() {
   const {
@@ -29,12 +28,8 @@ export default function PlayerBar() {
 
   const { isFavorite, toggle: toggleFavorite } = useFavorites();
   const { isOpen: isQueueOpen, toggle: toggleQueue } = useQueuePanel();
+  const { visible: deckVisible, toggleVisible: toggleDeck } = useDeckStore();
 
-  const [showVisualizer, setShowVisualizer] = useState(false);
-  const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => {
-    const saved = loadPreferences().visualizerMode;
-    return saved === 'vinyl' ? 'bars' : saved;
-  });
   const [showNowPlaying, setShowNowPlaying] = useState(false);
   const [showRetroMode, setShowRetroMode] = useState(false);
   const [waveformEnabled, setWaveformEnabled] = useState(() => loadPreferences().waveformEnabled);
@@ -51,15 +46,10 @@ export default function PlayerBar() {
     if (isPlaying) pause(); else resume();
   }, [isPlaying, pause, resume]);
 
-  const handleToggleVisualizer = useCallback(() => {
+  const handleToggleDeck = useCallback(() => {
     audioGraph.init();
-    setShowVisualizer((v) => !v);
-  }, []);
-
-  const handleVisualizerModeChange = useCallback((mode: VisualizerMode) => {
-    setVisualizerMode(mode);
-    savePreferences({ visualizerMode: mode });
-  }, []);
+    toggleDeck();
+  }, [toggleDeck]);
 
   if (!currentTrack) return null;
 
@@ -68,8 +58,6 @@ export default function PlayerBar() {
 
   return (
     <div role="region" aria-label="Music player" className="shrink-0 animate-slide-up" style={{ background: 'linear-gradient(to top, var(--mc-player-background), var(--mc-glass-background))', borderTop: '1px solid var(--mc-glass-border)', backdropFilter: 'blur(var(--mc-glass-blur))', WebkitBackdropFilter: 'blur(var(--mc-glass-blur))' }}>
-      <Visualizer visible={showVisualizer} mode={visualizerMode} onModeChange={handleVisualizerModeChange} />
-
       <div className={`flex items-center px-4 gap-4 transition-[height] duration-200 ${waveformEnabled ? 'h-32' : 'h-28'}`}>
         {/* Left: Track info + Heart */}
         <div className="flex items-center gap-4 shrink-0 w-[260px]">
@@ -124,10 +112,10 @@ export default function PlayerBar() {
           <CrossfadePopover getCrossfadeDuration={getCrossfadeDuration} setCrossfadeDuration={setCrossfadeDuration} />
           <EqPopover />
           <button
-            onClick={handleToggleVisualizer}
-            aria-label={showVisualizer ? 'Hide visualizer' : 'Show visualizer'}
-            aria-pressed={showVisualizer}
-            className={`flex items-center justify-center transition-colors ${showVisualizer ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+            onClick={handleToggleDeck}
+            aria-label={deckVisible ? 'Hide analyzer deck' : 'Show analyzer deck'}
+            aria-pressed={deckVisible}
+            className={`flex items-center justify-center transition-colors ${deckVisible ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
           >
             <BarChart3 className="w-[18px] h-[18px]" />
           </button>

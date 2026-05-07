@@ -34,7 +34,11 @@ export function useFrameScheduler(
         }
         lastFrameRef.current = timestamp - (elapsed % minInterval);
       }
-      callbackRef.current(timestamp);
+      try {
+        callbackRef.current(timestamp);
+      } catch (e) {
+        // Don't let a render error kill the rAF loop
+      }
       rafRef.current = requestAnimationFrame(loop);
     }
 

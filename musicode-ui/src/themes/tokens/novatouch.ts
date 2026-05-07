@@ -59,7 +59,7 @@ export const novatouchTheme: ThemeConfig = {
     deckBorder: '#1e1e2e',
     deckLabel: 'rgba(129, 140, 248, 0.35)',
     scopeGrid: 'rgba(129, 140, 248, 0.08)',
-    scopeLine: 'rgba(129, 140, 248, 0.8)',
+    scopeLine: '#4834d4',
 
     // Misc
     scrollbarThumb: '#2e2e40',

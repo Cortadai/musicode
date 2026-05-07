@@ -59,7 +59,7 @@ export const minimalTheme: ThemeConfig = {
     deckBorder: '#1f1f22',
     deckLabel: 'rgba(161, 161, 170, 0.3)',
     scopeGrid: 'rgba(255, 255, 255, 0.05)',
-    scopeLine: 'rgba(129, 140, 248, 0.7)',
+    scopeLine: '#4834d4',
 
     // Misc
     scrollbarThumb: '#2a2a30',

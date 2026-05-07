@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-07T15:19:07Z | Files: 303 | Described: 0/303
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-07T15:19:07Z","fingerprint":"7c3991f0ab455c0af4ce5ea0c472a10f5cdfef88","fileCount":303,"truncated":false} -->
+Generated: 2026-05-07T20:54:13Z | Files: 313 | Described: 0/313
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-07T20:54:13Z","fingerprint":"484e31a2c8b743adea5941c1af2c47a56b26f246","fileCount":313,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -250,6 +250,7 @@ Generated: 2026-05-07T15:19:07Z | Files: 303 | Described: 0/303
 - `musicode-ui/src/api/waveforms.ts`
 
 ### musicode-ui/src/audio/
+- `musicode-ui/src/audio/analyzerDeckDataSource.ts`
 - `musicode-ui/src/audio/audioGraph.ts`
 - `musicode-ui/src/audio/audioPreferences.test.ts`
 - `musicode-ui/src/audio/audioPreferences.ts`
@@ -259,6 +260,18 @@ Generated: 2026-05-07T15:19:07Z | Files: 303 | Described: 0/303
 
 ### musicode-ui/src/components/activity/
 - `musicode-ui/src/components/activity/ActivityFeed.tsx`
+
+### musicode-ui/src/components/analyzer/
+- `musicode-ui/src/components/analyzer/AnalyzerDeck.css`
+- `musicode-ui/src/components/analyzer/AnalyzerDeck.tsx`
+- `musicode-ui/src/components/analyzer/index.ts`
+- `musicode-ui/src/components/analyzer/types.ts`
+- `musicode-ui/src/components/analyzer/useDeckStore.ts`
+
+### musicode-ui/src/components/analyzer/scopes/
+- `musicode-ui/src/components/analyzer/scopes/heatScale.ts`
+- `musicode-ui/src/components/analyzer/scopes/index.ts`
+- `musicode-ui/src/components/analyzer/scopes/SpectrumAnalyzer.ts`
 
 ### musicode-ui/src/components/auth/
 - `musicode-ui/src/components/auth/ProtectedRoute.tsx`
@@ -310,6 +323,7 @@ Generated: 2026-05-07T15:19:07Z | Files: 303 | Described: 0/303
 ### musicode-ui/src/hooks/
 - `musicode-ui/src/hooks/useDynamicTheme.ts`
 - `musicode-ui/src/hooks/useFavorites.ts`
+- `musicode-ui/src/hooks/useFrameScheduler.ts`
 - `musicode-ui/src/hooks/useGapless.ts`
 - `musicode-ui/src/hooks/useMediaSession.ts`
 - `musicode-ui/src/hooks/usePlayer.ts`
