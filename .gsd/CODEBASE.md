@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-08T18:42:06Z | Files: 322 | Described: 0/322
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-08T18:42:06Z","fingerprint":"d29693db1b19e478d4a47a8e43536f6e7e91085b","fileCount":322,"truncated":false} -->
+Generated: 2026-05-08T19:28:30Z | Files: 322 | Described: 0/322
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-08T19:28:30Z","fingerprint":"f3dce8e6084e5e91853afc785fbb35d5bb88b9a3","fileCount":322,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -334,10 +334,10 @@ Generated: 2026-05-08T18:42:06Z | Files: 322 | Described: 0/322
 - `musicode-ui/src/hooks/useFavorites.ts`
 - `musicode-ui/src/hooks/useFrameScheduler.ts`
 - `musicode-ui/src/hooks/useGapless.ts`
+- `musicode-ui/src/hooks/useMarqueePref.ts`
 - `musicode-ui/src/hooks/useMediaSession.ts`
 - `musicode-ui/src/hooks/usePlayer.ts`
 - `musicode-ui/src/hooks/useScrobble.ts`
-- `musicode-ui/src/hooks/useSidebarCollapse.ts`
 - `musicode-ui/src/hooks/useWaveform.ts`
 
 ### musicode-ui/src/pages/
@@ -353,7 +353,6 @@ Generated: 2026-05-08T18:42:06Z | Files: 322 | Described: 0/322
 - `musicode-ui/src/pages/SettingsPage.tsx`
 - `musicode-ui/src/pages/StatsPage.tsx`
 - `musicode-ui/src/pages/TracksPage.tsx`
-- `musicode-ui/src/pages/UsersPage.tsx`
 
 ### musicode-ui/src/themes/
 - `musicode-ui/src/themes/index.ts`
@@ -375,6 +374,7 @@ Generated: 2026-05-08T18:42:06Z | Files: 322 | Described: 0/322
 - `musicode-ui/src/utils/errors.ts`
 - `musicode-ui/src/utils/format.test.ts`
 - `musicode-ui/src/utils/format.ts`
+- `musicode-ui/src/utils/greetings.ts`
 - `musicode-ui/src/utils/lrcParser.ts`
 
 ### scripts/
