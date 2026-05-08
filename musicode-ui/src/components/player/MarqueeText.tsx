@@ -1,4 +1,5 @@
 import { memo, useRef, useState, useEffect, type ReactNode } from 'react';
+import { useMarqueePlaybar } from '../../hooks/useMarqueePref';
 
 interface Props {
   children: ReactNode;
@@ -10,6 +11,7 @@ function MarqueeText({ children, className = '', style }: Props) {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLSpanElement>(null);
   const [overflows, setOverflows] = useState(false);
+  const marqueeEnabled = useMarqueePlaybar();
 
   useEffect(() => {
     const outer = outerRef.current;
@@ -24,15 +26,17 @@ function MarqueeText({ children, className = '', style }: Props) {
     return () => ro.disconnect();
   }, [children]);
 
+  const shouldAnimate = overflows && marqueeEnabled;
+
   return (
-    <div ref={outerRef} className={`overflow-hidden whitespace-nowrap group ${className}`} style={style}>
+    <div ref={outerRef} className={`overflow-hidden whitespace-nowrap group ${className}`} style={{ ...style, textOverflow: overflows && !marqueeEnabled ? 'ellipsis' : undefined }}>
       <span
         ref={innerRef}
-        className={overflows ? 'inline-block marquee-scroll group-hover:[animation-play-state:paused]' : 'inline-block'}
-        style={overflows ? { paddingRight: '2rem' } : undefined}
+        className={shouldAnimate ? 'inline-block marquee-scroll group-hover:[animation-play-state:paused]' : 'inline-block'}
+        style={shouldAnimate ? { paddingRight: '2rem' } : undefined}
       >
         {children}
-        {overflows && (
+        {shouldAnimate && (
           <span aria-hidden="true" style={{ paddingLeft: '2rem' }}>
             {children}
           </span>

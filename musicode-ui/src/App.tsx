@@ -18,7 +18,6 @@ const ArtistDetailPage = lazy(() => import('./pages/ArtistDetailPage'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const StatsPage = lazy(() => import('./pages/StatsPage'));
-const UsersPage = lazy(() => import('./pages/UsersPage'));
 const LibraryHealthPage = lazy(() => import('./pages/LibraryHealthPage'));
 
 const queryClient = new QueryClient({
@@ -63,7 +62,6 @@ export default function App() {
               <Route element={<ProtectedRoute requiredRole="ADMIN" />}>
                 <Route element={<AppShell />}>
                   <Route path="/settings/health" element={<Suspense fallback={<Spinner />}><LibraryHealthPage /></Suspense>} />
-                  <Route path="/users" element={<Suspense fallback={<Spinner />}><UsersPage /></Suspense>} />
                 </Route>
               </Route>
             </Routes>

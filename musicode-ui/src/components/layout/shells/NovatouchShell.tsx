@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router';
 import { Outlet } from 'react-router';
-import { Home, Library, Music, Search, Settings, UserCog, LogOut, TrendingUp, HeartPulse, BarChart3 } from 'lucide-react';
+import { Home, Library, Music, Search, Settings, LogOut, TrendingUp, HeartPulse } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import audioGraph from '../../../audio/audioGraph';
@@ -9,25 +9,21 @@ import QueuePanel from '../../player/QueuePanel';
 import { AnalyzerDeck, useDeckStore, buildScopeMap } from '../../analyzer';
 
 export default function NovatouchShell() {
-  const { isAdmin, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  const { visible: deckVisible, toggleVisible: toggleDeck } = useDeckStore();
+  const { visible: deckVisible } = useDeckStore();
   const scopeMap = useMemo(() => buildScopeMap(), []);
 
   const navItems = [
     { to: '/', icon: Home, label: 'Home', end: true },
     { to: '/library', icon: Library, label: 'Library' },
     { to: '/stats', icon: TrendingUp, label: 'Stats' },
+    { to: '/settings/health', icon: HeartPulse, label: 'Health' },
     { to: '/settings', icon: Settings, label: 'Settings', end: true },
-  ];
-
-  const adminItems = [
-    { to: '/settings/health', icon: HeartPulse, label: 'Library Health' },
-    { to: '/users', icon: UserCog, label: 'Users' },
   ];
 
   const handleSearchSubmit = useCallback((e: React.FormEvent) => {
@@ -103,18 +99,6 @@ export default function NovatouchShell() {
             </NavLink>
           ))}
 
-          {/* Analyzer Deck toggle */}
-          <button
-            onClick={toggleDeck}
-            title="Analyzer Deck"
-            className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
-              deckVisible ? 'mc-nav-active' : 'mc-nav-item'
-            }`}
-            style={deckVisible ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
-          >
-            <BarChart3 className="w-4 h-4" />
-          </button>
-
           {/* Search with floating input */}
           <div className="relative" ref={searchContainerRef}>
             <button
@@ -149,29 +133,6 @@ export default function NovatouchShell() {
             )}
           </div>
 
-          {isAdmin && (
-            <>
-              <div className="w-6 my-2" style={{ borderTop: '1px solid var(--mc-border-subtle)' }} />
-              {adminItems.map(({ to, icon: Icon, label, end }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={end}
-                  title={label}
-                  className={({ isActive }) =>
-                    `flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
-                      isActive
-                        ? 'mc-nav-active'
-                        : 'mc-nav-item'
-                    }`
-                  }
-                  style={({ isActive }) => isActive ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
-                >
-                  <Icon className="w-4 h-4" />
-                </NavLink>
-              ))}
-            </>
-          )}
         </nav>
 
         <button

@@ -1,6 +1,6 @@
 import { usePlayer } from '../../hooks/usePlayer';
 import audioGraph from '../../audio/audioGraph';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { BarChart3, Activity, CassetteTape, ListMusic } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import TrackInfo from './TrackInfo';
@@ -50,6 +50,13 @@ export default function PlayerBar() {
     audioGraph.init();
     toggleDeck();
   }, [toggleDeck]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--mc-player-height',
+      waveformEnabled ? '8rem' : '7rem',
+    );
+  }, [waveformEnabled]);
 
   if (!currentTrack) return null;
 

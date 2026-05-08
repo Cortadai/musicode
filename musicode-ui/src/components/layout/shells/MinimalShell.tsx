@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router';
 import { Outlet } from 'react-router';
 import { useState, useMemo } from 'react';
-import { Home, Library, Music, Search, Settings, UserCog, TrendingUp, HeartPulse, LogOut, BarChart3 } from 'lucide-react';
+import { Home, Library, Music, Search, Settings, TrendingUp, HeartPulse, LogOut } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import audioGraph from '../../../audio/audioGraph';
 import PlayerBar from '../../player/PlayerBar';
@@ -9,22 +9,18 @@ import QueuePanel from '../../player/QueuePanel';
 import { AnalyzerDeck, useDeckStore, buildScopeMap } from '../../analyzer';
 
 export default function MinimalShell() {
-  const { isAdmin, user, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const { visible: deckVisible, toggleVisible: toggleDeck } = useDeckStore();
+  const { visible: deckVisible } = useDeckStore();
   const scopeMap = useMemo(() => buildScopeMap(), []);
 
   const navItems = [
     { to: '/', icon: Home, label: 'Home', end: true },
     { to: '/library', icon: Library, label: 'Library' },
     { to: '/stats', icon: TrendingUp, label: 'Stats' },
-    { to: '/settings', icon: Settings, label: 'Settings', end: true },
-  ];
-
-  const adminItems = [
     { to: '/settings/health', icon: HeartPulse, label: 'Health' },
-    { to: '/users', icon: UserCog, label: 'Users' },
+    { to: '/settings', icon: Settings, label: 'Settings', end: true },
   ];
 
   async function handleLogout() {
@@ -75,35 +71,9 @@ export default function MinimalShell() {
             </NavLink>
           ))}
 
-          {isAdmin && adminItems.map(({ to, label, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                `px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  isActive
-                    ? 'mc-nav-active'
-                    : 'mc-interactive-muted'
-                }`
-              }
-              style={({ isActive }) => isActive ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
-            >
-              {label}
-            </NavLink>
-          ))}
         </nav>
 
-        <button
-          onClick={toggleDeck}
-          title="Analyzer Deck"
-          className="ml-auto flex items-center justify-center w-7 h-7 rounded-md transition-colors mc-interactive-muted"
-          style={deckVisible ? { color: 'var(--mc-accent-primary)' } : undefined}
-        >
-          <BarChart3 className="w-3.5 h-3.5" />
-        </button>
-
-        <form onSubmit={handleSearch} className="flex items-center gap-3">
+        <form onSubmit={handleSearch} className="ml-auto flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--mc-text-muted)' }} />
             <input

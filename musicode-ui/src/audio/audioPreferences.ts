@@ -24,6 +24,9 @@ export interface AudioPreferences {
   visualizerMode: VisualizerMode;
   dynamicTheme: boolean;
   waveformEnabled: boolean;
+  marqueePlaybar: boolean;
+  marqueeAlbumCards: boolean;
+  greetingMessages: boolean;
 }
 
 const DEFAULTS: AudioPreferences = {
@@ -37,6 +40,9 @@ const DEFAULTS: AudioPreferences = {
   visualizerMode: 'vinyl',
   dynamicTheme: false,
   waveformEnabled: false,
+  marqueePlaybar: true,
+  marqueeAlbumCards: true,
+  greetingMessages: true,
 };
 
 /**
@@ -89,7 +95,13 @@ export function loadPreferences(): AudioPreferences {
 
     const waveformEnabled = typeof parsed.waveformEnabled === 'boolean' ? parsed.waveformEnabled : DEFAULTS.waveformEnabled;
 
-    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreset, visualizerMode, dynamicTheme, waveformEnabled };
+    const marqueePlaybar = typeof parsed.marqueePlaybar === 'boolean' ? parsed.marqueePlaybar : DEFAULTS.marqueePlaybar;
+
+    const marqueeAlbumCards = typeof parsed.marqueeAlbumCards === 'boolean' ? parsed.marqueeAlbumCards : DEFAULTS.marqueeAlbumCards;
+
+    const greetingMessages = typeof parsed.greetingMessages === 'boolean' ? parsed.greetingMessages : DEFAULTS.greetingMessages;
+
+    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreset, visualizerMode, dynamicTheme, waveformEnabled, marqueePlaybar, marqueeAlbumCards, greetingMessages };
   } catch {
     // Corrupted JSON — reset to defaults
     localStorage.removeItem(STORAGE_KEY);

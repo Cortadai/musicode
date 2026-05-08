@@ -44,7 +44,7 @@ export const DEFAULT_DECK_CONFIG: DeckConfig = {
 export const SCOPE_REGISTRY: { id: string; name: string; defaultProportion: number; hasOptions?: boolean }[] = [
   { id: 'classicBars', name: 'Classic Bars', defaultProportion: 1.5 },
   { id: 'spectrum', name: 'Spectrum Analyzer', defaultProportion: 2, hasOptions: true },
-  { id: 'vectorscope', name: 'Vectorscope', defaultProportion: 1, hasOptions: true },
+  { id: 'vectorscope', name: 'Vectorscope', defaultProportion: 0.5, hasOptions: true },
   { id: 'oscilloscope', name: 'Oscilloscope', defaultProportion: 1.5, hasOptions: true },
   { id: 'spectrogram', name: 'Spectrogram', defaultProportion: 2, hasOptions: true },
   { id: 'vu', name: 'VU Meter', defaultProportion: 1.2, hasOptions: true },

@@ -1,15 +1,10 @@
 import { NavLink, useNavigate } from 'react-router';
-import { Home, Library, Settings, UserCog, LogOut, TrendingUp, HeartPulse, PanelLeftClose, PanelLeftOpen, Music } from 'lucide-react';
+import { Home, Library, Settings, LogOut, TrendingUp, HeartPulse, Music } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import audioGraph from '../../audio/audioGraph';
 import ActivityFeed from '../activity/ActivityFeed';
 
-interface SidebarProps {
-  collapsed: boolean;
-  onToggle: () => void;
-}
-
-export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export default function Sidebar() {
   const { isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -17,12 +12,8 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     { to: '/', label: 'Home', icon: Home, end: true },
     { to: '/library', label: 'Library', icon: Library },
     { to: '/stats', label: 'Stats', icon: TrendingUp },
-    { to: '/settings', label: 'Settings', icon: Settings, end: true },
-  ];
-
-  const adminItems = [
     { to: '/settings/health', label: 'Library Health', icon: HeartPulse },
-    { to: '/users', label: 'Users', icon: UserCog },
+    { to: '/settings', label: 'Settings', icon: Settings, end: true },
   ];
 
   async function handleLogout() {
@@ -33,7 +24,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   return (
     <aside
-      className={`${collapsed ? 'w-16' : 'w-56'} flex flex-col h-full transition-[width] duration-200 ease-in-out`}
+      className="w-56 flex flex-col h-full"
       style={{
         background: 'linear-gradient(to bottom, var(--mc-sidebar-background), var(--mc-glass-background))',
         borderRight: '1px solid var(--mc-glass-border)',
@@ -42,93 +33,57 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       }}
     >
       {/* Header */}
-      <div className={`py-5 flex items-center ${collapsed ? 'px-0 justify-center' : 'px-5 justify-between'}`}>
-        <h1 className={`font-bold tracking-tight flex items-center gap-2 ${collapsed ? 'text-base' : 'text-lg'}`} style={{ color: 'var(--mc-text-primary)' }}>
+      <div className="py-5 px-5 flex items-center">
+        <h1 className="font-bold tracking-tight flex items-center gap-2 text-lg" style={{ color: 'var(--mc-text-primary)' }}>
           <Music className="w-5 h-5 shrink-0" style={{ color: 'var(--mc-accent-primary)' }} />
-          {!collapsed && <span className="transition-opacity duration-200">Musicode</span>}
+          <span>Musicode</span>
         </h1>
-        {!collapsed && (
-          <button onClick={onToggle} className="mc-interactive-muted transition-colors" title="Collapse sidebar">
-            <PanelLeftClose className="w-4 h-4" />
-          </button>
-        )}
       </div>
 
-      {/* Collapse toggle in collapsed mode */}
-      {collapsed && (
-        <button onClick={onToggle} className="mx-auto mb-2 mc-interactive-muted transition-colors" title="Expand sidebar">
-          <PanelLeftOpen className="w-4 h-4" />
-        </button>
-      )}
-
       {/* Navigation */}
-      <nav className={`flex-1 space-y-0.5 ${collapsed ? 'px-2' : 'px-3'}`}>
+      <nav className="space-y-0.5 px-3">
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
-            title={collapsed ? label : undefined}
             className={({ isActive }) =>
-              `flex items-center ${collapsed ? 'justify-center' : 'gap-3'} ${collapsed ? 'px-0 py-2.5' : 'px-3 py-2'} rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'mc-nav-active'
-                  : 'mc-nav-item'
+              `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? 'mc-nav-active' : 'mc-nav-item'
               }`
             }
           >
             <Icon className="w-4 h-4 shrink-0" />
-            {!collapsed && label}
+            {label}
           </NavLink>
         ))}
 
-        {isAdmin && (
-          <>
-            <div className="my-3" style={{ borderTop: '1px solid var(--mc-border-default)' }} />
-            {adminItems.map(({ to, label, icon: Icon, end }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                title={collapsed ? label : undefined}
-                className={({ isActive }) =>
-                  `flex items-center ${collapsed ? 'justify-center' : 'gap-3'} ${collapsed ? 'px-0 py-2.5' : 'px-3 py-2'} rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'mc-nav-active'
-                      : 'mc-nav-item'
-                  }`
-                }
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                {!collapsed && label}
-              </NavLink>
-            ))}
-          </>
-        )}
       </nav>
 
-      {/* Activity feed - hidden when collapsed */}
-      {!collapsed && <ActivityFeed />}
+      <ActivityFeed />
 
-      {/* User info + logout */}
-      <div className={`pb-4 pt-3 ${collapsed ? 'px-2' : 'px-3'}`} style={{ borderTop: '1px solid var(--mc-border-default)' }}>
-        {!collapsed && (
-          <div className="flex items-center gap-2 px-3 mb-2">
-            <span className="text-sm truncate flex-1" style={{ color: 'var(--mc-text-primary)' }}>{user?.username}</span>
-            <span className={`text-xs px-1.5 py-0.5 rounded ${
-              isAdmin ? 'mc-badge' : 'mc-badge-muted'
-            }`}>
-              {user?.role}
-            </span>
-          </div>
-        )}
+      {/* User info + logout — height synced with PlayerBar via CSS var */}
+      <div
+        className="flex flex-col justify-center px-3 shrink-0 transition-[height] duration-200"
+        style={{
+          borderTop: '1px solid var(--mc-border-default)',
+          height: 'calc(var(--mc-player-height, 7rem) + 1px)',
+        }}
+      >
+        <div className="flex items-center gap-2 px-3 mb-2">
+          <span className="text-sm truncate flex-1" style={{ color: 'var(--mc-text-primary)' }}>{user?.username}</span>
+          <span className={`text-xs px-1.5 py-0.5 rounded ${
+            isAdmin ? 'mc-badge' : 'mc-badge-muted'
+          }`}>
+            {user?.role}
+          </span>
+        </div>
         <button
           onClick={handleLogout}
-          title={collapsed ? 'Sign out' : undefined}
-          className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} ${collapsed ? 'px-0 py-2.5' : 'px-3 py-2'} rounded-lg text-sm font-medium mc-nav-item transition-colors w-full`}
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium mc-nav-item transition-colors w-full"
         >
           <LogOut className="w-4 h-4 shrink-0" />
-          {!collapsed && 'Sign out'}
+          Sign out
         </button>
       </div>
     </aside>

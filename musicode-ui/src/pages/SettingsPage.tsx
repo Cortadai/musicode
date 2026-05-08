@@ -1,17 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../api/client';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus, resetLibrary } from '../api/library';
 import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones } from 'lucide-react';
 import ThemeSelector from '../components/layout/ThemeSelector';
 import { useAuth } from '../context/AuthContext';
+import { useMarqueeSettings } from '../hooks/useMarqueePref';
+import { loadPreferences, savePreferences } from '../audio/audioPreferences';
+import type { UserInfo } from '../types';
 
 export default function SettingsPage() {
   const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [newPath, setNewPath] = useState('');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState<'ADMIN' | 'LISTENER'>('LISTENER');
+  const marquee = useMarqueeSettings();
+  const [greetingMessages, setGreetingMessages] = useState(() => loadPreferences().greetingMessages);
 
   const { data: folders, isLoading: foldersLoading } = useQuery({
     queryKey: ['folders'],
@@ -76,6 +85,37 @@ export default function SettingsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['scanStatus'] }),
   });
 
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const { data } = await api.get<UserInfo[]>('/users');
+      return data;
+    },
+    enabled: isAdmin,
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: async () => {
+      await api.post('/users', { username: newUsername, password: newPassword, role: newRole });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setNewUsername('');
+      setNewPassword('');
+      setNewRole('LISTENER');
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (id: number) => { await api.delete(`/users/${id}`); },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
+  });
+
+  function handleCreateUser(e: React.FormEvent) {
+    e.preventDefault();
+    if (newUsername.trim() && newPassword.trim()) createUserMutation.mutate();
+  }
+
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (newPath.trim()) {
@@ -99,8 +139,156 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Behavior */}
+      <section className="mb-8">
+        <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Behavior</h3>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+              <div>
+                <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Player marquee</span>
+                <p className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>Scroll long titles in the play bar</p>
+              </div>
+            </div>
+            <button
+              role="switch"
+              aria-checked={marquee.playbar}
+              onClick={() => marquee.togglePlaybar(!marquee.playbar)}
+              className="mc-toggle"
+              data-on={marquee.playbar || undefined}
+            >
+              <span className="mc-toggle__thumb" />
+            </button>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+              <div>
+                <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Album card marquee</span>
+                <p className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>Scroll long titles on hover in album grid</p>
+              </div>
+            </div>
+            <button
+              role="switch"
+              aria-checked={marquee.albumCards}
+              onClick={() => marquee.toggleAlbumCards(!marquee.albumCards)}
+              className="mc-toggle"
+              data-on={marquee.albumCards || undefined}
+            >
+              <span className="mc-toggle__thumb" />
+            </button>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+              <div>
+                <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Greeting messages</span>
+                <p className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>Show quotes and fun greetings on the home page</p>
+              </div>
+            </div>
+            <button
+              role="switch"
+              aria-checked={greetingMessages}
+              onClick={() => {
+                const next = !greetingMessages;
+                setGreetingMessages(next);
+                savePreferences({ greetingMessages: next });
+              }}
+              className="mc-toggle"
+              data-on={greetingMessages || undefined}
+            >
+              <span className="mc-toggle__thumb" />
+            </button>
+          </div>
+        </div>
+      </section>
+
       {isAdmin && (
         <>
+          {/* User Management */}
+          <section className="mb-8">
+            <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Users</h3>
+
+            {usersLoading ? (
+              <p className="text-sm" style={{ color: 'var(--mc-text-muted)' }}>Loading…</p>
+            ) : users && users.length > 0 ? (
+              <div className="space-y-2 mb-4">
+                {users.map((u) => (
+                  <div key={u.id} className="flex items-center gap-3 px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+                    {u.role === 'ADMIN' ? (
+                      <Shield className="w-4 h-4 shrink-0" style={{ color: 'var(--mc-accent-primary)' }} />
+                    ) : (
+                      <Headphones className="w-4 h-4 shrink-0" style={{ color: 'var(--mc-text-muted)' }} />
+                    )}
+                    <span className="text-sm flex-1" style={{ color: 'var(--mc-text-primary)' }}>{u.username}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === 'ADMIN' ? 'mc-badge' : 'mc-badge-muted'}`}>
+                      {u.role}
+                    </span>
+                    {!u.enabled && (
+                      <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(248,113,113,0.2)', color: 'var(--mc-text-error)' }}>
+                        disabled
+                      </span>
+                    )}
+                    <button
+                      onClick={() => deleteUserMutation.mutate(u.id)}
+                      className="mc-interactive-danger transition-colors"
+                      title="Delete user"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm mb-4" style={{ color: 'var(--mc-text-muted)' }}>No users found.</p>
+            )}
+            {deleteUserMutation.isError && (
+              <p className="text-sm mb-2" style={{ color: 'var(--mc-text-error)' }}>
+                {getErrorMessage(deleteUserMutation.error, 'Failed to delete user')}
+              </p>
+            )}
+
+            <form onSubmit={handleCreateUser} className="space-y-3">
+              <input
+                type="text"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                placeholder="Username"
+                required
+                className="w-full border rounded-lg px-4 py-2 text-sm mc-input focus:outline-none"
+              />
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Password"
+                required
+                className="w-full border rounded-lg px-4 py-2 text-sm mc-input focus:outline-none"
+              />
+              <select
+                value={newRole}
+                onChange={(e) => setNewRole(e.target.value as 'ADMIN' | 'LISTENER')}
+                className="w-full border rounded-lg px-4 py-2 text-sm mc-input focus:outline-none"
+              >
+                <option value="LISTENER">Listener</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+              <button
+                type="submit"
+                disabled={createUserMutation.isPending}
+                className="flex items-center gap-1.5 px-4 py-2 mc-btn-primary text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                <UserPlus className="w-4 h-4" /> Create User
+              </button>
+              {createUserMutation.isError && (
+                <p className="text-sm" style={{ color: 'var(--mc-text-error)' }}>
+                  {getErrorMessage(createUserMutation.error, 'Failed to create user')}
+                </p>
+              )}
+            </form>
+          </section>
+
           {/* Library Folders */}
           <section className="mb-8">
             <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Library Folders</h3>

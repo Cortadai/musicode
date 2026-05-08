@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { getCoverUrl } from '../../api/albums';
 import type { Album } from '../../types';
 import { Disc3 } from 'lucide-react';
+import { useMarqueeAlbumCards } from '../../hooks/useMarqueePref';
 
 interface Props {
   album: Album;
@@ -10,6 +11,7 @@ interface Props {
 
 function AlbumCard({ album }: Props) {
   const imgRef = useRef<HTMLImageElement>(null);
+  const marqueeEnabled = useMarqueeAlbumCards();
 
   const handleLoad = useCallback(() => {
     imgRef.current?.classList.add('loaded');
@@ -47,21 +49,27 @@ function AlbumCard({ album }: Props) {
       </div>
       <div className="px-3 py-2.5 overflow-hidden">
         <div className="overflow-hidden">
-          <div className="card-marquee-container">
-            <span
-              className="text-sm font-medium whitespace-nowrap card-marquee-text"
-              style={{ color: 'var(--mc-text-primary)' }}
-            >
+          {marqueeEnabled ? (
+            <div className="card-marquee-container">
+              <span
+                className="text-sm font-medium whitespace-nowrap card-marquee-text"
+                style={{ color: 'var(--mc-text-primary)' }}
+              >
+                {album.title}
+              </span>
+              <span
+                className="text-sm font-medium whitespace-nowrap card-marquee-text"
+                style={{ color: 'var(--mc-text-primary)' }}
+                aria-hidden="true"
+              >
+                {album.title}
+              </span>
+            </div>
+          ) : (
+            <p className="text-sm font-medium truncate" style={{ color: 'var(--mc-text-primary)' }}>
               {album.title}
-            </span>
-            <span
-              className="text-sm font-medium whitespace-nowrap card-marquee-text"
-              style={{ color: 'var(--mc-text-primary)' }}
-              aria-hidden="true"
-            >
-              {album.title}
-            </span>
-          </div>
+            </p>
+          )}
         </div>
         <p className="text-xs truncate mt-0.5" style={{ color: 'var(--mc-text-muted)' }}>
           {album.artist?.name ?? 'Unknown Artist'}

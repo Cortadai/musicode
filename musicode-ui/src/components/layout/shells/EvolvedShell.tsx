@@ -4,16 +4,14 @@ import Sidebar from '../Sidebar';
 import TopBar from '../TopBar';
 import PlayerBar from '../../player/PlayerBar';
 import QueuePanel from '../../player/QueuePanel';
-import { useSidebarCollapse } from '../../../hooks/useSidebarCollapse';
 import { AnalyzerDeck, buildScopeMap } from '../../analyzer';
 
 export default function EvolvedShell() {
-  const { collapsed, toggle } = useSidebarCollapse();
   const scopeMap = useMemo(() => buildScopeMap(), []);
 
   return (
     <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'var(--mc-bg-base)', color: 'var(--mc-text-primary)' }}>
-      <Sidebar collapsed={collapsed} onToggle={toggle} />
+      <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar />
         <AnalyzerDeck scopeMap={scopeMap} />

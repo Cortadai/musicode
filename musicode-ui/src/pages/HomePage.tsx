@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { Music, Clock, Users, Disc3, User } from 'lucide-react';
@@ -8,13 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 import Carousel from '../components/home/Carousel';
-
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
-}
+import { chooseGreeting, getTimeGreeting } from '../utils/greetings';
+import { loadPreferences } from '../audio/audioPreferences';
 
 function formatDuration(totalSec: number): string {
   if (totalSec < 60) return `${totalSec}s`;
@@ -149,6 +144,11 @@ function EmptyState({ message }: { message: string }) {
 
 export default function HomePage() {
   const { user } = useAuth();
+  const greeting = useMemo(() => {
+    const prefs = loadPreferences();
+    if (!prefs.greetingMessages) return null;
+    return chooseGreeting();
+  }, []);
 
   const summary = useQuery({
     queryKey: ['stats', 'summary', 'all'],
@@ -184,12 +184,19 @@ export default function HomePage() {
 
   return (
     <div className="p-6 space-y-8">
-      <h1
-        className="text-2xl font-bold"
-        style={{ color: 'var(--mc-text-primary)' }}
-      >
-        {getGreeting()}, {user?.username ?? 'there'}
-      </h1>
+      <div>
+        <h1
+          className="text-2xl font-bold"
+          style={{ color: 'var(--mc-text-primary)' }}
+        >
+          {greeting ? greeting.text : `${getTimeGreeting()}, ${user?.username ?? 'there'}`}
+        </h1>
+        {greeting?.subtitle && (
+          <p className="text-sm mt-1" style={{ color: 'var(--mc-text-muted)' }}>
+            — {greeting.subtitle}
+          </p>
+        )}
+      </div>
 
       {/* Stats cards */}
       <div className="grid grid-cols-4 gap-4">

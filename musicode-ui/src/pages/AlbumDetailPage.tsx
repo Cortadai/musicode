@@ -5,25 +5,30 @@ import { getAlbum, getCoverUrl } from '../api/albums';
 import TrackList from '../components/library/TrackList';
 import { usePlayer } from '../hooks/usePlayer';
 import { useCurrentTrackInfo } from '../context/PlayerContext';
-import { ArrowLeft, Disc3, Play } from 'lucide-react';
+import { ArrowLeft, Disc3, Play, Square } from 'lucide-react';
 import { AlbumDetailSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 import { formatAlbumDuration } from '../utils/format';
 
-function PlayAlbumButton({ onClick, albumTitle, totalDuration }: { onClick: () => void; albumTitle: string; totalDuration: number }) {
+function PlayAlbumButton({ onClick, albumTitle, totalDuration, isAlbumPlaying }: {
+  onClick: () => void; albumTitle: string; totalDuration: number; isAlbumPlaying: boolean;
+}) {
   return (
     <button
       onClick={onClick}
-      aria-label={`Play ${albumTitle}`}
-      className="play-album-btn mt-3 flex items-center justify-between w-52 px-5 py-2.5 rounded-full text-sm font-medium focus-visible:outline-none focus-visible:ring-2"
+      aria-label={isAlbumPlaying ? `Stop ${albumTitle}` : `Play ${albumTitle}`}
+      className={`play-album-btn mt-3 flex items-center justify-between w-52 px-5 py-2.5 rounded-full text-sm font-medium focus-visible:outline-none focus-visible:ring-2${isAlbumPlaying ? ' play-album-btn--active' : ''}`}
       style={{
         color: 'var(--mc-bg-base)',
         ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
       }}
     >
       <span className="flex items-center gap-2">
-        <Play className="w-4 h-4" fill="currentColor" /> Play
+        {isAlbumPlaying
+          ? <><Square className="w-3.5 h-3.5" fill="currentColor" /> Stop</>
+          : <><Play className="w-4 h-4" fill="currentColor" /> Play</>
+        }
       </span>
       {totalDuration > 0 && (
         <span className="opacity-75 text-xs">{formatAlbumDuration(totalDuration)}</span>
@@ -36,8 +41,8 @@ export default function AlbumDetailPage() {
   const { id } = useParams<{ id: string }>();
   const albumId = Number(id);
   const location = useLocation();
-  const { playAlbum } = usePlayer();
-  const { trackId: currentTrackId } = useCurrentTrackInfo();
+  const { playAlbum, stop } = usePlayer();
+  const { trackId: currentTrackId, isPlaying } = useCurrentTrackInfo();
   const shouldScrollToTrack = !!(location.state as { scrollToTrack?: boolean })?.scrollToTrack;
 
   const { data: album, isLoading, error } = useQuery({
@@ -65,7 +70,15 @@ export default function AlbumDetailPage() {
     [playAlbum, tracks]
   );
 
-  const handlePlayAlbum = useCallback(() => playAlbum(tracks, 0), [playAlbum, tracks]);
+  const isAlbumPlaying = isPlaying && currentTrackId != null && tracks.some(t => t.id === currentTrackId);
+
+  const handlePlayAlbum = useCallback(() => {
+    if (isAlbumPlaying) {
+      stop();
+    } else {
+      playAlbum(tracks, 0);
+    }
+  }, [isAlbumPlaying, stop, playAlbum, tracks]);
 
   if (isLoading) return <AlbumDetailSkeleton />;
   if (error || !album) return <ErrorMessage message="Album not found" detail={getErrorMessage(error)} />;
@@ -94,7 +107,7 @@ export default function AlbumDetailPage() {
             {album.year && ` · ${album.year}`}
             {` · ${tracks.length} tracks`}
           </p>
-          <PlayAlbumButton onClick={handlePlayAlbum} albumTitle={album.title} totalDuration={totalDuration} />
+          <PlayAlbumButton onClick={handlePlayAlbum} albumTitle={album.title} totalDuration={totalDuration} isAlbumPlaying={isAlbumPlaying} />
         </div>
       </div>
 
