@@ -47,7 +47,7 @@ export default function LoginPage() {
               autoComplete="username"
               autoFocus
               required
-              className="w-full border rounded-lg px-4 py-2.5 text-sm mc-input focus:outline-none focus:ring-1"
+              className="w-full px-4 py-2.5 text-sm mc-input"
               placeholder="Enter your username"
             />
           </div>
@@ -63,7 +63,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
-              className="w-full border rounded-lg px-4 py-2.5 text-sm mc-input focus:outline-none focus:ring-1"
+              className="w-full px-4 py-2.5 text-sm mc-input"
               placeholder="Enter your password"
             />
           </div>

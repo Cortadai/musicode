@@ -1,14 +1,14 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import type { ThemeConfig, ThemeContextValue, ThemeName, ThemeTokens } from './types';
 import { evolvedTheme } from './tokens/evolved';
-import { novatouchTheme } from './tokens/novatouch';
+import { novaTheme } from './tokens/nova';
 import { minimalTheme } from './tokens/minimal';
 
 const STORAGE_KEY = 'musicode-theme';
 
 const themes: Record<ThemeName, ThemeConfig> = {
   evolved: evolvedTheme,
-  novatouch: novatouchTheme,
+  nova: novaTheme,
   minimal: minimalTheme,
 };
 
@@ -31,7 +31,8 @@ function applyTokensToRoot(tokens: ThemeTokens): void {
 
 function getStoredTheme(): ThemeName {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    let stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === 'novatouch') { stored = 'nova'; localStorage.setItem(STORAGE_KEY, stored); }
     if (stored && stored in themes) return stored as ThemeName;
   } catch {
     // localStorage unavailable

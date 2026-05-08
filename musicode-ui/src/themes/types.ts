@@ -1,4 +1,4 @@
-export type ThemeName = 'evolved' | 'novatouch' | 'minimal';
+export type ThemeName = 'evolved' | 'nova' | 'minimal';
 
 export type ShellLayout = 'sidebar-expanded' | 'sidebar-icons' | 'horizontal';
 

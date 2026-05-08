@@ -105,9 +105,16 @@ export default function StatsPage() {
               <XAxis dataKey="date" tick={{ fill: t.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: t.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip
-                contentStyle={{ backgroundColor: t.bgSurface, border: `1px solid ${t.borderDefault}`, borderRadius: '8px' }}
-                labelStyle={{ color: t.textSecondary }}
-                itemStyle={{ color: t.accentPrimary }}
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  return (
+                    <div style={{ backgroundColor: t.bgSurface, border: `1px solid ${t.borderDefault}`, borderRadius: '8px', padding: '8px 12px' }}>
+                      <div style={{ color: t.textSecondary, fontSize: 12, marginBottom: 2 }}>{label}</div>
+                      <div style={{ color: t.accentPrimary, fontSize: 13, fontWeight: 500 }}>Plays: {payload[0].value}</div>
+                    </div>
+                  );
+                }}
+                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
               />
               <Bar dataKey="count" fill={t.accentPrimaryHover} radius={[4, 4, 0, 0]} name="Plays" />
             </BarChart>

@@ -3,7 +3,7 @@ import type { ThemeName } from '../../themes';
 
 const options: { name: ThemeName; label: string }[] = [
   { name: 'evolved', label: 'Evolved' },
-  { name: 'novatouch', label: 'Novatouch' },
+  { name: 'nova', label: 'Nova' },
   { name: 'minimal', label: 'Minimal' },
 ];
 

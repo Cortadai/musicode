@@ -23,7 +23,7 @@ export default function TopBar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search tracks, albums, artists…"
-            className="w-full border rounded-lg pl-10 pr-4 py-1.5 text-sm mc-input focus:outline-none transition-colors"
+            className="w-full pl-10 pr-4 py-1.5 text-sm mc-input transition-colors"
           />
         </div>
       </form>

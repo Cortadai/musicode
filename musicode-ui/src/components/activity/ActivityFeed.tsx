@@ -61,7 +61,7 @@ export default function ActivityFeed() {
 
   return (
     <div
-      className="flex flex-col min-h-0 flex-1 px-3 pb-2 pt-3"
+      className="flex flex-col min-h-0 flex-1 px-3 pb-2 pt-4"
       style={{ borderTop: '1px solid var(--mc-border-default)' }}
     >
       <div className="flex items-center gap-2 px-3 mb-2 shrink-0">

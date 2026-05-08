@@ -41,7 +41,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="space-y-0.5 px-3">
+      <nav className="space-y-0.5 px-3 pb-2">
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}

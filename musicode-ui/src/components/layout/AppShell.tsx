@@ -3,12 +3,12 @@ import { usePlayer } from '../../hooks/usePlayer';
 import { useTheme } from '../../themes';
 import { QueuePanelProvider } from '../../context/QueuePanelContext';
 import EvolvedShell from './shells/EvolvedShell';
-import NovatouchShell from './shells/NovatouchShell';
+import NovaShell from './shells/NovaShell';
 import MinimalShell from './shells/MinimalShell';
 
 const shellByLayout = {
   'sidebar-expanded': EvolvedShell,
-  'sidebar-icons': NovatouchShell,
+  'sidebar-icons': NovaShell,
   'horizontal': MinimalShell,
 } as const;
 

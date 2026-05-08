@@ -1,8 +1,8 @@
 import type { ThemeConfig } from '../types';
 
-export const novatouchTheme: ThemeConfig = {
-  name: 'novatouch',
-  label: 'Novatouch',
+export const novaTheme: ThemeConfig = {
+  name: 'nova',
+  label: 'Nova',
   layout: 'sidebar-icons',
   tokens: {
     // Backgrounds — darker, cooler

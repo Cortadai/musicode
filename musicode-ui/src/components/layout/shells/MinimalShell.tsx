@@ -81,11 +81,7 @@ export default function MinimalShell() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search…"
-              className="w-40 bg-transparent border rounded-md pl-8 pr-3 py-1 text-xs mc-input focus:outline-none transition-colors"
-              style={{
-                borderColor: 'var(--mc-border-subtle)',
-                color: 'var(--mc-text-primary)',
-              }}
+              className="w-40 pl-8 pr-3 py-1 text-xs mc-input transition-colors"
             />
           </div>
 

@@ -8,7 +8,7 @@ import PlayerBar from '../../player/PlayerBar';
 import QueuePanel from '../../player/QueuePanel';
 import { AnalyzerDeck, useDeckStore, buildScopeMap } from '../../analyzer';
 
-export default function NovatouchShell() {
+export default function NovaShell() {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);

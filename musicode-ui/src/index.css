@@ -138,14 +138,17 @@ body {
 /* Input fields */
 .mc-input {
   background-color: var(--mc-bg-surface);
-  border-color: var(--mc-border-default);
+  border: 1px solid var(--mc-border-default);
+  border-radius: 0.5rem;
   color: var(--mc-text-primary);
+  outline: none;
 }
 .mc-input::placeholder {
   color: var(--mc-text-muted);
 }
 .mc-input:focus {
   border-color: var(--mc-border-accent);
+  box-shadow: 0 0 0 1px var(--mc-border-accent);
 }
 
 /* Badge — role pill, count pill */

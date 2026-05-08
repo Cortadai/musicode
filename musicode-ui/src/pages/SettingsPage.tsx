@@ -4,7 +4,7 @@ import api from '../api/client';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus, resetLibrary } from '../api/library';
 import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown } from 'lucide-react';
 import ThemeSelector from '../components/layout/ThemeSelector';
 import { useAuth } from '../context/AuthContext';
 import { useMarqueeSettings } from '../hooks/useMarqueePref';
@@ -19,6 +19,8 @@ export default function SettingsPage() {
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState<'ADMIN' | 'LISTENER'>('LISTENER');
+  const [roleOpen, setRoleOpen] = useState(false);
+  const roleRef = useRef<HTMLDivElement>(null);
   const marquee = useMarqueeSettings();
   const [greetingMessages, setGreetingMessages] = useState(() => loadPreferences().greetingMessages);
 
@@ -45,6 +47,17 @@ export default function SettingsPage() {
     }
     prevScanning.current = scanStatus?.scanning ?? false;
   }, [scanStatus?.scanning, queryClient]);
+
+  useEffect(() => {
+    if (!roleOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (roleRef.current && !roleRef.current.contains(e.target as Node)) setRoleOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setRoleOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
+  }, [roleOpen]);
 
   const addMutation = useMutation({
     mutationFn: addFolder,
@@ -256,7 +269,7 @@ export default function SettingsPage() {
                 onChange={(e) => setNewUsername(e.target.value)}
                 placeholder="Username"
                 required
-                className="w-full border rounded-lg px-4 py-2 text-sm mc-input focus:outline-none"
+                className="w-full px-4 py-2 text-sm mc-input"
               />
               <input
                 type="password"
@@ -264,16 +277,46 @@ export default function SettingsPage() {
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Password"
                 required
-                className="w-full border rounded-lg px-4 py-2 text-sm mc-input focus:outline-none"
+                className="w-full px-4 py-2 text-sm mc-input"
               />
-              <select
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value as 'ADMIN' | 'LISTENER')}
-                className="w-full border rounded-lg px-4 py-2 text-sm mc-input focus:outline-none"
-              >
-                <option value="LISTENER">Listener</option>
-                <option value="ADMIN">Admin</option>
-              </select>
+              <div className="relative" ref={roleRef}>
+                <button
+                  type="button"
+                  onClick={() => setRoleOpen((v) => !v)}
+                  aria-haspopup="listbox"
+                  aria-expanded={roleOpen}
+                  aria-label="User role"
+                  className="flex items-center justify-between w-full px-4 py-2 text-sm mc-input cursor-pointer"
+                >
+                  {newRole === 'ADMIN' ? 'Admin' : 'Listener'}
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                {roleOpen && (
+                  <ul
+                    role="listbox"
+                    aria-label="User roles"
+                    className="absolute left-0 top-full mt-1 w-full border rounded-lg shadow-xl z-50 py-1"
+                    style={{ backgroundColor: 'var(--mc-bg-surface-hover)', borderColor: 'var(--mc-scrollbar-thumb-hover)' }}
+                  >
+                    {([['LISTENER', 'Listener'], ['ADMIN', 'Admin']] as const).map(([val, label]) => (
+                      <li
+                        key={val}
+                        role="option"
+                        aria-selected={newRole === val}
+                        onClick={() => { setNewRole(val); setRoleOpen(false); }}
+                        className="px-4 py-2 text-sm cursor-pointer transition-colors"
+                        style={newRole === val
+                          ? { backgroundColor: 'var(--mc-accent-primary-hover)', color: 'var(--mc-text-primary)' }
+                          : { color: 'var(--mc-text-primary)' }}
+                        onMouseEnter={(e) => { if (newRole !== val) e.currentTarget.style.backgroundColor = 'var(--mc-bg-surface)'; }}
+                        onMouseLeave={(e) => { if (newRole !== val) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                      >
+                        {label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
               <button
                 type="submit"
                 disabled={createUserMutation.isPending}
@@ -321,7 +364,7 @@ export default function SettingsPage() {
                 value={newPath}
                 onChange={(e) => setNewPath(e.target.value)}
                 placeholder="C:\Users\you\Music"
-                className="flex-1 mc-input border rounded-lg px-4 py-2 text-sm focus:outline-none"
+                className="flex-1 px-4 py-2 text-sm mc-input"
               />
               <button
                 type="submit"
@@ -492,7 +535,7 @@ function ScrobbleSection() {
               value={lbToken}
               onChange={(e) => setLbToken(e.target.value)}
               placeholder="Paste your ListenBrainz token"
-              className="flex-1 mc-input border rounded px-3 py-1.5 text-xs focus:outline-none"
+              className="flex-1 px-3 py-1.5 text-xs mc-input"
             />
             <button type="submit" disabled={!lbToken.trim() || connectMutation.isPending}
               className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium rounded transition-colors disabled:opacity-50">
@@ -528,10 +571,10 @@ function ScrobbleSection() {
             <div className="flex gap-2">
               <input type="text" value={lfmUsername} onChange={(e) => setLfmUsername(e.target.value)}
                 placeholder="Last.fm username"
-                className="flex-1 mc-input border rounded px-3 py-1.5 text-xs focus:outline-none" />
+                className="flex-1 px-3 py-1.5 text-xs mc-input" />
               <input type="password" value={lfmPassword} onChange={(e) => setLfmPassword(e.target.value)}
                 placeholder="Last.fm password"
-                className="flex-1 mc-input border rounded px-3 py-1.5 text-xs focus:outline-none" />
+                className="flex-1 px-3 py-1.5 text-xs mc-input" />
             </div>
             <button type="submit" disabled={!lfmUsername.trim() || !lfmPassword.trim() || connectMutation.isPending}
               className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-medium rounded transition-colors disabled:opacity-50">
