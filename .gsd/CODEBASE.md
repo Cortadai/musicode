@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-07T20:54:13Z | Files: 313 | Described: 0/313
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-07T20:54:13Z","fingerprint":"484e31a2c8b743adea5941c1af2c47a56b26f246","fileCount":313,"truncated":false} -->
+Generated: 2026-05-08T18:42:06Z | Files: 322 | Described: 0/322
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-08T18:42:06Z","fingerprint":"d29693db1b19e478d4a47a8e43536f6e7e91085b","fileCount":322,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -264,14 +264,23 @@ Generated: 2026-05-07T20:54:13Z | Files: 313 | Described: 0/313
 ### musicode-ui/src/components/analyzer/
 - `musicode-ui/src/components/analyzer/AnalyzerDeck.css`
 - `musicode-ui/src/components/analyzer/AnalyzerDeck.tsx`
+- `musicode-ui/src/components/analyzer/DeckSettings.tsx`
 - `musicode-ui/src/components/analyzer/index.ts`
+- `musicode-ui/src/components/analyzer/ScopeOptionsPopover.tsx`
 - `musicode-ui/src/components/analyzer/types.ts`
 - `musicode-ui/src/components/analyzer/useDeckStore.ts`
 
 ### musicode-ui/src/components/analyzer/scopes/
+- `musicode-ui/src/components/analyzer/scopes/ClassicBars.ts`
 - `musicode-ui/src/components/analyzer/scopes/heatScale.ts`
 - `musicode-ui/src/components/analyzer/scopes/index.ts`
+- `musicode-ui/src/components/analyzer/scopes/LUFSMeter.ts`
+- `musicode-ui/src/components/analyzer/scopes/Oscilloscope.ts`
+- `musicode-ui/src/components/analyzer/scopes/Spectrogram.ts`
 - `musicode-ui/src/components/analyzer/scopes/SpectrumAnalyzer.ts`
+- `musicode-ui/src/components/analyzer/scopes/Vectorscope.ts`
+- `musicode-ui/src/components/analyzer/scopes/VUMeter.ts`
+- `musicode-ui/src/components/analyzer/scopes/Waveform.ts`
 
 ### musicode-ui/src/components/auth/
 - `musicode-ui/src/components/auth/ProtectedRoute.tsx`
