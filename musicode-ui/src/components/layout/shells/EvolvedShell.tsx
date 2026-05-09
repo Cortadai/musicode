@@ -4,6 +4,7 @@ import Sidebar from '../Sidebar';
 import TopBar from '../TopBar';
 import PlayerBar from '../../player/PlayerBar';
 import QueuePanel from '../../player/QueuePanel';
+import LyricsSidebar from '../../player/LyricsSidebar';
 import { AnalyzerDeck, buildScopeMap } from '../../analyzer';
 
 export default function EvolvedShell() {
@@ -20,6 +21,7 @@ export default function EvolvedShell() {
             <Outlet />
           </main>
           <QueuePanel />
+          <LyricsSidebar />
         </div>
         <PlayerBar />
       </div>

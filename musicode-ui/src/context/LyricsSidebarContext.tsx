@@ -1,16 +1,16 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 
-interface QueuePanelState {
+interface LyricsSidebarState {
   isOpen: boolean;
   toggle: () => void;
   close: () => void;
 }
 
-const QueuePanelContext = createContext<QueuePanelState>({ isOpen: false, toggle: () => {}, close: () => {} });
+const LyricsSidebarContext = createContext<LyricsSidebarState>({ isOpen: false, toggle: () => {}, close: () => {} });
 
-const STORAGE_KEY = 'mc-queue-panel-open';
+const STORAGE_KEY = 'mc-lyrics-sidebar-open';
 
-export function QueuePanelProvider({ children }: { children: ReactNode }) {
+export function LyricsSidebarProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(() => localStorage.getItem(STORAGE_KEY) === 'true');
 
   const toggle = useCallback(() => {
@@ -27,12 +27,12 @@ export function QueuePanelProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <QueuePanelContext.Provider value={{ isOpen, toggle, close }}>
+    <LyricsSidebarContext.Provider value={{ isOpen, toggle, close }}>
       {children}
-    </QueuePanelContext.Provider>
+    </LyricsSidebarContext.Provider>
   );
 }
 
-export function useQueuePanel() {
-  return useContext(QueuePanelContext);
+export function useLyricsSidebar() {
+  return useContext(LyricsSidebarContext);
 }

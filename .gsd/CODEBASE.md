@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-09T09:35:57Z | Files: 322 | Described: 0/322
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-09T09:35:57Z","fingerprint":"2ee792d294e41bc7636d0e6ed2fd50fc9e3df419","fileCount":322,"truncated":false} -->
+Generated: 2026-05-09T12:34:23Z | Files: 333 | Described: 0/333
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-09T12:34:23Z","fingerprint":"e7e49f36e73f07328bd425ece0783cbd5b372ba0","fileCount":333,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -297,6 +297,7 @@ Generated: 2026-05-09T09:35:57Z | Files: 322 | Described: 0/322
 
 ### musicode-ui/src/components/layout/
 - `musicode-ui/src/components/layout/AppShell.tsx`
+- `musicode-ui/src/components/layout/PaletteSelector.tsx`
 - `musicode-ui/src/components/layout/Sidebar.tsx`
 - `musicode-ui/src/components/layout/ThemeSelector.tsx`
 - `musicode-ui/src/components/layout/TopBar.tsx`
@@ -359,6 +360,18 @@ Generated: 2026-05-09T09:35:57Z | Files: 322 | Described: 0/322
 - `musicode-ui/src/themes/ThemeProvider.tsx`
 - `musicode-ui/src/themes/types.ts`
 - `musicode-ui/src/themes/useTheme.ts`
+
+### musicode-ui/src/themes/palettes/
+- `musicode-ui/src/themes/palettes/amber.ts`
+- `musicode-ui/src/themes/palettes/crimson.ts`
+- `musicode-ui/src/themes/palettes/cyan.ts`
+- `musicode-ui/src/themes/palettes/daylight.ts`
+- `musicode-ui/src/themes/palettes/emerald.ts`
+- `musicode-ui/src/themes/palettes/frost.ts`
+- `musicode-ui/src/themes/palettes/index.ts`
+- `musicode-ui/src/themes/palettes/indigo.ts`
+- `musicode-ui/src/themes/palettes/sunrise.ts`
+- `musicode-ui/src/themes/palettes/zinc.ts`
 
 ### musicode-ui/src/themes/tokens/
 - `musicode-ui/src/themes/tokens/evolved.ts`

@@ -6,9 +6,10 @@ import { parseLrc, findActiveLine, type LrcLine } from '../../utils/lrcParser';
 interface Props {
   trackId: number;
   currentTime: number;
+  compact?: boolean;
 }
 
-export default function LyricsPanel({ trackId, currentTime }: Props) {
+export default function LyricsPanel({ trackId, currentTime, compact = false }: Props) {
   const [lyrics, setLyrics] = useState<LyricsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState(false);
@@ -139,7 +140,7 @@ export default function LyricsPanel({ trackId, currentTime }: Props) {
               <p
                 key={i}
                 ref={(el) => setLineRef(i, el)}
-                className={`text-lg font-medium leading-relaxed transition-all duration-300 ${
+                className={`${compact ? 'text-sm' : 'text-lg'} font-medium leading-relaxed transition-all duration-300 ${
                   i === activeLine
                     ? 'scale-[1.02] origin-left'
                     : ''

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useTheme } from '../../themes';
 import { QueuePanelProvider } from '../../context/QueuePanelContext';
+import { LyricsSidebarProvider } from '../../context/LyricsSidebarContext';
 import EvolvedShell from './shells/EvolvedShell';
 import NovaShell from './shells/NovaShell';
 import MinimalShell from './shells/MinimalShell';
@@ -62,7 +63,9 @@ export default function AppShell() {
   const Shell = shellByLayout[theme.layout];
   return (
     <QueuePanelProvider>
-      <Shell />
+      <LyricsSidebarProvider>
+        <Shell />
+      </LyricsSidebarProvider>
     </QueuePanelProvider>
   );
 }

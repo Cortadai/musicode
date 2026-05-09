@@ -619,6 +619,63 @@ body {
   border-color: color-mix(in srgb, var(--_glow) 60%, transparent);
 }
 
+/* === Related Albums Toggle — circular accent glow button === */
+.related-toggle-btn {
+  --_glow: var(--mc-accent-primary);
+  position: relative;
+  overflow: hidden;
+  background: var(--mc-bg-surface-hover);
+  color: var(--mc-text-secondary);
+  border: 1px solid transparent;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.related-toggle-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 70%
+  );
+  translate: -120% 0;
+  transition: translate 0.6s ease;
+}
+
+.related-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--_glow) 40%, transparent),
+    0 2px 8px color-mix(in srgb, var(--_glow) 25%, transparent);
+}
+
+.related-toggle-btn:hover::after {
+  translate: 120% 0;
+}
+
+.related-toggle-btn:active {
+  transform: scale(0.93);
+}
+
+.related-toggle-btn--active {
+  background: var(--mc-accent-primary);
+  color: var(--mc-bg-base);
+  border-color: color-mix(in srgb, var(--_glow) 30%, transparent);
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--_glow) 35%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.related-toggle-btn--active:hover {
+  background: var(--mc-accent-primary-hover);
+  box-shadow:
+    0 0 20px color-mix(in srgb, var(--_glow) 50%, transparent),
+    0 4px 12px color-mix(in srgb, var(--_glow) 30%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
 /* === Retro Mode === */
 @keyframes retro-fade-in {
   from { opacity: 0; }

@@ -6,6 +6,7 @@ import { useAuth } from '../../../context/AuthContext';
 import audioGraph from '../../../audio/audioGraph';
 import PlayerBar from '../../player/PlayerBar';
 import QueuePanel from '../../player/QueuePanel';
+import LyricsSidebar from '../../player/LyricsSidebar';
 import { AnalyzerDeck, useDeckStore, buildScopeMap } from '../../analyzer';
 
 export default function MinimalShell() {
@@ -104,6 +105,7 @@ export default function MinimalShell() {
           <Outlet />
         </main>
         <QueuePanel />
+        <LyricsSidebar />
       </div>
 
       <PlayerBar />

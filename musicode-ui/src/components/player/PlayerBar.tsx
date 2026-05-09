@@ -1,7 +1,7 @@
 import { usePlayer } from '../../hooks/usePlayer';
 import audioGraph from '../../audio/audioGraph';
 import { useCallback, useEffect, useState } from 'react';
-import { BarChart3, Activity, CassetteTape, ListMusic } from 'lucide-react';
+import { BarChart3, Activity, CassetteTape, ListMusic, Mic2 } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import TrackInfo from './TrackInfo';
 import TransportControls from './TransportControls';
@@ -15,6 +15,7 @@ import ScrobbleIndicator from './ScrobbleIndicator';
 import HeartButton from '../common/HeartButton';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useQueuePanel } from '../../context/QueuePanelContext';
+import { useLyricsSidebar } from '../../context/LyricsSidebarContext';
 import { useDeckStore } from '../analyzer/useDeckStore';
 
 export default function PlayerBar() {
@@ -27,7 +28,8 @@ export default function PlayerBar() {
   } = usePlayer();
 
   const { isFavorite, toggle: toggleFavorite } = useFavorites();
-  const { isOpen: isQueueOpen, toggle: toggleQueue } = useQueuePanel();
+  const { isOpen: isQueueOpen, toggle: toggleQueue, close: closeQueue } = useQueuePanel();
+  const { isOpen: isLyricsOpen, toggle: toggleLyrics, close: closeLyrics } = useLyricsSidebar();
   const { visible: deckVisible, toggleVisible: toggleDeck } = useDeckStore();
 
   const [showNowPlaying, setShowNowPlaying] = useState(false);
@@ -50,6 +52,16 @@ export default function PlayerBar() {
     audioGraph.init();
     toggleDeck();
   }, [toggleDeck]);
+
+  const handleToggleQueue = useCallback(() => {
+    if (!isQueueOpen) closeLyrics();
+    toggleQueue();
+  }, [isQueueOpen, closeLyrics, toggleQueue]);
+
+  const handleToggleLyrics = useCallback(() => {
+    if (!isLyricsOpen) closeQueue();
+    toggleLyrics();
+  }, [isLyricsOpen, closeQueue, toggleLyrics]);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -134,7 +146,15 @@ export default function PlayerBar() {
             <CassetteTape className="w-[18px] h-[18px]" />
           </button>
           <button
-            onClick={toggleQueue}
+            onClick={handleToggleLyrics}
+            aria-label={isLyricsOpen ? 'Hide lyrics' : 'Show lyrics'}
+            aria-pressed={isLyricsOpen}
+            className={`flex items-center justify-center transition-colors ${isLyricsOpen ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+          >
+            <Mic2 className="w-[18px] h-[18px]" />
+          </button>
+          <button
+            onClick={handleToggleQueue}
             aria-label={isQueueOpen ? 'Hide queue' : 'Show queue'}
             aria-pressed={isQueueOpen}
             className={`flex items-center justify-center transition-colors ${isQueueOpen ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}

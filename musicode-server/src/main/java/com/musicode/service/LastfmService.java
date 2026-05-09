@@ -1,6 +1,7 @@
 package com.musicode.service;
 
 import com.musicode.config.LastfmConfig;
+import com.musicode.model.dto.ArtistBioDTO;
 import com.musicode.model.dto.ScrobbleResult;
 import com.musicode.model.dto.ScrobbleResult.ErrorType;
 import com.musicode.model.entity.Track;
@@ -157,6 +158,56 @@ public class LastfmService {
         } catch (Exception e) {
             throw new RuntimeException("MD5 not available", e);
         }
+    }
+
+    public ArtistBioDTO getArtistInfo(String artistName) {
+        if (!isConfigured()) {
+            return ArtistBioDTO.empty();
+        }
+
+        try {
+            String url = apiUrl + "?method=artist.getInfo&artist={artist}&api_key={apiKey}&format=json&autocorrect=1";
+            var response = restTemplate.getForEntity(url, Map.class, artistName, config.getApiKey());
+
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                return ArtistBioDTO.empty();
+            }
+
+            var artist = (Map<?, ?>) response.getBody().get("artist");
+            if (artist == null) {
+                return ArtistBioDTO.empty();
+            }
+
+            var bio = (Map<?, ?>) artist.get("bio");
+            if (bio == null) {
+                return ArtistBioDTO.empty();
+            }
+
+            String summary = stripHtmlLinks(asString(bio.get("summary")));
+            String content = stripHtmlLinks(asString(bio.get("content")));
+            String lastfmUrl = asString(artist.get("url"));
+
+            if (summary == null || summary.isBlank()) {
+                return ArtistBioDTO.empty();
+            }
+
+            return new ArtistBioDTO(summary.trim(), content != null ? content.trim() : null, lastfmUrl);
+        } catch (HttpClientErrorException e) {
+            log.debug("[lastfm] artist.getInfo client error for '{}': {}", artistName, e.getStatusCode());
+            return ArtistBioDTO.empty();
+        } catch (Exception e) {
+            log.debug("[lastfm] artist.getInfo failed for '{}': {}", artistName, e.getMessage());
+            return ArtistBioDTO.empty();
+        }
+    }
+
+    private static String asString(Object obj) {
+        return obj != null ? obj.toString() : null;
+    }
+
+    private static String stripHtmlLinks(String text) {
+        if (text == null) return null;
+        return text.replaceAll("<a [^>]*>.*?</a>", "").trim();
     }
 
     public boolean isConfigured() {

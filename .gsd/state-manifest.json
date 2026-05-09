@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-05-09T09:46:28.126Z",
+  "exported_at": "2026-05-09T12:41:14.671Z",
   "milestones": [
     {
       "id": "M001",
@@ -955,6 +955,59 @@
       ],
       "requirement_coverage": "Not provided.",
       "boundary_map_markdown": "Not provided."
+    },
+    {
+      "id": "M022",
+      "title": "Lyrics Sidebar & Album Detail Enrichment",
+      "status": "complete",
+      "depends_on": [],
+      "created_at": "2026-05-09T11:14:13.203Z",
+      "completed_at": "2026-05-09T12:41:14.633Z",
+      "vision": "Expose lyrics from the normal UI via a right sidebar panel (same pattern as QueuePanel), and enrich the album detail page with audio quality summary, artist bio from Last.fm, and related albums from local DB.",
+      "success_criteria": [
+        "Lyrics sidebar opens from PlayerBar button, shows synced lyrics for current track, mutually exclusive with queue panel",
+        "Audio quality badges (codec breakdown, bitrate, sample rate) render on album detail from local data — always available",
+        "Artist bio from Last.fm renders when available, section absent (not placeholder) when empty",
+        "Related albums by same artist shown in horizontal scroll container, excludes current album",
+        "All features work across Evolved, Nova, and Minimal shells"
+      ],
+      "key_risks": [
+        {
+          "risk": "Last.fm artist.getInfo returns empty for indie artists",
+          "whyItMatters": "Bio section depends on external data — graceful absence prevents empty UI but reduces feature value for indie-heavy libraries"
+        },
+        {
+          "risk": "Lyrics sidebar + queue panel mutual exclusion across 3 shells",
+          "whyItMatters": "Each shell has its own layout; the context provider pattern must work uniformly without shell-specific hacks"
+        }
+      ],
+      "proof_strategy": [],
+      "verification_contract": "",
+      "verification_integration": "",
+      "verification_operational": "",
+      "verification_uat": "",
+      "definition_of_done": [],
+      "requirement_coverage": "Not provided.",
+      "boundary_map_markdown": "Not provided."
+    },
+    {
+      "id": "M023",
+      "title": "",
+      "status": "queued",
+      "depends_on": [],
+      "created_at": "2026-05-09T11:17:32.210Z",
+      "completed_at": null,
+      "vision": "",
+      "success_criteria": [],
+      "key_risks": [],
+      "proof_strategy": [],
+      "verification_contract": "",
+      "verification_integration": "",
+      "verification_operational": "",
+      "verification_uat": "",
+      "definition_of_done": [],
+      "requirement_coverage": "",
+      "boundary_map_markdown": ""
     }
   ],
   "slices": [
@@ -2627,6 +2680,46 @@
       "integration_closure": "Not provided.",
       "observability_impact": "Not provided.",
       "sequence": 4,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M022",
+      "id": "S01",
+      "title": "S01",
+      "status": "complete",
+      "risk": "low",
+      "depends": [],
+      "demo": "Click lyrics button in PlayerBar → right sidebar opens with synced lyrics for current track. Click queue button → lyrics closes, queue opens. Works in all 3 shells.",
+      "created_at": "2026-05-09T11:14:49.501Z",
+      "completed_at": "2026-05-09T12:39:22.702Z",
+      "full_summary_md": "---\nid: S01\nparent: M022\nmilestone: M022\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - [\"musicode-ui/src/context/LyricsSidebarContext.tsx\", \"musicode-ui/src/components/player/LyricsSidebar.tsx\", \"musicode-ui/src/components/player/PlayerBar.tsx\", \"musicode-ui/src/context/QueuePanelContext.tsx\", \"musicode-ui/src/components/layout/AppShell.tsx\", \"musicode-ui/src/components/layout/shells/EvolvedShell.tsx\", \"musicode-ui/src/components/layout/shells/NovaShell.tsx\", \"musicode-ui/src/components/layout/shells/MinimalShell.tsx\"]\nkey_decisions:\n  - (none)\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-05-09T12:39:22.702Z\nblocker_discovered: false\n---\n\n# S01: Lyrics Sidebar Panel\n\n**Lyrics sidebar accessible from PlayerBar with mutual exclusion against queue panel, works across all 3 shells**\n\n## What Happened\n\nBuilt a lyrics sidebar that mirrors the QueuePanel pattern. Created LyricsSidebarContext with isOpen/toggle/close, wired mutual exclusion so opening one closes the other. LyricsSidebar component wraps the existing LyricsPanel in a sidebar aside. Added Mic2 icon button to PlayerBar. Wired into EvolvedShell, NovaShell, and MinimalShell. Font size tuned to text-sm for the sidebar's more compact context.\n\n## Verification\n\nBrowser verified in all 3 shells: lyrics button toggles sidebar, mutual exclusion with queue works, synced lyrics scroll correctly in sidebar format.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S01: Lyrics Sidebar Panel — UAT\n\n**Milestone:** M022\n**Written:** 2026-05-09T12:39:22.702Z\n\n## UAT — S01: Lyrics Sidebar Panel\n\n### Test Cases\n\n- [x] **Lyrics button visible** — Mic2 icon button appears in PlayerBar right section\n- [x] **Sidebar opens** — Clicking lyrics button opens right sidebar with synced lyrics\n- [x] **Mutual exclusion** — Opening lyrics closes queue panel; opening queue closes lyrics\n- [x] **All shells** — Works in Evolved, Nova, and Minimal shells\n- [x] **Synced scrolling** — Active lyric line highlights and auto-scrolls in sidebar\n- [x] **Font size** — Lyrics use text-sm (14px) in sidebar for compact display\n",
+      "goal": "Add a lyrics sidebar panel to the normal UI, toggled from PlayerBar, reusing existing LyricsPanel sync logic. Mutually exclusive with queue panel.",
+      "success_criteria": "Lyrics sidebar opens/closes from PlayerBar button; shows synced lyrics with auto-scroll; mutually exclusive with queue panel; works in Evolved, Nova, Minimal shells",
+      "proof_level": "manual-browser",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
+      "sequence": 1,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M022",
+      "id": "S02",
+      "title": "S02",
+      "status": "complete",
+      "risk": "medium",
+      "depends": [],
+      "demo": "Open any album detail page → header shows audio quality badges. If Last.fm has artist data, bio excerpt appears. Other albums by same artist shown in horizontal scroll.",
+      "created_at": "2026-05-09T11:14:49.501Z",
+      "completed_at": "2026-05-09T12:40:40.463Z",
+      "full_summary_md": "---\nid: S02\nparent: M022\nmilestone: M022\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - [\"musicode-ui/src/components/library/AlbumInfoCard.tsx\", \"musicode-ui/src/pages/AlbumDetailPage.tsx\", \"musicode-ui/src/api/artists.ts\", \"musicode-server/src/main/java/com/musicode/model/dto/ArtistBioDTO.java\", \"musicode-server/src/main/java/com/musicode/service/LastfmService.java\", \"musicode-server/src/main/java/com/musicode/controller/ArtistController.java\"]\nkey_decisions:\n  - [\"Removed bio section — replaced with inline Last.fm link\", \"Reverted 3-column to 2-column header\", \"Hi-res badges use amber #f59e0b matching TechBadges pattern\"]\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-05-09T12:40:40.464Z\nblocker_discovered: false\n---\n\n# S02: Album Detail Enrichment\n\n**Album detail header enriched with audio quality badges, Last.fm link, and togglable related albums strip**\n\n## What Happened\n\nAdded three enrichments to album detail. Audio quality badges sit above ALBUM label as subtle pills — hi-res albums get amber badges with star, normal quality uses theme accent. Last.fm link appears inline when bio data exists. Related albums in togglable strip via Disc3 button with glow/sweep animations. Initially had bio section and 3-column layout but removed after user review — cleaner 2-column approach with truncation for long titles.\n\n## Verification\n\nBrowser verified across multiple albums: FLAC hi-res badges gold, MP3 badges accent-colored, Last.fm link present for known artists, related albums toggle works, long titles truncate.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S02: Album Detail Enrichment — UAT\n\n**Milestone:** M022\n**Written:** 2026-05-09T12:40:40.464Z\n\n## UAT — S02: Album Detail Enrichment\n\n### Test Cases\n\n- [x] **Audio quality badges** — Codec badges with counts appear above ALBUM label\n- [x] **Hi-res detection** — Gold/amber badges with star for sample rate >44.1kHz or bit depth >16\n- [x] **Normal quality** — Standard albums show badges in theme accent color\n- [x] **Last.fm link** — Inline link appears when bio data exists\n- [x] **Related albums toggle** — Disc3 button shows/hides related albums strip\n- [x] **Button animations** — Disc3 button matches Play button glow/sweep/scale\n- [x] **Long titles** — Truncate instead of breaking layout\n",
+      "goal": "Enrich album detail page with audio quality badges, Last.fm link, and togglable related albums strip",
+      "success_criteria": "Not provided.",
+      "proof_level": "Not provided.",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
+      "sequence": 2,
       "replan_triggered_at": null
     }
   ],
@@ -10126,6 +10219,174 @@
       ],
       "expected_output": [
         "Verified working palette selector with persistence"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M022",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "Created LyricsSidebarContext with mutual exclusion against QueuePanel",
+      "status": "complete",
+      "one_liner": "Created LyricsSidebarContext with mutual exclusion against QueuePanel",
+      "narrative": "Created LyricsSidebarContext.tsx mirroring QueuePanelContext pattern with isOpen/toggle/close. Updated QueuePanelContext to expose close(). Both contexts wired into AppShell via nested providers. Mutual exclusion: opening lyrics closes queue and vice versa.",
+      "verification_result": "TypeScript compiles, both contexts export correctly, mutual exclusion logic verified in browser.",
+      "duration": "",
+      "completed_at": "2026-05-09T12:39:04.698Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/context/LyricsSidebarContext.tsx",
+        "musicode-ui/src/context/QueuePanelContext.tsx",
+        "musicode-ui/src/components/layout/AppShell.tsx"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T01\nparent: S01\nmilestone: M022\nkey_files:\n  - musicode-ui/src/context/LyricsSidebarContext.tsx\n  - musicode-ui/src/context/QueuePanelContext.tsx\n  - musicode-ui/src/components/layout/AppShell.tsx\nkey_decisions:\n  - (none)\nduration: \nverification_result: untested\ncompleted_at: 2026-05-09T12:39:04.696Z\nblocker_discovered: false\n---\n\n# T01: Created LyricsSidebarContext with mutual exclusion against QueuePanel\n\n**Created LyricsSidebarContext with mutual exclusion against QueuePanel**\n\n## What Happened\n\nCreated LyricsSidebarContext.tsx mirroring QueuePanelContext pattern with isOpen/toggle/close. Updated QueuePanelContext to expose close(). Both contexts wired into AppShell via nested providers. Mutual exclusion: opening lyrics closes queue and vice versa.\n\n## Verification\n\nTypeScript compiles, both contexts export correctly, mutual exclusion logic verified in browser.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| — | No verification commands discovered | — | — | — |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/context/LyricsSidebarContext.tsx`\n- `musicode-ui/src/context/QueuePanelContext.tsx`\n- `musicode-ui/src/components/layout/AppShell.tsx`\n",
+      "description": "Create LyricsSidebarContext (mirror QueuePanelContext pattern with isOpen/toggle/close). Add close() to QueuePanelContext. Wire LyricsSidebarProvider into AppShell alongside QueuePanelProvider.",
+      "estimate": "15m",
+      "files": [
+        "musicode-ui/src/context/LyricsSidebarContext.tsx",
+        "musicode-ui/src/context/QueuePanelContext.tsx",
+        "musicode-ui/src/components/layout/AppShell.tsx"
+      ],
+      "verify": "TypeScript compiles, both contexts export correctly",
+      "inputs": [
+        "QueuePanelContext.tsx pattern"
+      ],
+      "expected_output": [
+        "LyricsSidebarContext.tsx with isOpen/toggle/close",
+        "QueuePanelContext updated with close()",
+        "AppShell wraps Shell in both providers"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M022",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "Built LyricsSidebar component and added lyrics toggle button to PlayerBar",
+      "status": "complete",
+      "one_liner": "Built LyricsSidebar component and added lyrics toggle button to PlayerBar",
+      "narrative": "Created LyricsSidebar.tsx wrapping LyricsPanel in a sidebar aside matching QueuePanel styling. Added Mic2 icon button to PlayerBar right section. Mutual exclusion wired: opening lyrics closes queue, opening queue closes lyrics. Font size tuned to text-sm for sidebar context.",
+      "verification_result": "TypeScript compiles, button renders in PlayerBar, sidebar opens/closes correctly.",
+      "duration": "",
+      "completed_at": "2026-05-09T12:39:07.574Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/player/LyricsSidebar.tsx",
+        "musicode-ui/src/components/player/PlayerBar.tsx"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T02\nparent: S01\nmilestone: M022\nkey_files:\n  - musicode-ui/src/components/player/LyricsSidebar.tsx\n  - musicode-ui/src/components/player/PlayerBar.tsx\nkey_decisions:\n  - (none)\nduration: \nverification_result: untested\ncompleted_at: 2026-05-09T12:39:07.574Z\nblocker_discovered: false\n---\n\n# T02: Built LyricsSidebar component and added lyrics toggle button to PlayerBar\n\n**Built LyricsSidebar component and added lyrics toggle button to PlayerBar**\n\n## What Happened\n\nCreated LyricsSidebar.tsx wrapping LyricsPanel in a sidebar aside matching QueuePanel styling. Added Mic2 icon button to PlayerBar right section. Mutual exclusion wired: opening lyrics closes queue, opening queue closes lyrics. Font size tuned to text-sm for sidebar context.\n\n## Verification\n\nTypeScript compiles, button renders in PlayerBar, sidebar opens/closes correctly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| — | No verification commands discovered | — | — | — |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/player/LyricsSidebar.tsx`\n- `musicode-ui/src/components/player/PlayerBar.tsx`\n",
+      "description": "Create LyricsSidebar component that wraps LyricsPanel in a sidebar aside (same styling as QueuePanel). Add lyrics toggle button (Mic2 icon) to PlayerBar right section, with mutual exclusion logic (opening lyrics closes queue, opening queue closes lyrics).",
+      "estimate": "20m",
+      "files": [
+        "musicode-ui/src/components/player/LyricsSidebar.tsx",
+        "musicode-ui/src/components/player/PlayerBar.tsx"
+      ],
+      "verify": "TypeScript compiles, button renders in PlayerBar",
+      "inputs": [
+        "QueuePanel.tsx sidebar pattern",
+        "LyricsPanel.tsx",
+        "PlayerBar.tsx"
+      ],
+      "expected_output": [
+        "LyricsSidebar.tsx component",
+        "PlayerBar with lyrics button and mutual exclusion"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M022",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "Wired LyricsSidebar into all 3 shells (Evolved, Nova, Minimal)",
+      "status": "complete",
+      "one_liner": "Wired LyricsSidebar into all 3 shells (Evolved, Nova, Minimal)",
+      "narrative": "Added LyricsSidebar component alongside QueuePanel in EvolvedShell, NovaShell, and MinimalShell. Both panels share the same flex container with only one visible at a time via mutual exclusion context.",
+      "verification_result": "Browser verified: lyrics button toggles sidebar in all 3 shells, mutual exclusion with queue works correctly.",
+      "duration": "",
+      "completed_at": "2026-05-09T12:39:10.444Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/layout/shells/EvolvedShell.tsx",
+        "musicode-ui/src/components/layout/shells/NovaShell.tsx",
+        "musicode-ui/src/components/layout/shells/MinimalShell.tsx"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T03\nparent: S01\nmilestone: M022\nkey_files:\n  - musicode-ui/src/components/layout/shells/EvolvedShell.tsx\n  - musicode-ui/src/components/layout/shells/NovaShell.tsx\n  - musicode-ui/src/components/layout/shells/MinimalShell.tsx\nkey_decisions:\n  - (none)\nduration: \nverification_result: untested\ncompleted_at: 2026-05-09T12:39:10.443Z\nblocker_discovered: false\n---\n\n# T03: Wired LyricsSidebar into all 3 shells (Evolved, Nova, Minimal)\n\n**Wired LyricsSidebar into all 3 shells (Evolved, Nova, Minimal)**\n\n## What Happened\n\nAdded LyricsSidebar component alongside QueuePanel in EvolvedShell, NovaShell, and MinimalShell. Both panels share the same flex container with only one visible at a time via mutual exclusion context.\n\n## Verification\n\nBrowser verified: lyrics button toggles sidebar in all 3 shells, mutual exclusion with queue works correctly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| — | No verification commands discovered | — | — | — |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/layout/shells/EvolvedShell.tsx`\n- `musicode-ui/src/components/layout/shells/NovaShell.tsx`\n- `musicode-ui/src/components/layout/shells/MinimalShell.tsx`\n",
+      "description": "Add LyricsSidebar next to QueuePanel in EvolvedShell, NovaShell, and MinimalShell. Both panels sit in the same flex container — only one renders at a time due to mutual exclusion.",
+      "estimate": "10m",
+      "files": [
+        "musicode-ui/src/components/layout/shells/EvolvedShell.tsx",
+        "musicode-ui/src/components/layout/shells/NovaShell.tsx",
+        "musicode-ui/src/components/layout/shells/MinimalShell.tsx"
+      ],
+      "verify": "Browser verification: lyrics button toggles sidebar in all 3 shells, mutual exclusion with queue works",
+      "inputs": [
+        "Shell component patterns"
+      ],
+      "expected_output": [
+        "All 3 shells render LyricsSidebar alongside QueuePanel"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M022",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "Album detail enriched with quality badges, Last.fm link, and togglable related albums",
+      "status": "complete",
+      "one_liner": "Album detail enriched with quality badges, Last.fm link, and togglable related albums",
+      "narrative": "Built AlbumInfoCard component with audio quality badges (codec counts, bitrate, sample rate, bit depth) above ALBUM label. Hi-res detection colors badges amber with star icon, normal quality uses theme accent. Created backend ArtistBioDTO and Last.fm artist.getInfo endpoint with smart caching. Bio section removed per user feedback, replaced with inline Last.fm link. Related albums moved to togglable strip with Disc3 button matching Play button animations.",
+      "verification_result": "Browser verified: FLAC albums show gold hi-res badges, MP3 albums show accent-colored badges, Last.fm link appears, related albums toggle works with animations, long titles truncate correctly.",
+      "duration": "",
+      "completed_at": "2026-05-09T12:40:26.584Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/library/AlbumInfoCard.tsx",
+        "musicode-ui/src/pages/AlbumDetailPage.tsx",
+        "musicode-ui/src/api/artists.ts",
+        "musicode-server/src/main/java/com/musicode/model/dto/ArtistBioDTO.java",
+        "musicode-server/src/main/java/com/musicode/service/LastfmService.java",
+        "musicode-server/src/main/java/com/musicode/controller/ArtistController.java"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T01\nparent: S02\nmilestone: M022\nkey_files:\n  - musicode-ui/src/components/library/AlbumInfoCard.tsx\n  - musicode-ui/src/pages/AlbumDetailPage.tsx\n  - musicode-ui/src/api/artists.ts\n  - musicode-server/src/main/java/com/musicode/model/dto/ArtistBioDTO.java\n  - musicode-server/src/main/java/com/musicode/service/LastfmService.java\n  - musicode-server/src/main/java/com/musicode/controller/ArtistController.java\nkey_decisions:\n  - (none)\nduration: \nverification_result: untested\ncompleted_at: 2026-05-09T12:40:26.583Z\nblocker_discovered: false\n---\n\n# T01: Album detail enriched with quality badges, Last.fm link, and togglable related albums\n\n**Album detail enriched with quality badges, Last.fm link, and togglable related albums**\n\n## What Happened\n\nBuilt AlbumInfoCard component with audio quality badges (codec counts, bitrate, sample rate, bit depth) above ALBUM label. Hi-res detection colors badges amber with star icon, normal quality uses theme accent. Created backend ArtistBioDTO and Last.fm artist.getInfo endpoint with smart caching. Bio section removed per user feedback, replaced with inline Last.fm link. Related albums moved to togglable strip with Disc3 button matching Play button animations.\n\n## Verification\n\nBrowser verified: FLAC albums show gold hi-res badges, MP3 albums show accent-colored badges, Last.fm link appears, related albums toggle works with animations, long titles truncate correctly.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| — | No verification commands discovered | — | — | — |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/library/AlbumInfoCard.tsx`\n- `musicode-ui/src/pages/AlbumDetailPage.tsx`\n- `musicode-ui/src/api/artists.ts`\n- `musicode-server/src/main/java/com/musicode/model/dto/ArtistBioDTO.java`\n- `musicode-server/src/main/java/com/musicode/service/LastfmService.java`\n- `musicode-server/src/main/java/com/musicode/controller/ArtistController.java`\n",
+      "description": "Add audio quality badges above ALBUM label, inline Last.fm link, backend bio endpoint, and togglable related albums strip with animated Disc3 button",
+      "estimate": "1 step",
+      "files": [
+        "AlbumInfoCard.tsx",
+        "AlbumDetailPage.tsx",
+        "artists.ts",
+        "ArtistBioDTO.java",
+        "LastfmService.java",
+        "ArtistController.java"
+      ],
+      "verify": "Browser verification of badges, link, and related albums toggle",
+      "inputs": [
+        "Existing AlbumDetailPage layout",
+        "Last.fm API artist.getInfo endpoint"
+      ],
+      "expected_output": [
+        "Audio quality badges above ALBUM label",
+        "Last.fm link inline with artist info",
+        "Togglable related albums strip"
       ],
       "observability_impact": "",
       "full_plan_md": "",
