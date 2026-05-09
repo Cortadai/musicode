@@ -19,7 +19,6 @@ export default function NovaShell() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
   const { visible: deckVisible } = useDeckStore();
   const scopeMap = useMemo(() => buildScopeMap(), []);
   const particles = useParticlesEnabled();
@@ -49,21 +48,15 @@ export default function NovaShell() {
   }, [searchOpen]);
 
   useEffect(() => {
-    if (!searchOpen) return;
-    function handleClickOutside(e: MouseEvent) {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
-        setSearchOpen(false);
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(v => !v);
       }
+      if (e.key === 'Escape' && searchOpen) setSearchOpen(false);
     }
-    function handleEscape(e: KeyboardEvent) {
-      if (e.key === 'Escape') setSearchOpen(false);
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [searchOpen]);
 
   async function handleLogout() {
@@ -85,12 +78,42 @@ export default function NovaShell() {
         <div className="mb-3">
           <Music className="w-5 h-5" style={{ color: 'var(--mc-accent-primary)' }} />
         </div>
-        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" title="GitHub" className="mb-3 mc-interactive-muted transition-colors">
+        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" title="GitHub" className="mc-interactive-muted transition-colors">
           <GitHubIcon className="w-4 h-4" />
         </a>
 
-        <nav className="flex-1 flex flex-col items-center justify-center gap-1">
-          {navItems.map(({ to, icon: Icon, label, end }) => (
+        <div className="w-6 my-2" style={{ borderBottom: '1px solid var(--mc-sidebar-border)' }} />
+
+        <nav className="flex-1 flex flex-col items-center gap-1">
+          {/* Home */}
+          <NavLink
+            to="/"
+            end
+            title="Home"
+            className={({ isActive }) =>
+              `flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
+                isActive ? 'mc-nav-active' : 'mc-nav-item'
+              }`
+            }
+            style={({ isActive }) => isActive ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
+          >
+            <Home className="w-4 h-4" />
+          </NavLink>
+
+          {/* Search — Spotlight style */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            title="Search (Ctrl+K)"
+            className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
+              searchOpen ? 'mc-nav-active' : 'mc-nav-item'
+            }`}
+            style={searchOpen ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
+          {/* Rest of nav items */}
+          {navItems.slice(1).map(({ to, icon: Icon, label, end }) => (
             <NavLink
               key={to}
               to={to}
@@ -98,9 +121,7 @@ export default function NovaShell() {
               title={label}
               className={({ isActive }) =>
                 `flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
-                  isActive
-                    ? 'mc-nav-active'
-                    : 'mc-nav-item'
+                  isActive ? 'mc-nav-active' : 'mc-nav-item'
                 }`
               }
               style={({ isActive }) => isActive ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
@@ -108,41 +129,6 @@ export default function NovaShell() {
               <Icon className="w-4 h-4" />
             </NavLink>
           ))}
-
-          {/* Search with floating input */}
-          <div className="relative" ref={searchContainerRef}>
-            <button
-              onClick={() => setSearchOpen(v => !v)}
-              title="Search"
-              className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
-                searchOpen ? 'mc-nav-active' : 'mc-nav-item'
-              }`}
-              style={searchOpen ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
-            >
-              <Search className="w-4 h-4" />
-            </button>
-            {searchOpen && (
-              <form
-                onSubmit={handleSearchSubmit}
-                className="absolute left-full top-0 ml-2 z-50 flex items-center rounded-lg shadow-lg overflow-hidden"
-                style={{
-                  backgroundColor: 'var(--mc-bg-surface)',
-                  border: '1px solid var(--mc-border-default)',
-                }}
-              >
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search..."
-                  className="w-56 px-3 py-2 text-sm bg-transparent outline-none selectable"
-                  style={{ color: 'var(--mc-text-primary)' }}
-                />
-              </form>
-            )}
-          </div>
-
         </nav>
 
         <button
@@ -165,6 +151,44 @@ export default function NovaShell() {
         </div>
         <PlayerBar />
       </div>
+
+      {searchOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
+          onClick={e => { if (e.target === e.currentTarget) setSearchOpen(false); }}
+        >
+          <form
+            onSubmit={handleSearchSubmit}
+            className="w-full max-w-lg rounded-xl shadow-2xl overflow-hidden outline-none"
+            style={{
+              backgroundColor: 'var(--mc-bg-surface)',
+            }}
+          >
+            <div className="flex items-center px-4 gap-3">
+              <Search className="w-5 h-5 shrink-0" style={{ color: 'var(--mc-text-muted)' }} />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search artists, albums, tracks…"
+                className="flex-1 py-4 text-base bg-transparent outline-none selectable"
+                style={{ color: 'var(--mc-text-primary)', outline: 'none' }}
+              />
+              <kbd
+                className="text-xs px-1.5 py-0.5 rounded"
+                style={{
+                  color: 'var(--mc-text-muted)',
+                  backgroundColor: 'var(--mc-bg-elevated)',
+                }}
+              >
+                ESC
+              </kbd>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
