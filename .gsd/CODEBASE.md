@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-08T19:28:30Z | Files: 322 | Described: 0/322
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-08T19:28:30Z","fingerprint":"f3dce8e6084e5e91853afc785fbb35d5bb88b9a3","fileCount":322,"truncated":false} -->
+Generated: 2026-05-09T09:35:57Z | Files: 322 | Described: 0/322
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-09T09:35:57Z","fingerprint":"2ee792d294e41bc7636d0e6ed2fd50fc9e3df419","fileCount":322,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -304,7 +304,7 @@ Generated: 2026-05-08T19:28:30Z | Files: 322 | Described: 0/322
 ### musicode-ui/src/components/layout/shells/
 - `musicode-ui/src/components/layout/shells/EvolvedShell.tsx`
 - `musicode-ui/src/components/layout/shells/MinimalShell.tsx`
-- `musicode-ui/src/components/layout/shells/NovatouchShell.tsx`
+- `musicode-ui/src/components/layout/shells/NovaShell.tsx`
 
 ### musicode-ui/src/components/library/
 - `musicode-ui/src/components/library/AlbumCard.tsx`
@@ -363,7 +363,7 @@ Generated: 2026-05-08T19:28:30Z | Files: 322 | Described: 0/322
 ### musicode-ui/src/themes/tokens/
 - `musicode-ui/src/themes/tokens/evolved.ts`
 - `musicode-ui/src/themes/tokens/minimal.ts`
-- `musicode-ui/src/themes/tokens/novatouch.ts`
+- `musicode-ui/src/themes/tokens/nova.ts`
 
 ### musicode-ui/src/types/
 - `musicode-ui/src/types/index.ts`

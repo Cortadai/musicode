@@ -139,10 +139,15 @@ function TracksTab() {
     return () => observer.disconnect();
   }, [handleObserver]);
 
-  const allTracks: Track[] = useMemo(
-    () => data?.pages.flatMap((p) => p.content) ?? [],
-    [data?.pages]
-  );
+  const allTracks: Track[] = useMemo(() => {
+    const tracks = data?.pages.flatMap((p) => p.content) ?? [];
+    const seen = new Set<number>();
+    return tracks.filter(t => {
+      if (seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
+  }, [data?.pages]);
 
   const handlePlay = useCallback(
     (track: Track, index: number) => playTrack(track, allTracks, index),
@@ -246,10 +251,15 @@ function FavoritesTab() {
     return () => observer.disconnect();
   }, [handleObserver]);
 
-  const allTracks: Track[] = useMemo(
-    () => data?.pages.flatMap((p) => p.content) ?? [],
-    [data?.pages]
-  );
+  const allTracks: Track[] = useMemo(() => {
+    const tracks = data?.pages.flatMap((p) => p.content) ?? [];
+    const seen = new Set<number>();
+    return tracks.filter(t => {
+      if (seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
+  }, [data?.pages]);
 
   const handlePlay = useCallback(
     (track: Track, index: number) => playTrack(track, allTracks, index),

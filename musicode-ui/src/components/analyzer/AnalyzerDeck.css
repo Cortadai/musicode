@@ -50,7 +50,7 @@
   left: 50%;
   width: 1px;
   transform: translateX(-50%);
-  background: rgba(72, 52, 212, 0.25);
+  background: color-mix(in srgb, var(--mc-deck-handle) 25%, transparent);
   transition: background 0.15s;
 }
 
@@ -62,26 +62,26 @@
   width: 5px;
   height: 24px;
   border-radius: 3px;
-  background: rgba(72, 52, 212, 0.3);
+  background: color-mix(in srgb, var(--mc-deck-handle) 30%, transparent);
   box-shadow:
-    inset 0  7px 0 -2px rgba(72, 52, 212, 0.7),
-    inset 0  0px 0 -2px rgba(72, 52, 212, 0.7),
-    inset 0 -7px 0 -2px rgba(72, 52, 212, 0.7);
+    inset 0  7px 0 -2px color-mix(in srgb, var(--mc-deck-handle) 70%, transparent),
+    inset 0  0px 0 -2px color-mix(in srgb, var(--mc-deck-handle) 70%, transparent),
+    inset 0 -7px 0 -2px color-mix(in srgb, var(--mc-deck-handle) 70%, transparent);
   transition: background 0.15s, box-shadow 0.15s;
 }
 
 .analyzer-deck__splitter:hover::before,
 .analyzer-deck__splitter:active::before {
-  background: rgba(72, 52, 212, 0.5);
+  background: color-mix(in srgb, var(--mc-deck-handle) 50%, transparent);
 }
 
 .analyzer-deck__splitter:hover::after,
 .analyzer-deck__splitter:active::after {
-  background: rgba(72, 52, 212, 0.5);
+  background: color-mix(in srgb, var(--mc-deck-handle) 50%, transparent);
   box-shadow:
-    inset 0  7px 0 -2px #4834d4,
-    inset 0  0px 0 -2px #4834d4,
-    inset 0 -7px 0 -2px #4834d4;
+    inset 0  7px 0 -2px var(--mc-deck-handle),
+    inset 0  0px 0 -2px var(--mc-deck-handle),
+    inset 0 -7px 0 -2px var(--mc-deck-handle);
 }
 
 .analyzer-deck__label {

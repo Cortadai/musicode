@@ -601,22 +601,22 @@ body {
 }
 
 .play-album-btn--active {
-  --_glow: #4834d4;
-  background: #4834d4;
-  border-color: color-mix(in srgb, #4834d4 40%, transparent);
+  --_glow: var(--mc-accent-primary-hover);
+  background: var(--mc-accent-primary-hover);
+  border-color: color-mix(in srgb, var(--_glow) 40%, transparent);
   box-shadow:
-    0 0 12px color-mix(in srgb, #4834d4 40%, transparent),
-    0 2px 8px color-mix(in srgb, #4834d4 25%, transparent),
+    0 0 12px color-mix(in srgb, var(--_glow) 40%, transparent),
+    0 2px 8px color-mix(in srgb, var(--_glow) 25%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .play-album-btn--active:hover {
-  background: #5a45e0;
+  background: var(--mc-accent-primary);
   box-shadow:
-    0 0 20px color-mix(in srgb, #4834d4 55%, transparent),
-    0 4px 16px color-mix(in srgb, #4834d4 35%, transparent),
+    0 0 20px color-mix(in srgb, var(--_glow) 55%, transparent),
+    0 4px 16px color-mix(in srgb, var(--_glow) 35%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  border-color: color-mix(in srgb, #4834d4 60%, transparent);
+  border-color: color-mix(in srgb, var(--_glow) 60%, transparent);
 }
 
 /* === Retro Mode === */

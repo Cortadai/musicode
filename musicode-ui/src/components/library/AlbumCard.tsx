@@ -23,10 +23,10 @@ function AlbumCard({ album }: Props) {
       aria-label={`${album.title} by ${album.artist?.name ?? 'Unknown Artist'}`}
       className="group block rounded-2xl overflow-hidden transition-all duration-200 mc-nav-item hover:-translate-y-1 hover:shadow-lg"
       style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        backgroundColor: 'var(--mc-glass-background)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid var(--mc-glass-border)',
       }}
     >
       <div className="p-2.5 pb-0">

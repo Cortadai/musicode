@@ -6,6 +6,7 @@ import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconne
 import { getErrorMessage } from '../utils/errors';
 import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown } from 'lucide-react';
 import ThemeSelector from '../components/layout/ThemeSelector';
+import PaletteSelector from '../components/layout/PaletteSelector';
 import { useAuth } from '../context/AuthContext';
 import { useMarqueeSettings } from '../hooks/useMarqueePref';
 import { loadPreferences, savePreferences } from '../audio/audioPreferences';
@@ -143,12 +144,21 @@ export default function SettingsPage() {
       {/* Appearance */}
       <section className="mb-8">
         <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Appearance</h3>
-        <div className="flex items-center gap-4 px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
-          <div className="flex items-center gap-2">
-            <Palette className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
-            <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Theme</span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-4 px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+            <div className="flex items-center gap-2">
+              <Palette className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+              <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Shell</span>
+            </div>
+            <ThemeSelector />
           </div>
-          <ThemeSelector />
+          <div className="px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Palette className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+              <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Palette</span>
+            </div>
+            <PaletteSelector />
+          </div>
         </div>
       </section>
 

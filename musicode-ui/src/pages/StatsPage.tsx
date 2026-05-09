@@ -98,7 +98,7 @@ export default function StatsPage() {
 
       {/* Daily plays chart */}
       {history.data && history.data.length > 0 && (
-        <div className="rounded-xl p-4 mb-8" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+        <div className="rounded-xl p-4 mb-8" style={{ backgroundColor: 'var(--mc-bg-surface)', border: '1px solid var(--mc-border-subtle)' }}>
           <h3 className="text-sm font-medium mb-3" style={{ color: 'var(--mc-text-primary)' }}>Plays per Day</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={history.data.map(d => ({ ...d, date: d.date.substring(5) }))}>
@@ -134,7 +134,7 @@ export default function StatsPage() {
 
 function SummaryCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
-    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)', border: '1px solid var(--mc-border-subtle)' }}>
       <div className="flex items-center gap-2 mb-1">
         <Icon className="w-4 h-4" style={{ color: 'var(--mc-accent-primary)' }} />
         <span className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>{label}</span>
@@ -155,7 +155,7 @@ interface TopListProps<T extends { playCount: number }> {
 function TopList<T extends { playCount: number }>({ title, icon: Icon, items, nameKey, subKey }: TopListProps<T>) {
   if (!items || items.length === 0) {
     return (
-      <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+      <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)', border: '1px solid var(--mc-border-subtle)' }}>
         <h3 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--mc-text-primary)' }}>
           <Icon className="w-4 h-4" style={{ color: 'var(--mc-accent-primary)' }} /> {title}
         </h3>
@@ -165,7 +165,7 @@ function TopList<T extends { playCount: number }>({ title, icon: Icon, items, na
   }
 
   return (
-    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--mc-bg-surface)', border: '1px solid var(--mc-border-subtle)' }}>
       <h3 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--mc-text-primary)' }}>
         <Icon className="w-4 h-4" style={{ color: 'var(--mc-accent-primary)' }} /> {title}
       </h3>

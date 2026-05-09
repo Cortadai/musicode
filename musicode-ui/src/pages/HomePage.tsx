@@ -96,7 +96,7 @@ function CardSkeleton() {
   return (
     <div
       className="flex-shrink-0 w-40 rounded-xl overflow-hidden"
-      style={{ backgroundColor: 'var(--mc-bg-surface)' }}
+      style={{ backgroundColor: 'var(--mc-bg-surface)', border: '1px solid var(--mc-border-subtle)' }}
     >
       <div className="aspect-square mc-skeleton rounded-none" />
       <div className="p-2.5 space-y-2">
@@ -247,6 +247,7 @@ export default function HomePage() {
               className="flex-shrink-0 w-40 rounded-xl overflow-hidden mc-card-lift"
               style={{
                 backgroundColor: 'var(--mc-bg-surface)',
+                border: '1px solid var(--mc-border-subtle)',
                 scrollSnapAlign: 'start',
               }}
             >
@@ -291,6 +292,7 @@ export default function HomePage() {
               className="flex-shrink-0 w-40 rounded-xl overflow-hidden mc-card-lift"
               style={{
                 backgroundColor: 'var(--mc-bg-surface)',
+                border: '1px solid var(--mc-border-subtle)',
                 scrollSnapAlign: 'start',
               }}
             >

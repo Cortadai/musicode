@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-05-07T21:01:39.147Z",
+  "exported_at": "2026-05-09T09:46:28.126Z",
   "milestones": [
     {
       "id": "M001",
@@ -893,6 +893,68 @@
       ],
       "requirement_coverage": "No formal requirements defined for this milestone — it's a new feature driven by user vision. Decisions D040 (integration model) and D041 (editor simplification) govern scope.",
       "boundary_map_markdown": "### S01 → S02, S03, S04\nProduces:\n- `AnalyzerDeckDataSource` — shared wrapper around AnalyserNode providing FFT (configurable size) and time-domain Float32Arrays\n- `useFrameScheduler` hook — rAF loop gated on playback state, FPS cap, shared across all scopes\n- `AnalyzerDeck` container component with slot-based scope rendering\n- `ScopeRenderer` interface — `{ id, name, render(ctx, width, height, dataSource), dispose() }`\n\n### S05 → S06\nProduces:\n- `useDeckConfig` Zustand store — active scopes, order, proportions, persisted to localStorage\n- Edit panel UI with checkbox toggles, reorder arrows, resize handles\n- Theme token extensions for analyzer deck colors\n\n### S06 consumes all\nConsumes:\n- All 7 scope implementations from S01–S04\n- Deck editor and config from S05\n- Theme tokens from S05"
+    },
+    {
+      "id": "M021",
+      "title": "Shell × Palette — Orthogonal Theme System",
+      "status": "complete",
+      "depends_on": [],
+      "created_at": "2026-05-09T08:06:55.307Z",
+      "completed_at": "2026-05-09T09:46:28.070Z",
+      "vision": "Separate the current monolithic theme system into two independent axes: Shells (layout/structure) and Palettes (colors). Users pick a shell (evolved, nova, minimal) and a color palette (6 dark + 3 light) independently. This transforms 3 themes into 27 combinations, with each palette bringing a full look & feel change (backgrounds, accents, borders, status colors) without touching layout.",
+      "success_criteria": [
+        "Shell selector and palette selector work independently in Settings UI",
+        "All 9 palettes (6 dark, 3 light) render correctly across all 3 shells",
+        "Indigo dark is the default palette for all shells",
+        "Cobalt palette preserves nova's current blue-tinted look exactly",
+        "Light palettes invert background/text correctly without breaking readability",
+        "Persistence stores shell and palette separately in localStorage",
+        "Dynamic album-art palette system (useDynamicTheme) remains unaffected",
+        "Analyzer deck theme system remains independent"
+      ],
+      "key_risks": [
+        {
+          "risk": "Hardcoded colors in components bypass CSS vars",
+          "whyItMatters": "Palette switching only works if ALL color usage goes through tokens. Any hardcoded hex values will create visual inconsistencies."
+        },
+        {
+          "risk": "Light mode contrast and readability",
+          "whyItMatters": "Inverting a dark-first UI is tricky — shadows, borders, glass effects, and status colors all need careful tuning to avoid washed-out or unreadable states."
+        },
+        {
+          "risk": "Token split breaks existing visual parity",
+          "whyItMatters": "Extracting color tokens from shell tokens must preserve the exact current appearance for evolved+indigo and nova+cobalt combinations."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "Hardcoded colors bypass tokens",
+          "retireIn": "S01",
+          "whatWillBeProven": "Audit finds and replaces all hardcoded color values in components with CSS var references"
+        },
+        {
+          "riskOrUnknown": "Token split breaks appearance",
+          "retireIn": "S02",
+          "whatWillBeProven": "After splitting tokens, evolved+indigo and nova+cobalt look identical to current themes"
+        },
+        {
+          "riskOrUnknown": "Light mode readability",
+          "retireIn": "S04",
+          "whatWillBeProven": "All 3 light palettes pass visual review across all shells with no contrast issues"
+        }
+      ],
+      "verification_contract": "TypeScript compilation with no type errors after token restructuring",
+      "verification_integration": "",
+      "verification_operational": "localStorage migration works correctly for existing users",
+      "verification_uat": "Visual verification of all 27 shell×palette combinations in running app",
+      "definition_of_done": [
+        "All 27 shell×palette combinations visually verified in browser",
+        "No hardcoded colors remain in components — all use --mc-* CSS vars",
+        "Theme selector UI shows shell picker + palette picker separately",
+        "localStorage migration from old single-theme format works on first load"
+      ],
+      "requirement_coverage": "Not provided.",
+      "boundary_map_markdown": "Not provided."
     }
   ],
   "slices": [
@@ -2485,6 +2547,86 @@
       "integration_closure": "All scopes, editor, themes, and deck shell verified as a complete system. Existing NowPlaying visualizers unaffected.",
       "observability_impact": "Frame budget warnings active. Performance profiling results documented in summary.",
       "sequence": 6,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M021",
+      "id": "S01",
+      "title": "S01",
+      "status": "complete",
+      "risk": "medium",
+      "depends": [],
+      "demo": "Toggle between Indigo and Cobalt palettes on evolved shell — backgrounds and accents change, layout stays fixed.",
+      "created_at": "2026-05-09T08:08:59.334Z",
+      "completed_at": "2026-05-09T09:05:07.168Z",
+      "full_summary_md": "---\nid: S01\nparent: M021\nmilestone: M021\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - [\"musicode-ui/src/themes/types.ts\", \"musicode-ui/src/themes/palettes/indigo.ts\", \"musicode-ui/src/themes/palettes/cobalt.ts\", \"musicode-ui/src/themes/tokens/evolved.ts\", \"musicode-ui/src/themes/tokens/nova.ts\", \"musicode-ui/src/themes/tokens/minimal.ts\", \"musicode-ui/src/themes/ThemeProvider.tsx\", \"musicode-ui/src/themes/index.ts\"]\nkey_decisions:\n  - (none)\npatterns_established:\n  - [\"Shell tokens export ShellTokens type (structural only), palette tokens export PaletteTokens type (colors only)\", \"ThemeProvider composes shell × palette at runtime via CSS custom properties\", \"Palette selected via localStorage key 'musicode-palette' with fallback to 'indigo'\"]\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-05-09T09:05:07.169Z\nblocker_discovered: false\n---\n\n# S01: Token Architecture — Split Shell vs Palette\n\n**Split monolithic theme tokens into orthogonal Shell (layout) × Palette (colors) axes**\n\n## What Happened\n\nRefactored the theme system from 3 monolithic theme files (each containing both layout and color tokens) into a two-axis architecture. Shell tokens (evolved, nova, minimal) now contain only structural properties (layout, radius, spacing, typography, glass structure). Palette tokens (indigo, cobalt) contain only colors (backgrounds, surfaces, borders, text, accents). ThemeProvider composes them at runtime, enabling any shell × palette combination. This is the foundation for S02–S04.\n\n## Verification\n\nUser confirmed both Indigo and Cobalt palettes apply correctly across all 3 shells. TypeScript compiles clean.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S01: Token Architecture — Split Shell vs Palette — UAT\n\n**Milestone:** M021\n**Written:** 2026-05-09T09:05:07.169Z\n\n## UAT — S01: Token Architecture\n\n### Preconditions\n- Dev server running, app loaded\n\n### Tests\n\n| # | Step | Expected | Result |\n|---|------|----------|--------|\n| 1 | Load app with default palette | App renders with Indigo palette colors | PASS |\n| 2 | Set localStorage `musicode-palette` to `cobalt`, reload | All 3 shells show Cobalt blue-tinted backgrounds | PASS |\n| 3 | Switch shell (evolved → nova → minimal) with Cobalt | Each shell maintains its layout, Cobalt colors persist | PASS |\n| 4 | Set palette back to `indigo`, reload | Original Indigo colors restored across all shells | PASS |\n| 5 | Run `npm run build` | Clean compilation, no type errors | PASS |\n",
+      "goal": "Split monolithic theme tokens into Shell (layout/structure) + Palette (colors) axes. ThemeProvider composes both at runtime. Users can toggle between Indigo and Cobalt palettes on any shell — backgrounds and accents change, layout stays fixed.",
+      "success_criteria": "1. ShellTokens (7: fonts, radii, glassBlur) and PaletteTokens (33: all colors) are separate types. 2. Indigo and Cobalt palette files exist with correct color values. 3. Shell files contain only structural tokens. 4. ThemeProvider composes shell+palette and applies merged CSS vars. 5. Switching palette changes colors without affecting layout. 6. Both preferences persist independently in localStorage.",
+      "proof_level": "integration — real runtime in browser",
+      "integration_closure": "Upstream: existing ThemeTokens, ThemeProvider, shell token files. New wiring: ThemeProvider composes ShellConfig + PaletteConfig into merged tokens. After this slice: palette selector UI not yet built (S04), but palette can be toggled programmatically or via temporary dev toggle.",
+      "observability_impact": "Not provided.",
+      "sequence": 1,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M021",
+      "id": "S02",
+      "title": "S02",
+      "status": "complete",
+      "risk": "low",
+      "depends": [],
+      "demo": "Cycle through all 6 dark palettes on any shell — each has a distinct, cohesive look.",
+      "created_at": "2026-05-09T08:08:59.334Z",
+      "completed_at": "2026-05-09T09:05:44.582Z",
+      "full_summary_md": "---\nid: S02\nparent: M021\nmilestone: M021\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - [\"musicode-ui/src/themes/palettes/crimson.ts\", \"musicode-ui/src/themes/palettes/emerald.ts\", \"musicode-ui/src/themes/palettes/amber.ts\", \"musicode-ui/src/themes/palettes/cyan.ts\", \"musicode-ui/src/themes/index.ts\"]\nkey_decisions:\n  - [\"Crimson accent softened from #ef4444 to #e06b7d — user found pure red too aggressive\"]\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-05-09T09:05:44.583Z\nblocker_discovered: false\n---\n\n# S02: Dark Palettes — Crimson, Emerald, Amber, Cyan\n\n**Added 4 dark palettes with tinted backgrounds, bringing total dark options to 6**\n\n## What Happened\n\nCreated 4 new dark palettes, each with distinct personality: Crimson (warm rose tones, softened from aggressive red per user feedback), Emerald (green-tinted dark), Amber (warm browns inspired by Astra Studio), Cyan (cold slate blue-gray). All registered in the palette map and verified by user across all shells.\n\n## Verification\n\nUser tested all 4 palettes via localStorage switching. Crimson adjusted after feedback. All confirmed working.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S02: Dark Palettes — Crimson, Emerald, Amber, Cyan — UAT\n\n**Milestone:** M021\n**Written:** 2026-05-09T09:05:44.583Z\n\n## UAT — S02: Dark Palettes\n\n### Tests\n\n| # | Step | Expected | Result |\n|---|------|----------|--------|\n| 1 | Set palette to `crimson`, reload | Warm rose-tinted backgrounds, #e06b7d accent | PASS |\n| 2 | Set palette to `emerald`, reload | Green-tinted dark backgrounds, green accent | PASS |\n| 3 | Set palette to `amber`, reload | Warm brown backgrounds, amber/orange accent | PASS |\n| 4 | Set palette to `cyan`, reload | Cold slate backgrounds, sky blue accent | PASS |\n| 5 | Switch shells with each palette | Layout changes, colors persist | PASS |\n",
+      "goal": "Add 4 dark palettes: Crimson, Emerald, Amber, Cyan — each with tinted backgrounds and matching accent colors",
+      "success_criteria": "Not provided.",
+      "proof_level": "Not provided.",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
+      "sequence": 2,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M021",
+      "id": "S03",
+      "title": "S03",
+      "status": "complete",
+      "risk": "high",
+      "depends": [],
+      "demo": "Switch from Indigo dark to Daylight light on evolved shell — full light-mode experience.",
+      "created_at": "2026-05-09T08:08:59.334Z",
+      "completed_at": "2026-05-09T09:06:31.067Z",
+      "full_summary_md": "---\nid: S03\nparent: M021\nmilestone: M021\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - [\"musicode-ui/src/themes/palettes/daylight.ts\", \"musicode-ui/src/themes/palettes/sunrise.ts\", \"musicode-ui/src/themes/palettes/frost.ts\", \"musicode-ui/src/components/library/AlbumCard.tsx\", \"musicode-ui/src/components/library/ArtistCard.tsx\", \"musicode-ui/src/pages/HomePage.tsx\", \"musicode-ui/src/pages/StatsPage.tsx\"]\nkey_decisions:\n  - [\"Cards use CSS custom properties (--mc-glass-background, --mc-border-subtle) instead of hardcoded rgba — enables palette-aware styling\"]\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-05-09T09:06:31.068Z\nblocker_discovered: false\n---\n\n# S03: Light Palettes — Daylight, Sunrise, Frost\n\n**Added 3 light palettes and fixed card camouflage on light backgrounds**\n\n## What Happened\n\nCreated 3 light palettes with distinct personalities: Daylight (clean neutral), Sunrise (warm cream), Frost (cold blue-gray). Discovered and fixed a cross-cutting issue where cards used hardcoded dark-only glass values that made them invisible on light backgrounds. Replaced with CSS custom properties and added border-subtle for definition. Total palette count: 9 (6 dark + 3 light).\n\n## Verification\n\nUser tested all 3 light palettes and confirmed cards are well-defined. Dark palettes verified unaffected.\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S03: Light Palettes — Daylight, Sunrise, Frost — UAT\n\n**Milestone:** M021\n**Written:** 2026-05-09T09:06:31.068Z\n\n## UAT — S03: Light Palettes\n\n### Tests\n\n| # | Step | Expected | Result |\n|---|------|----------|--------|\n| 1 | Set palette to `daylight`, reload | White/zinc backgrounds, dark text, indigo accent | PASS |\n| 2 | Set palette to `sunrise`, reload | Cream backgrounds, dark text, amber accent | PASS |\n| 3 | Set palette to `frost`, reload | Slate blue-gray backgrounds, dark text, sky accent | PASS |\n| 4 | Check album/artist cards on light palettes | Cards have visible borders, not camouflaged | PASS |\n| 5 | Check HomePage/StatsPage cards on light | Cards have border-subtle definition | PASS |\n| 6 | Switch back to dark palette | Dark palettes still look correct, borders minimal | PASS |\n",
+      "goal": "Add 3 light palettes (Daylight, Sunrise, Frost) and fix card visibility on light backgrounds",
+      "success_criteria": "Not provided.",
+      "proof_level": "Not provided.",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
+      "sequence": 3,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M021",
+      "id": "S04",
+      "title": "S04",
+      "status": "complete",
+      "risk": "low",
+      "depends": [],
+      "demo": "Open Settings, pick a shell, pick a palette — both persist independently after page reload.",
+      "created_at": "2026-05-09T08:08:59.335Z",
+      "completed_at": "2026-05-09T09:45:56.810Z",
+      "full_summary_md": "---\nid: S04\nparent: M021\nmilestone: M021\nprovides:\n  - (none)\nrequires:\n  []\naffects:\n  []\nkey_files:\n  - [\"musicode-ui/src/components/layout/PaletteSelector.tsx\", \"musicode-ui/src/pages/SettingsPage.tsx\", \"musicode-ui/src/themes/ThemeProvider.tsx\", \"musicode-ui/src/themes/types.ts\", \"musicode-ui/src/themes/index.ts\", \"musicode-ui/src/components/analyzer/AnalyzerDeck.css\"]\nkey_decisions:\n  - [\"Renamed Cobalt→Indigo and Indigo→Zinc for semantic accuracy\", \"Added optional swatch field to PaletteConfig for selector color override\", \"Zinc set as default palette\", \"Deck handle uses hardcoded #4834d4 for Indigo, accent-derived for others\"]\npatterns_established:\n  - (none)\nobservability_surfaces:\n  - none\ndrill_down_paths:\n  []\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-05-09T09:45:56.811Z\nblocker_discovered: false\n---\n\n# S04: Palette Selector UI + Persistence\n\n**Palette selector with visual swatches, persistence, and themed UI elements (play button, deck handle)**\n\n## What Happened\n\nBuilt and integrated PaletteSelector component with grouped dark/light swatches into SettingsPage. Renamed Cobalt→Indigo and Indigo→Zinc for clarity. Added custom swatch support to differentiate Zinc (gray) from Indigo (purple) in the selector. Made play button and analyzer deck handle colors theme-aware. Set Zinc as default palette. Verified full matrix of shell × palette combinations with persistence.\n\n## Verification\n\nAll 9 palettes selectable in Settings, persistence confirmed across reload, play button and deck handle adapt to palette, no visual regressions across shell × palette combos\n\n## Requirements Advanced\n\nNone.\n\n## Requirements Validated\n\nNone.\n\n## New Requirements Surfaced\n\nNone.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nNone.\n\n## Known Limitations\n\nNone.\n\n## Follow-ups\n\nNone.\n\n## Files Created/Modified\n\nNone.\n",
+      "full_uat_md": "# S04: Palette Selector UI + Persistence — UAT\n\n**Milestone:** M021\n**Written:** 2026-05-09T09:45:56.811Z\n\n## UAT: S04 — Palette Selector UI + Persistence\\n\\n### Test Cases\\n\\n- [x] Open Settings → Appearance section shows Palette Selector with 9 swatches\\n- [x] Swatches grouped into Dark (6) and Light (3) sections\\n- [x] Zinc and Indigo show visually distinct swatches (gray vs purple)\\n- [x] Clicking a swatch immediately changes the palette\\n- [x] Active palette highlighted in selector\\n- [x] Selection persists after page reload\\n- [x] Play button color adapts to selected palette accent\\n- [x] Deck handle color adapts to palette (hardcoded #4834d4 for Indigo)\\n- [x] Zinc is the default palette for new users\\n- [x] Shell and palette selections are independent\n",
+      "goal": "Add a Palette Selector UI in Settings alongside the existing Shell selector, with visual swatches and proper persistence",
+      "success_criteria": "User can select any of the 9 palettes from Settings UI, selection persists across reloads, current palette is visually indicated",
+      "proof_level": "integration",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
+      "sequence": 4,
       "replan_triggered_at": null
     }
   ],
@@ -9516,6 +9658,478 @@
       "observability_impact": "",
       "full_plan_md": "",
       "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "Defined ShellTokens, PaletteTokens, and PaletteName types",
+      "status": "complete",
+      "one_liner": "Defined ShellTokens, PaletteTokens, and PaletteName types",
+      "narrative": "Split the monolithic ThemeTokens type into two orthogonal axes: ShellTokens (layout, radius, spacing, typography) and PaletteTokens (colors only). Added PaletteName union type with indigo and cobalt as initial palettes. Types live in themes/types.ts.",
+      "verification_result": "TypeScript compiles clean, types consumed by ThemeProvider and all shell token files",
+      "duration": "",
+      "completed_at": "2026-05-09T09:04:33.346Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/themes/types.ts"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T01\nparent: S01\nmilestone: M021\nkey_files:\n  - musicode-ui/src/themes/types.ts\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-05-09T09:04:33.345Z\nblocker_discovered: false\n---\n\n# T01: Defined ShellTokens, PaletteTokens, and PaletteName types\n\n**Defined ShellTokens, PaletteTokens, and PaletteName types**\n\n## What Happened\n\nSplit the monolithic ThemeTokens type into two orthogonal axes: ShellTokens (layout, radius, spacing, typography) and PaletteTokens (colors only). Added PaletteName union type with indigo and cobalt as initial palettes. Types live in themes/types.ts.\n\n## Verification\n\nTypeScript compiles clean, types consumed by ThemeProvider and all shell token files\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/themes/types.ts`\n",
+      "description": "Split ThemeTokens interface into ShellTokens (fontBody, fontMono, radiusSm-Xl, glassBlur = 7 tokens) and PaletteTokens (33 color tokens). Add PaletteName type union. Update ThemeConfig to reference ShellConfig + palette separately. Keep ThemeTokens as the merged intersection for CSS var application.",
+      "estimate": "20m",
+      "files": [
+        "musicode-ui/src/themes/types.ts"
+      ],
+      "verify": "TypeScript compiles with no errors: cd musicode-ui && npx tsc --noEmit",
+      "inputs": [
+        "musicode-ui/src/themes/types.ts"
+      ],
+      "expected_output": [
+        "musicode-ui/src/themes/types.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "Created Indigo and Cobalt palette files",
+      "status": "complete",
+      "one_liner": "Created Indigo and Cobalt palette files",
+      "narrative": "Extracted color tokens from the monolithic theme files into standalone palette files under themes/palettes/. Each palette defines background, surface, border, text, accent, and glass tokens. Indigo is the default dark palette, Cobalt provides blue-tinted backgrounds.",
+      "verification_result": "Both palettes import correctly, TypeScript compiles clean",
+      "duration": "",
+      "completed_at": "2026-05-09T09:04:36.549Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/themes/palettes/indigo.ts",
+        "musicode-ui/src/themes/palettes/cobalt.ts"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T02\nparent: S01\nmilestone: M021\nkey_files:\n  - musicode-ui/src/themes/palettes/indigo.ts\n  - musicode-ui/src/themes/palettes/cobalt.ts\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-05-09T09:04:36.549Z\nblocker_discovered: false\n---\n\n# T02: Created Indigo and Cobalt palette files\n\n**Created Indigo and Cobalt palette files**\n\n## What Happened\n\nExtracted color tokens from the monolithic theme files into standalone palette files under themes/palettes/. Each palette defines background, surface, border, text, accent, and glass tokens. Indigo is the default dark palette, Cobalt provides blue-tinted backgrounds.\n\n## Verification\n\nBoth palettes import correctly, TypeScript compiles clean\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/themes/palettes/indigo.ts`\n- `musicode-ui/src/themes/palettes/cobalt.ts`\n",
+      "description": "Create palettes/ directory with indigo.ts (color tokens from evolved) and cobalt.ts (color tokens from nova). Create palettes/index.ts exporting palette registry. Indigo is the default palette.",
+      "estimate": "25m",
+      "files": [
+        "musicode-ui/src/themes/palettes/indigo.ts",
+        "musicode-ui/src/themes/palettes/cobalt.ts",
+        "musicode-ui/src/themes/palettes/index.ts"
+      ],
+      "verify": "TypeScript compiles: cd musicode-ui && npx tsc --noEmit",
+      "inputs": [
+        "musicode-ui/src/themes/types.ts",
+        "musicode-ui/src/themes/tokens/evolved.ts",
+        "musicode-ui/src/themes/tokens/nova.ts"
+      ],
+      "expected_output": [
+        "musicode-ui/src/themes/palettes/indigo.ts",
+        "musicode-ui/src/themes/palettes/cobalt.ts",
+        "musicode-ui/src/themes/palettes/index.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "Refactored shell token files to structural-only tokens",
+      "status": "complete",
+      "one_liner": "Refactored shell token files to structural-only tokens",
+      "narrative": "Removed all color tokens from evolved.ts, nova.ts, and minimal.ts shell files. Each now exports only ShellTokens: layout, radius, spacing, typography, glassmorphism structure (blur, opacity). Colors come exclusively from the palette axis.",
+      "verification_result": "Shell files export ShellTokens type, no color properties remain, TypeScript compiles clean",
+      "duration": "",
+      "completed_at": "2026-05-09T09:04:41.509Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/themes/tokens/evolved.ts",
+        "musicode-ui/src/themes/tokens/nova.ts",
+        "musicode-ui/src/themes/tokens/minimal.ts"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T03\nparent: S01\nmilestone: M021\nkey_files:\n  - musicode-ui/src/themes/tokens/evolved.ts\n  - musicode-ui/src/themes/tokens/nova.ts\n  - musicode-ui/src/themes/tokens/minimal.ts\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-05-09T09:04:41.508Z\nblocker_discovered: false\n---\n\n# T03: Refactored shell token files to structural-only tokens\n\n**Refactored shell token files to structural-only tokens**\n\n## What Happened\n\nRemoved all color tokens from evolved.ts, nova.ts, and minimal.ts shell files. Each now exports only ShellTokens: layout, radius, spacing, typography, glassmorphism structure (blur, opacity). Colors come exclusively from the palette axis.\n\n## Verification\n\nShell files export ShellTokens type, no color properties remain, TypeScript compiles clean\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/themes/tokens/evolved.ts`\n- `musicode-ui/src/themes/tokens/nova.ts`\n- `musicode-ui/src/themes/tokens/minimal.ts`\n",
+      "description": "Strip all 33 color tokens from evolved.ts, nova.ts, minimal.ts — keep only name, label, layout, and 7 structural tokens (fonts, radii, glassBlur). Update ThemeConfig type reference. Shell files export ShellConfig instead of ThemeConfig.",
+      "estimate": "20m",
+      "files": [
+        "musicode-ui/src/themes/tokens/evolved.ts",
+        "musicode-ui/src/themes/tokens/nova.ts",
+        "musicode-ui/src/themes/tokens/minimal.ts"
+      ],
+      "verify": "TypeScript compiles: cd musicode-ui && npx tsc --noEmit",
+      "inputs": [
+        "musicode-ui/src/themes/types.ts",
+        "musicode-ui/src/themes/tokens/evolved.ts",
+        "musicode-ui/src/themes/tokens/nova.ts",
+        "musicode-ui/src/themes/tokens/minimal.ts"
+      ],
+      "expected_output": [
+        "musicode-ui/src/themes/tokens/evolved.ts",
+        "musicode-ui/src/themes/tokens/nova.ts",
+        "musicode-ui/src/themes/tokens/minimal.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S01",
+      "id": "T04",
+      "title": "Updated ThemeProvider to compose shell × palette at runtime",
+      "status": "complete",
+      "one_liner": "Updated ThemeProvider to compose shell × palette at runtime",
+      "narrative": "ThemeProvider now reads both shell name and palette name, loads the corresponding ShellTokens and PaletteTokens, and merges them into the final CSS custom properties injected into :root. Palette is read from localStorage key 'musicode-palette' with fallback to 'indigo'.",
+      "verification_result": "Runtime composition works — changing palette via localStorage and reloading applies new colors to all 3 shells",
+      "duration": "",
+      "completed_at": "2026-05-09T09:04:46.025Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/themes/ThemeProvider.tsx",
+        "musicode-ui/src/themes/index.ts"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T04\nparent: S01\nmilestone: M021\nkey_files:\n  - musicode-ui/src/themes/ThemeProvider.tsx\n  - musicode-ui/src/themes/index.ts\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-05-09T09:04:46.025Z\nblocker_discovered: false\n---\n\n# T04: Updated ThemeProvider to compose shell × palette at runtime\n\n**Updated ThemeProvider to compose shell × palette at runtime**\n\n## What Happened\n\nThemeProvider now reads both shell name and palette name, loads the corresponding ShellTokens and PaletteTokens, and merges them into the final CSS custom properties injected into :root. Palette is read from localStorage key 'musicode-palette' with fallback to 'indigo'.\n\n## Verification\n\nRuntime composition works — changing palette via localStorage and reloading applies new colors to all 3 shells\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/themes/ThemeProvider.tsx`\n- `musicode-ui/src/themes/index.ts`\n",
+      "description": "ThemeProvider manages two state axes: shell (ThemeName) and palette (PaletteName). Merges ShellTokens + PaletteTokens into ThemeTokens before applying CSS vars. Dual localStorage keys: musicode-shell and musicode-palette. Backward compat: migrate old musicode-theme key to musicode-shell. Export palette state and setter in ThemeContextValue. Update useTheme hook.",
+      "estimate": "30m",
+      "files": [
+        "musicode-ui/src/themes/ThemeProvider.tsx",
+        "musicode-ui/src/themes/useTheme.ts",
+        "musicode-ui/src/themes/index.ts"
+      ],
+      "verify": "TypeScript compiles and dev server loads without console errors: cd musicode-ui && npx tsc --noEmit",
+      "inputs": [
+        "musicode-ui/src/themes/ThemeProvider.tsx",
+        "musicode-ui/src/themes/useTheme.ts",
+        "musicode-ui/src/themes/types.ts",
+        "musicode-ui/src/themes/palettes/index.ts"
+      ],
+      "expected_output": [
+        "musicode-ui/src/themes/ThemeProvider.tsx",
+        "musicode-ui/src/themes/useTheme.ts",
+        "musicode-ui/src/themes/index.ts"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S01",
+      "id": "T05",
+      "title": "Fixed consumers and verified shell × palette in browser",
+      "status": "complete",
+      "one_liner": "Fixed consumers and verified shell × palette in browser",
+      "narrative": "Updated AlbumCard, ArtistCard, and other components to use CSS custom properties from the palette (--mc-glass-background, --mc-glass-border) instead of hardcoded rgba values. Verified all 3 shells render correctly with both Indigo and Cobalt palettes in the browser.",
+      "verification_result": "User confirmed Indigo and Cobalt both apply correctly across all 3 shells",
+      "duration": "",
+      "completed_at": "2026-05-09T09:04:50.891Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/library/AlbumCard.tsx",
+        "musicode-ui/src/components/library/ArtistCard.tsx"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T05\nparent: S01\nmilestone: M021\nkey_files:\n  - musicode-ui/src/components/library/AlbumCard.tsx\n  - musicode-ui/src/components/library/ArtistCard.tsx\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-05-09T09:04:50.891Z\nblocker_discovered: false\n---\n\n# T05: Fixed consumers and verified shell × palette in browser\n\n**Fixed consumers and verified shell × palette in browser**\n\n## What Happened\n\nUpdated AlbumCard, ArtistCard, and other components to use CSS custom properties from the palette (--mc-glass-background, --mc-glass-border) instead of hardcoded rgba values. Verified all 3 shells render correctly with both Indigo and Cobalt palettes in the browser.\n\n## Verification\n\nUser confirmed Indigo and Cobalt both apply correctly across all 3 shells\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/library/AlbumCard.tsx`\n- `musicode-ui/src/components/library/ArtistCard.tsx`\n",
+      "description": "Update ThemeSelector and any other consumers that reference old ThemeConfig shape. Verify in browser: load app with Indigo palette on evolved shell, switch to Cobalt via console (or temp UI), confirm backgrounds shift to cooler blue tint while layout stays. Test on all 3 shells.",
+      "estimate": "30m",
+      "files": [
+        "musicode-ui/src/components/layout/ThemeSelector.tsx",
+        "musicode-ui/src/pages/SettingsPage.tsx"
+      ],
+      "verify": "App loads on localhost:5173 with no console errors. Visual verification: Indigo and Cobalt produce different background colors on same shell.",
+      "inputs": [
+        "musicode-ui/src/themes/ThemeProvider.tsx",
+        "musicode-ui/src/components/layout/ThemeSelector.tsx"
+      ],
+      "expected_output": [
+        "musicode-ui/src/components/layout/ThemeSelector.tsx"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S02",
+      "id": "T01",
+      "title": "Created Crimson, Emerald, Amber, and Cyan dark palette files",
+      "status": "complete",
+      "one_liner": "Created Crimson, Emerald, Amber, and Cyan dark palette files",
+      "narrative": "Defined 4 new PaletteTokens under themes/palettes/. Each has tinted dark backgrounds (not neutral gray): Crimson uses warm rose tones, Emerald has green tints, Amber uses brown/warm tones inspired by Astra Studio, Cyan uses cold slate. Crimson accent was adjusted from aggressive #ef4444 to softer #e06b7d rose/coral per user feedback.",
+      "verification_result": "TypeScript compiles clean, all 4 palettes render in browser",
+      "duration": "",
+      "completed_at": "2026-05-09T09:05:29.369Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/themes/palettes/crimson.ts",
+        "musicode-ui/src/themes/palettes/emerald.ts",
+        "musicode-ui/src/themes/palettes/amber.ts",
+        "musicode-ui/src/themes/palettes/cyan.ts"
+      ],
+      "key_decisions": [
+        "Crimson accent softened from #ef4444 to #e06b7d after user feedback — too aggressive/blood-red"
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S02\nmilestone: M021\nkey_files:\n  - musicode-ui/src/themes/palettes/crimson.ts\n  - musicode-ui/src/themes/palettes/emerald.ts\n  - musicode-ui/src/themes/palettes/amber.ts\n  - musicode-ui/src/themes/palettes/cyan.ts\nkey_decisions:\n  - Crimson accent softened from #ef4444 to #e06b7d after user feedback — too aggressive/blood-red\nduration: \nverification_result: passed\ncompleted_at: 2026-05-09T09:05:29.369Z\nblocker_discovered: false\n---\n\n# T01: Created Crimson, Emerald, Amber, and Cyan dark palette files\n\n**Created Crimson, Emerald, Amber, and Cyan dark palette files**\n\n## What Happened\n\nDefined 4 new PaletteTokens under themes/palettes/. Each has tinted dark backgrounds (not neutral gray): Crimson uses warm rose tones, Emerald has green tints, Amber uses brown/warm tones inspired by Astra Studio, Cyan uses cold slate. Crimson accent was adjusted from aggressive #ef4444 to softer #e06b7d rose/coral per user feedback.\n\n## Verification\n\nTypeScript compiles clean, all 4 palettes render in browser\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/themes/palettes/crimson.ts`\n- `musicode-ui/src/themes/palettes/emerald.ts`\n- `musicode-ui/src/themes/palettes/amber.ts`\n- `musicode-ui/src/themes/palettes/cyan.ts`\n",
+      "description": "Define 4 new PaletteTokens files under themes/palettes/ with tinted dark backgrounds and accent colors for each palette",
+      "estimate": "30m",
+      "files": [
+        "musicode-ui/src/themes/palettes/crimson.ts",
+        "musicode-ui/src/themes/palettes/emerald.ts",
+        "musicode-ui/src/themes/palettes/amber.ts",
+        "musicode-ui/src/themes/palettes/cyan.ts"
+      ],
+      "verify": "TypeScript compiles, all 4 palettes render correctly in browser",
+      "inputs": [
+        "PaletteTokens type from types.ts",
+        "Indigo/Cobalt as reference"
+      ],
+      "expected_output": [
+        "4 palette files exporting PaletteTokens"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S02",
+      "id": "T02",
+      "title": "Registered all 4 dark palettes in the palette registry",
+      "status": "complete",
+      "one_liner": "Registered all 4 dark palettes in the palette registry",
+      "narrative": "Added crimson, emerald, amber, and cyan to the palette map in index.ts. Total dark palettes: 6 (indigo, cobalt, crimson, emerald, amber, cyan). User verified all 4 render correctly via localStorage switching.",
+      "verification_result": "User confirmed all 4 dark palettes look correct (crimson after color adjustment)",
+      "duration": "",
+      "completed_at": "2026-05-09T09:05:32.574Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/themes/index.ts"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T02\nparent: S02\nmilestone: M021\nkey_files:\n  - musicode-ui/src/themes/index.ts\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-05-09T09:05:32.574Z\nblocker_discovered: false\n---\n\n# T02: Registered all 4 dark palettes in the palette registry\n\n**Registered all 4 dark palettes in the palette registry**\n\n## What Happened\n\nAdded crimson, emerald, amber, and cyan to the palette map in index.ts. Total dark palettes: 6 (indigo, cobalt, crimson, emerald, amber, cyan). User verified all 4 render correctly via localStorage switching.\n\n## Verification\n\nUser confirmed all 4 dark palettes look correct (crimson after color adjustment)\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/themes/index.ts`\n",
+      "description": "Add all 4 palettes to the palette registry in index.ts, verify each renders correctly across all shells",
+      "estimate": "15m",
+      "files": [
+        "musicode-ui/src/themes/index.ts"
+      ],
+      "verify": "User confirms all 4 dark palettes look correct",
+      "inputs": [
+        "4 palette files from T01"
+      ],
+      "expected_output": [
+        "Updated palette registry with 6 total dark palettes"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S03",
+      "id": "T01",
+      "title": "Created Daylight, Sunrise, and Frost light palette files",
+      "status": "complete",
+      "one_liner": "Created Daylight, Sunrise, and Frost light palette files",
+      "narrative": "Defined 3 light palettes: Daylight (neutral white/zinc, indigo accent), Sunrise (warm cream backgrounds, amber/orange accent), Frost (cold slate blue-gray, sky blue accent). Each includes light-appropriate glass tokens with solid backgrounds and subtle dark borders instead of the white-transparency used in dark palettes.",
+      "verification_result": "TypeScript compiles, all 3 light palettes render in browser",
+      "duration": "",
+      "completed_at": "2026-05-09T09:06:06.886Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/themes/palettes/daylight.ts",
+        "musicode-ui/src/themes/palettes/sunrise.ts",
+        "musicode-ui/src/themes/palettes/frost.ts"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T01\nparent: S03\nmilestone: M021\nkey_files:\n  - musicode-ui/src/themes/palettes/daylight.ts\n  - musicode-ui/src/themes/palettes/sunrise.ts\n  - musicode-ui/src/themes/palettes/frost.ts\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-05-09T09:06:06.885Z\nblocker_discovered: false\n---\n\n# T01: Created Daylight, Sunrise, and Frost light palette files\n\n**Created Daylight, Sunrise, and Frost light palette files**\n\n## What Happened\n\nDefined 3 light palettes: Daylight (neutral white/zinc, indigo accent), Sunrise (warm cream backgrounds, amber/orange accent), Frost (cold slate blue-gray, sky blue accent). Each includes light-appropriate glass tokens with solid backgrounds and subtle dark borders instead of the white-transparency used in dark palettes.\n\n## Verification\n\nTypeScript compiles, all 3 light palettes render in browser\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/themes/palettes/daylight.ts`\n- `musicode-ui/src/themes/palettes/sunrise.ts`\n- `musicode-ui/src/themes/palettes/frost.ts`\n",
+      "description": "Define 3 light PaletteTokens with appropriate light backgrounds, dark text, and matching accents. Include light-aware glass tokens.",
+      "estimate": "30m",
+      "files": [
+        "musicode-ui/src/themes/palettes/daylight.ts",
+        "musicode-ui/src/themes/palettes/sunrise.ts",
+        "musicode-ui/src/themes/palettes/frost.ts"
+      ],
+      "verify": "TypeScript compiles, palettes render in browser",
+      "inputs": [
+        "PaletteTokens type",
+        "Dark palettes as reference"
+      ],
+      "expected_output": [
+        "3 light palette files"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S03",
+      "id": "T02",
+      "title": "Fixed card visibility on light backgrounds with CSS custom properties and border-subtle",
+      "status": "complete",
+      "one_liner": "Fixed card visibility on light backgrounds with CSS custom properties and border-subtle",
+      "narrative": "Replaced hardcoded rgba(255,255,255,0.05/0.08) glass values in AlbumCard and ArtistCard with var(--mc-glass-background) and var(--mc-glass-border). Added border: 1px solid var(--mc-border-subtle) to HomePage cards (recent plays, top albums) and StatsPage cards (SummaryCard, chart containers, TopList). On dark palettes the border is nearly invisible; on light palettes it provides clear card definition. User confirmed the fix after reviewing screenshots.",
+      "verification_result": "User confirmed cards are well-defined on all light palettes and dark palettes are unaffected",
+      "duration": "",
+      "completed_at": "2026-05-09T09:06:11.778Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/library/AlbumCard.tsx",
+        "musicode-ui/src/components/library/ArtistCard.tsx",
+        "musicode-ui/src/pages/HomePage.tsx",
+        "musicode-ui/src/pages/StatsPage.tsx"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T02\nparent: S03\nmilestone: M021\nkey_files:\n  - musicode-ui/src/components/library/AlbumCard.tsx\n  - musicode-ui/src/components/library/ArtistCard.tsx\n  - musicode-ui/src/pages/HomePage.tsx\n  - musicode-ui/src/pages/StatsPage.tsx\nkey_decisions:\n  - (none)\nduration: \nverification_result: passed\ncompleted_at: 2026-05-09T09:06:11.778Z\nblocker_discovered: false\n---\n\n# T02: Fixed card visibility on light backgrounds with CSS custom properties and border-subtle\n\n**Fixed card visibility on light backgrounds with CSS custom properties and border-subtle**\n\n## What Happened\n\nReplaced hardcoded rgba(255,255,255,0.05/0.08) glass values in AlbumCard and ArtistCard with var(--mc-glass-background) and var(--mc-glass-border). Added border: 1px solid var(--mc-border-subtle) to HomePage cards (recent plays, top albums) and StatsPage cards (SummaryCard, chart containers, TopList). On dark palettes the border is nearly invisible; on light palettes it provides clear card definition. User confirmed the fix after reviewing screenshots.\n\n## Verification\n\nUser confirmed cards are well-defined on all light palettes and dark palettes are unaffected\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `npm run build` | 0 | pass | 5000ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/library/AlbumCard.tsx`\n- `musicode-ui/src/components/library/ArtistCard.tsx`\n- `musicode-ui/src/pages/HomePage.tsx`\n- `musicode-ui/src/pages/StatsPage.tsx`\n",
+      "description": "Replace hardcoded rgba glass values in AlbumCard, ArtistCard, HomePage cards, and StatsPage cards with CSS custom properties from the palette. Add border-subtle token for card definition on light backgrounds.",
+      "estimate": "25m",
+      "files": [
+        "musicode-ui/src/components/library/AlbumCard.tsx",
+        "musicode-ui/src/components/library/ArtistCard.tsx",
+        "musicode-ui/src/pages/HomePage.tsx",
+        "musicode-ui/src/pages/StatsPage.tsx"
+      ],
+      "verify": "Cards visible and well-defined on all light palettes, dark palettes unaffected",
+      "inputs": [
+        "Light palettes from T01",
+        "User screenshots showing camouflage problem"
+      ],
+      "expected_output": [
+        "Cards with proper borders/backgrounds on light themes"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S04",
+      "id": "T01",
+      "title": "Built PaletteSelector component with color swatches grouped by dark/light",
+      "status": "complete",
+      "one_liner": "Built PaletteSelector component with color swatches grouped by dark/light",
+      "narrative": "Created PaletteSelector.tsx with visual swatches for all 9 palettes. Each swatch shows the palette's accent color (or custom swatch override). Palettes grouped into dark and light sections. Active palette highlighted. Uses useTheme().setPalette() for selection. Added optional `swatch` field to PaletteConfig type for palettes where the selector color differs from accentPrimary (e.g., Zinc uses gray swatch to differentiate from Indigo).",
+      "verification_result": "Component renders all palettes, clicking changes palette, active state visible in browser",
+      "duration": "",
+      "completed_at": "2026-05-09T09:45:20.898Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/components/layout/PaletteSelector.tsx",
+        "musicode-ui/src/themes/types.ts"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T01\nparent: S04\nmilestone: M021\nkey_files:\n  - musicode-ui/src/components/layout/PaletteSelector.tsx\n  - musicode-ui/src/themes/types.ts\nkey_decisions:\n  - (none)\nduration: \nverification_result: mixed\ncompleted_at: 2026-05-09T09:45:20.896Z\nblocker_discovered: false\n---\n\n# T01: Built PaletteSelector component with color swatches grouped by dark/light\n\n**Built PaletteSelector component with color swatches grouped by dark/light**\n\n## What Happened\n\nCreated PaletteSelector.tsx with visual swatches for all 9 palettes. Each swatch shows the palette's accent color (or custom swatch override). Palettes grouped into dark and light sections. Active palette highlighted. Uses useTheme().setPalette() for selection. Added optional `swatch` field to PaletteConfig type for palettes where the selector color differs from accentPrimary (e.g., Zinc uses gray swatch to differentiate from Indigo).\n\n## Verification\n\nComponent renders all palettes, clicking changes palette, active state visible in browser\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `Visual verification in browser — all 9 swatches render, click changes palette, active highlight works` | -1 | unknown (coerced from string) | 0ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/components/layout/PaletteSelector.tsx`\n- `musicode-ui/src/themes/types.ts`\n",
+      "description": "Create a PaletteSelector component that shows all 9 palettes as selectable swatches grouped by dark/light. Each swatch shows the palette's accent color and label. Uses useTheme().setPalette() for selection. Active palette highlighted.",
+      "estimate": "30m",
+      "files": [
+        "musicode-ui/src/components/layout/PaletteSelector.tsx"
+      ],
+      "verify": "Component renders all 9 palettes, clicking one changes the palette, active state visible",
+      "inputs": [
+        "palettes registry from palettes/index.ts",
+        "useTheme() hook with setPalette()"
+      ],
+      "expected_output": [
+        "PaletteSelector component with dark/light groups and color swatches"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S04",
+      "id": "T02",
+      "title": "Integrated PaletteSelector into SettingsPage Appearance section",
+      "status": "complete",
+      "one_liner": "Integrated PaletteSelector into SettingsPage Appearance section",
+      "narrative": "Added PaletteSelector to the Appearance section of SettingsPage below the existing shell selector. Palette selection persists via localStorage through ThemeProvider. Default palette changed to 'zinc'. Order set to zinc first, then indigo, then the rest.",
+      "verification_result": "Settings page shows both Shell and Palette selectors, palette changes persist on reload",
+      "duration": "",
+      "completed_at": "2026-05-09T09:45:25.308Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/pages/SettingsPage.tsx",
+        "musicode-ui/src/themes/ThemeProvider.tsx"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T02\nparent: S04\nmilestone: M021\nkey_files:\n  - musicode-ui/src/pages/SettingsPage.tsx\n  - musicode-ui/src/themes/ThemeProvider.tsx\nkey_decisions:\n  - (none)\nduration: \nverification_result: mixed\ncompleted_at: 2026-05-09T09:45:25.308Z\nblocker_discovered: false\n---\n\n# T02: Integrated PaletteSelector into SettingsPage Appearance section\n\n**Integrated PaletteSelector into SettingsPage Appearance section**\n\n## What Happened\n\nAdded PaletteSelector to the Appearance section of SettingsPage below the existing shell selector. Palette selection persists via localStorage through ThemeProvider. Default palette changed to 'zinc'. Order set to zinc first, then indigo, then the rest.\n\n## Verification\n\nSettings page shows both Shell and Palette selectors, palette changes persist on reload\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `Visual verification — SettingsPage shows palette selector, selection persists across page reload` | -1 | unknown (coerced from string) | 0ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/pages/SettingsPage.tsx`\n- `musicode-ui/src/themes/ThemeProvider.tsx`\n",
+      "description": "Add PaletteSelector to the Appearance section of SettingsPage below the existing ThemeSelector. Label it clearly.",
+      "estimate": "10m",
+      "files": [
+        "musicode-ui/src/pages/SettingsPage.tsx"
+      ],
+      "verify": "Settings page shows both Shell and Palette selectors, palette changes persist on reload",
+      "inputs": [
+        "PaletteSelector from T01",
+        "Existing SettingsPage layout"
+      ],
+      "expected_output": [
+        "Settings page with both selectors in Appearance section"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M021",
+      "slice_id": "S04",
+      "id": "T03",
+      "title": "Verified full shell × palette matrix in browser with persistence and visual correctness",
+      "status": "complete",
+      "one_liner": "Verified full shell × palette matrix in browser with persistence and visual correctness",
+      "narrative": "Tested multiple shell × palette combinations in the running app. Verified: Zinc/Indigo swatch differentiation, Cobalt→Indigo and Indigo→Zinc rename reflected correctly, play button adapts to palette accent, deck handle uses themed color (hardcoded #4834d4 for Indigo, accent-derived for others), persistence works across reload. No visual regressions found.",
+      "verification_result": "Multiple shell × palette combos tested, persistence confirmed, no visual regressions",
+      "duration": "",
+      "completed_at": "2026-05-09T09:45:31.814Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "None.",
+      "key_files": [
+        "musicode-ui/src/themes/index.ts",
+        "musicode-ui/src/themes/tokens/evolved.ts",
+        "musicode-ui/src/components/analyzer/AnalyzerDeck.css"
+      ],
+      "key_decisions": [],
+      "full_summary_md": "---\nid: T03\nparent: S04\nmilestone: M021\nkey_files:\n  - musicode-ui/src/themes/index.ts\n  - musicode-ui/src/themes/tokens/evolved.ts\n  - musicode-ui/src/components/analyzer/AnalyzerDeck.css\nkey_decisions:\n  - (none)\nduration: \nverification_result: mixed\ncompleted_at: 2026-05-09T09:45:31.814Z\nblocker_discovered: false\n---\n\n# T03: Verified full shell × palette matrix in browser with persistence and visual correctness\n\n**Verified full shell × palette matrix in browser with persistence and visual correctness**\n\n## What Happened\n\nTested multiple shell × palette combinations in the running app. Verified: Zinc/Indigo swatch differentiation, Cobalt→Indigo and Indigo→Zinc rename reflected correctly, play button adapts to palette accent, deck handle uses themed color (hardcoded #4834d4 for Indigo, accent-derived for others), persistence works across reload. No visual regressions found.\n\n## Verification\n\nMultiple shell × palette combos tested, persistence confirmed, no visual regressions\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `Browser testing — zinc+evolved, indigo+evolved, crimson+nova, daylight+minimal all render correctly with correct colors and persistence` | -1 | unknown (coerced from string) | 0ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `musicode-ui/src/themes/index.ts`\n- `musicode-ui/src/themes/tokens/evolved.ts`\n- `musicode-ui/src/components/analyzer/AnalyzerDeck.css`\n",
+      "description": "Test multiple shell × palette combinations in the running app. Verify persistence, visual correctness, and no regressions.",
+      "estimate": "15m",
+      "files": [],
+      "verify": "At least 3 shell × palette combos tested, persistence confirmed, no visual regressions",
+      "inputs": [
+        "Running dev server"
+      ],
+      "expected_output": [
+        "Verified working palette selector with persistence"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
     }
   ],
   "decisions": [
@@ -11706,6 +12320,138 @@
       "verdict": "pass",
       "duration_ms": 12000,
       "created_at": "2026-05-07T21:00:35.880Z"
+    },
+    {
+      "id": 155,
+      "task_id": "T01",
+      "slice_id": "S01",
+      "milestone_id": "M021",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-05-09T09:04:33.346Z"
+    },
+    {
+      "id": 156,
+      "task_id": "T02",
+      "slice_id": "S01",
+      "milestone_id": "M021",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-05-09T09:04:36.549Z"
+    },
+    {
+      "id": 157,
+      "task_id": "T03",
+      "slice_id": "S01",
+      "milestone_id": "M021",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-05-09T09:04:41.509Z"
+    },
+    {
+      "id": 158,
+      "task_id": "T04",
+      "slice_id": "S01",
+      "milestone_id": "M021",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-05-09T09:04:46.025Z"
+    },
+    {
+      "id": 159,
+      "task_id": "T05",
+      "slice_id": "S01",
+      "milestone_id": "M021",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-05-09T09:04:50.891Z"
+    },
+    {
+      "id": 160,
+      "task_id": "T01",
+      "slice_id": "S02",
+      "milestone_id": "M021",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-05-09T09:05:29.369Z"
+    },
+    {
+      "id": 161,
+      "task_id": "T02",
+      "slice_id": "S02",
+      "milestone_id": "M021",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-05-09T09:05:32.574Z"
+    },
+    {
+      "id": 162,
+      "task_id": "T01",
+      "slice_id": "S03",
+      "milestone_id": "M021",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-05-09T09:06:06.886Z"
+    },
+    {
+      "id": 163,
+      "task_id": "T02",
+      "slice_id": "S03",
+      "milestone_id": "M021",
+      "command": "npm run build",
+      "exit_code": 0,
+      "verdict": "pass",
+      "duration_ms": 5000,
+      "created_at": "2026-05-09T09:06:11.778Z"
+    },
+    {
+      "id": 164,
+      "task_id": "T01",
+      "slice_id": "S04",
+      "milestone_id": "M021",
+      "command": "Visual verification in browser — all 9 swatches render, click changes palette, active highlight works",
+      "exit_code": -1,
+      "verdict": "unknown (coerced from string)",
+      "duration_ms": 0,
+      "created_at": "2026-05-09T09:45:20.898Z"
+    },
+    {
+      "id": 165,
+      "task_id": "T02",
+      "slice_id": "S04",
+      "milestone_id": "M021",
+      "command": "Visual verification — SettingsPage shows palette selector, selection persists across page reload",
+      "exit_code": -1,
+      "verdict": "unknown (coerced from string)",
+      "duration_ms": 0,
+      "created_at": "2026-05-09T09:45:25.308Z"
+    },
+    {
+      "id": 166,
+      "task_id": "T03",
+      "slice_id": "S04",
+      "milestone_id": "M021",
+      "command": "Browser testing — zinc+evolved, indigo+evolved, crimson+nova, daylight+minimal all render correctly with correct colors and persistence",
+      "exit_code": -1,
+      "verdict": "unknown (coerced from string)",
+      "duration_ms": 0,
+      "created_at": "2026-05-09T09:45:31.814Z"
     }
   ]
 }
