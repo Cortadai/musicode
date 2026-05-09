@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-09T13:56:24Z | Files: 337 | Described: 0/337
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-09T13:56:24Z","fingerprint":"1e1c2b6497d6486f8e3fdec8b3132c5eb5828dcd","fileCount":337,"truncated":false} -->
+Generated: 2026-05-09T14:13:58Z | Files: 345 | Described: 0/345
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-09T14:13:58Z","fingerprint":"d91068b92e101d163a06fb5b90c732a56ebb172b","fileCount":345,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -256,7 +256,12 @@ Generated: 2026-05-09T13:56:24Z | Files: 337 | Described: 0/337
 - `musicode-ui/src/audio/audioPreferences.ts`
 - `musicode-ui/src/audio/colorExtraction.test.ts`
 - `musicode-ui/src/audio/colorExtraction.ts`
+- `musicode-ui/src/audio/eqMath.test.ts`
+- `musicode-ui/src/audio/eqMath.ts`
+- `musicode-ui/src/audio/eqPresetStorage.test.ts`
+- `musicode-ui/src/audio/eqPresetStorage.ts`
 - `musicode-ui/src/audio/eqProcessor.ts`
+- `musicode-ui/src/audio/eqSpectrumSource.ts`
 
 ### musicode-ui/src/components/activity/
 - `musicode-ui/src/components/activity/ActivityFeed.tsx`
@@ -314,7 +319,7 @@ Generated: 2026-05-09T13:56:24Z | Files: 337 | Described: 0/337
 - `musicode-ui/src/components/library/TrackList.tsx`
 
 ### musicode-ui/src/components/player/
-- *(24 files: 24 .tsx)*
+- *(27 files: 27 .tsx)*
 
 ### musicode-ui/src/components/player/cassette/
 - `musicode-ui/src/components/player/cassette/CassetteCanvas.tsx`

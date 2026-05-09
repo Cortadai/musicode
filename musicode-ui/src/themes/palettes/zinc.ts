@@ -2,7 +2,7 @@ import type { PaletteConfig } from '../types';
 
 export const zincPalette: PaletteConfig = {
   name: 'zinc',
-  label: 'Zinc',
+  label: 'Eclipse',
   swatch: '#a1a1aa',
   tokens: {
     // Backgrounds — zinc scale

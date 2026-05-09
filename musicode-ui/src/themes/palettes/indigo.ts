@@ -2,7 +2,7 @@ import type { PaletteConfig } from '../types';
 
 export const indigoPalette: PaletteConfig = {
   name: 'indigo',
-  label: 'Indigo',
+  label: 'Midnight',
   tokens: {
     // Backgrounds — darker, cooler blue tint
     bgBase: '#07070a',

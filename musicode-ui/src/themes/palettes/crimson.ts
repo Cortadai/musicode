@@ -2,7 +2,7 @@ import type { PaletteConfig } from '../types';
 
 export const crimsonPalette: PaletteConfig = {
   name: 'crimson',
-  label: 'Crimson',
+  label: 'Ember',
   tokens: {
     // Backgrounds — warm-neutral dark
     bgBase: '#0b0909',

@@ -4,7 +4,7 @@ import api from '../api/client';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus, resetLibrary } from '../api/library';
 import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers } from 'lucide-react';
 import ThemeSelector from '../components/layout/ThemeSelector';
 import PaletteSelector from '../components/layout/PaletteSelector';
 import { useAuth } from '../context/AuthContext';
@@ -147,7 +147,7 @@ export default function SettingsPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-4 px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
             <div className="flex items-center gap-2">
-              <Palette className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+              <Layers className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
               <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Shell</span>
             </div>
             <ThemeSelector />

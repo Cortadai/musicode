@@ -2,7 +2,7 @@ import type { PaletteConfig } from '../types';
 
 export const emeraldPalette: PaletteConfig = {
   name: 'emerald',
-  label: 'Emerald',
+  label: 'Aurora',
   tokens: {
     // Backgrounds — subtle green tint
     bgBase: '#070b09',

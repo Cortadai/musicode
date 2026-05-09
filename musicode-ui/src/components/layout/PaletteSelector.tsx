@@ -39,7 +39,7 @@ export default function PaletteSelector() {
     <div className="flex items-center gap-6">
       <div className="flex items-center gap-1.5">
         <span className="text-[10px] uppercase tracking-wider mr-1" style={{ color: 'var(--mc-text-muted)' }}>Dark</span>
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           {darkPalettes.map(name => (
             <Swatch key={name} name={name} active={name === paletteName} onClick={() => setPalette(name)} />
           ))}
@@ -48,7 +48,7 @@ export default function PaletteSelector() {
       <div className="w-px h-8 shrink-0" style={{ backgroundColor: 'var(--mc-border-subtle)' }} />
       <div className="flex items-center gap-1.5">
         <span className="text-[10px] uppercase tracking-wider mr-1" style={{ color: 'var(--mc-text-muted)' }}>Light</span>
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           {lightPalettes.map(name => (
             <Swatch key={name} name={name} active={name === paletteName} onClick={() => setPalette(name)} />
           ))}

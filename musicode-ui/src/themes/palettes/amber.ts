@@ -2,7 +2,7 @@ import type { PaletteConfig } from '../types';
 
 export const amberPalette: PaletteConfig = {
   name: 'amber',
-  label: 'Amber',
+  label: 'Bonfire',
   tokens: {
     // Backgrounds — warm dark (inspired by Astra Studio)
     bgBase: '#0a0908',

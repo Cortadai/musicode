@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-05-09T12:41:14.671Z",
+  "exported_at": "2026-05-09T12:57:34.468Z",
   "milestones": [
     {
       "id": "M001",
@@ -992,22 +992,68 @@
     },
     {
       "id": "M023",
-      "title": "",
-      "status": "queued",
+      "title": "Pro Equalizer — Interactive Curve, Spectrum, Custom Presets",
+      "status": "planning",
       "depends_on": [],
       "created_at": "2026-05-09T11:17:32.210Z",
       "completed_at": null,
-      "vision": "",
-      "success_criteria": [],
-      "key_risks": [],
-      "proof_strategy": [],
+      "vision": "Replace the minimal 5-band popover EQ with a full parametric equalizer: variable band count (5–10), filter types (peaking/shelf/pass), adjustable Q, preamp, interactive SVG frequency response curve with draggable handles, real-time post-EQ spectrum overlay, custom preset save/load, and AutoEQ import. The EQ becomes a dedicated panel accessible from the playbar, with a mini-preview curve in the compact popover.",
+      "success_criteria": [
+        "EQ engine supports 5–10 bands with peaking, lowshelf, highshelf, highpass, lowpass filter types and adjustable Q (0.1–18)",
+        "Preamp gain node (-12 to +12 dB) inserted before the filter chain",
+        "Interactive SVG frequency response curve with log-scale frequency axis, draggable band handles for gain/frequency adjustment",
+        "Real-time post-EQ spectrum analyzer overlay on the curve (AnalyserNode → canvas)",
+        "Custom presets: save, rename, delete, import/export JSON, AutoEQ .txt parser",
+        "Dedicated EQ panel UI replacing the popover for full editing, mini SVG preview in playbar popover",
+        "All existing EQ preferences (enabled, gains, preset) migrate seamlessly",
+        "Built-in presets preserved, custom presets persisted to localStorage"
+      ],
+      "key_risks": [
+        {
+          "risk": "SVG curve interaction complexity — drag handles must map mouse coordinates to log-frequency/dB space accurately",
+          "whyItMatters": "Bad coordinate mapping makes the curve feel broken. This is the centerpiece UX."
+        },
+        {
+          "risk": "Real-time spectrum performance — canvas overlay redrawn every rAF frame with FFT data",
+          "whyItMatters": "Must not cause jank. We already solved OffscreenCanvas DPR issues in M020 Prism, but this is a new rendering loop."
+        },
+        {
+          "risk": "EQ engine refactor breaks existing audio graph wiring",
+          "whyItMatters": "The insert chain (masterGain → EQ → analyser) must handle dynamic band add/remove without audio glitches."
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "SVG drag interaction accuracy",
+          "retireIn": "S02",
+          "whatWillBeProven": "Dragging a band handle updates frequency/gain correctly and the curve redraws in real time"
+        },
+        {
+          "riskOrUnknown": "Spectrum overlay performance",
+          "retireIn": "S03",
+          "whatWillBeProven": "Canvas overlay renders at 60fps without visible jank during playback"
+        },
+        {
+          "riskOrUnknown": "Dynamic band add/remove in live audio chain",
+          "retireIn": "S01",
+          "whatWillBeProven": "Adding/removing bands during playback produces no clicks, pops, or audio dropout"
+        }
+      ],
       "verification_contract": "",
       "verification_integration": "",
       "verification_operational": "",
       "verification_uat": "",
-      "definition_of_done": [],
-      "requirement_coverage": "",
-      "boundary_map_markdown": ""
+      "definition_of_done": [
+        "All 5 filter types work correctly with audible effect on playback",
+        "Curve visualization matches actual filter response (computed from biquad coefficients)",
+        "Presets save/load round-trip correctly including custom presets",
+        "AutoEQ .txt files parse and apply correctly",
+        "No audio glitches when adding/removing bands or toggling EQ",
+        "Mini-preview in playbar accurately reflects the current EQ curve",
+        "Existing eqProcessor preferences migrate without user action"
+      ],
+      "requirement_coverage": "Not provided.",
+      "boundary_map_markdown": "Not provided."
     }
   ],
   "slices": [
@@ -2720,6 +2766,116 @@
       "integration_closure": "Not provided.",
       "observability_impact": "Not provided.",
       "sequence": 2,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M023",
+      "id": "S01",
+      "title": "EQ Engine Upgrade",
+      "status": "pending",
+      "risk": "high",
+      "depends": [],
+      "demo": "Play a track, add/remove bands (up to 10), change filter types and Q via console or test harness — audio effect is audible and glitch-free. Preamp slider attenuates/boosts the signal.",
+      "created_at": "2026-05-09T12:51:10.138Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Upgrade EQ engine from fixed 5-band peaking-only to variable-band (5–10) parametric EQ with multiple filter types, adjustable Q, and preamp. Maintain backward compatibility with existing preferences.",
+      "success_criteria": "EQ engine supports add/remove bands (5–10), filter types (peaking/lowshelf/highshelf/highpass/lowpass), per-band Q (0.1–18), preamp (-12/+12 dB). Existing presets still work. Audio graph topology updated with preamp node. Preferences schema migrated without data loss. EqPopover adapts to new engine API. Build compiles clean.",
+      "proof_level": "Not provided.",
+      "integration_closure": "Not provided.",
+      "observability_impact": "Not provided.",
+      "sequence": 1,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M023",
+      "id": "S02",
+      "title": "Interactive SVG Frequency Response Curve",
+      "status": "pending",
+      "risk": "high",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Open EQ panel, see SVG curve reflecting current band settings. Drag band handles to adjust gain/frequency — curve updates in real time, audio changes correspondingly.",
+      "created_at": "2026-05-09T12:51:10.138Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Build an interactive SVG component that renders the combined frequency response of all EQ bands on a log-frequency axis, with draggable handles for each band.",
+      "success_criteria": "SVG renders correct frequency response computed from biquad coefficients. Band handles are draggable for gain (vertical) and frequency (horizontal). Grid lines at standard frequencies. Curve updates smoothly during drag.",
+      "proof_level": "visual verification in browser + manual drag testing",
+      "integration_closure": "EQFrequencyResponse component consumes eqProcessor state, calls setGain/setFrequency on drag",
+      "observability_impact": "none — pure visual component",
+      "sequence": 2,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M023",
+      "id": "S03",
+      "title": "Real-time Spectrum Analyzer Overlay",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S02"
+      ],
+      "demo": "Play a track with EQ panel open — see live spectrum overlay on the frequency response curve. Adjust EQ bands and observe the spectrum change in real time.",
+      "created_at": "2026-05-09T12:51:10.138Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Add a canvas-based real-time spectrum overlay on top of the SVG curve, fed by a post-EQ AnalyserNode.",
+      "success_criteria": "Spectrum renders at stable 60fps. Frequency bins mapped to the same log-scale as the SVG curve. Overlay uses accent color with transparency. Starts/stops with playback.",
+      "proof_level": "visual verification in browser, no visible jank during 30s playback",
+      "integration_closure": "Uses audioGraph.getInsertChainOutput() or dedicated post-EQ analyser tap",
+      "observability_impact": "console.debug for analyser frame source start/stop",
+      "sequence": 3,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M023",
+      "id": "S04",
+      "title": "Custom Presets + Import/Export",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S01"
+      ],
+      "demo": "Save current EQ as custom preset, rename it, export to JSON. Import an AutoEQ .txt file — bands populate correctly. Delete a custom preset.",
+      "created_at": "2026-05-09T12:51:10.138Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Implement custom preset management: save/load/rename/delete to localStorage, JSON export/import, and AutoEQ ParametricEQ.txt parser.",
+      "success_criteria": "Custom presets persist across page reloads. Export produces valid JSON. Import accepts both JSON and AutoEQ .txt format. Built-in presets are read-only.",
+      "proof_level": "manual test: save → reload → verify, import AutoEQ fixture",
+      "integration_closure": "Preset management hooks into eqProcessor.applyPreset and audioPreferences persistence",
+      "observability_impact": "none",
+      "sequence": 4,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M023",
+      "id": "S05",
+      "title": "EQ Panel UI + Playbar Mini-Preview",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S02",
+        "S03",
+        "S04"
+      ],
+      "demo": "Click EQ button in playbar — see mini SVG curve preview + 'Open Full EQ' button. Full panel shows curve with spectrum, band sliders with type/Q controls, preamp fader, preset management.",
+      "created_at": "2026-05-09T12:51:10.138Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Build the dedicated EQ panel component that integrates curve, spectrum, band sliders, preamp, and preset management. Add mini-preview SVG to the playbar popover.",
+      "success_criteria": "Full EQ panel accessible from playbar. Mini-preview accurately reflects current curve. Band sliders show type selector, Q control, frequency, and gain. Preamp fader visible. Preset dropdown includes custom presets + import/export buttons.",
+      "proof_level": "visual verification in browser, all controls functional",
+      "integration_closure": "EQ panel rendered as a slide-out or dedicated view, EqPopover becomes mini-preview with panel launch button",
+      "observability_impact": "none — UI only",
+      "sequence": 5,
       "replan_triggered_at": null
     }
   ],
@@ -10387,6 +10543,143 @@
         "Audio quality badges above ALBUM label",
         "Last.fm link inline with artist info",
         "Togglable related albums strip"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M023",
+      "slice_id": "S01",
+      "id": "T01",
+      "title": "Rewrite eqProcessor.ts — parametric engine core",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Replace fixed 5-band peaking engine with variable-band parametric EQ. New EqBand model: id, type, frequency, gain, Q. Support add/remove bands (max 10), filter type mapping, per-band Q, preamp GainNode. Atomic chain rebuild on structural changes, efficient single-band update for parameter tweaks. Pass filter normalization (gain=0 for highpass/lowpass).",
+      "estimate": "45min",
+      "files": [
+        "musicode-ui/src/audio/eqProcessor.ts"
+      ],
+      "verify": "TypeScript compiles. Unit: import and call init(), addBand(), removeBand(), updateBand(), setPreamp() — no runtime errors.",
+      "inputs": [
+        "Current eqProcessor.ts",
+        "Astra AudioEngine.ts EQ methods",
+        "Astra eq.ts utilities"
+      ],
+      "expected_output": [
+        "Rewritten eqProcessor.ts with EqBand interface, variable band management, preamp support"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M023",
+      "slice_id": "S01",
+      "id": "T02",
+      "title": "Update audioGraph.ts — preamp node in signal chain",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Insert preamp GainNode between masterGain and EQ filter chain. Update init() to create preamp node, wire it into the topology: masterGain → preamp → [EQ filters] → analyser. Expose preamp node to eqProcessor. Update getInsertChainOutput() if needed.",
+      "estimate": "15min",
+      "files": [
+        "musicode-ui/src/audio/audioGraph.ts"
+      ],
+      "verify": "Build compiles. Audio plays through with EQ enabled and disabled.",
+      "inputs": [
+        "Current audioGraph.ts",
+        "Updated eqProcessor.ts API"
+      ],
+      "expected_output": [
+        "audioGraph.ts with preamp node wired into signal chain"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M023",
+      "slice_id": "S01",
+      "id": "T03",
+      "title": "Update audioPreferences.ts — new EQ schema with migration",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Expand EQ preferences to store full EqBand[] (id, type, freq, gain, Q), preamp value, and enabled state. Migrate old format (eqBands: number[5], eqPreset: string) to new format on load. Validate band count, ranges, types.",
+      "estimate": "20min",
+      "files": [
+        "musicode-ui/src/audio/audioPreferences.ts"
+      ],
+      "verify": "Load old-format localStorage → migrates correctly. Save/load round-trip preserves all band properties.",
+      "inputs": [
+        "Current audioPreferences.ts",
+        "New EqBand interface from eqProcessor.ts"
+      ],
+      "expected_output": [
+        "audioPreferences.ts with migrated EQ schema"
+      ],
+      "observability_impact": "",
+      "full_plan_md": "",
+      "sequence": 0
+    },
+    {
+      "milestone_id": "M023",
+      "slice_id": "S01",
+      "id": "T04",
+      "title": "Adapt EqPopover.tsx to new engine API",
+      "status": "pending",
+      "one_liner": "",
+      "narrative": "",
+      "verification_result": "",
+      "duration": "",
+      "completed_at": null,
+      "blocker_discovered": false,
+      "deviations": "",
+      "known_issues": "",
+      "key_files": [],
+      "key_decisions": [],
+      "full_summary_md": "",
+      "description": "Update EqPopover to use new eqProcessor API. Keep the existing 5-slider UI for now (S05 will build the full panel), but wire it to the new band model. Preset application uses new applyPreset(). Toggle uses new enable/disable. Band changes call updateBand() with full EqBand object.",
+      "estimate": "20min",
+      "files": [
+        "musicode-ui/src/components/player/EqPopover.tsx"
+      ],
+      "verify": "Build compiles. EQ popover opens, sliders move, presets apply, toggle works.",
+      "inputs": [
+        "Updated eqProcessor.ts API",
+        "Updated audioPreferences.ts"
+      ],
+      "expected_output": [
+        "EqPopover.tsx adapted to new engine, visually unchanged"
       ],
       "observability_impact": "",
       "full_plan_md": "",

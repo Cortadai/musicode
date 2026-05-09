@@ -2,7 +2,7 @@ import type { PaletteConfig } from '../types';
 
 export const cyanPalette: PaletteConfig = {
   name: 'cyan',
-  label: 'Cyan',
+  label: 'Stardust',
   tokens: {
     // Backgrounds — cool slate (inspired by Astra Default/Graphite)
     bgBase: '#080a0c',
