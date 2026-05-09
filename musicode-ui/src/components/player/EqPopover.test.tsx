@@ -1,34 +1,74 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+
+// jsdom doesn't have ResizeObserver
+class MockResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
+
 import EqPopover from './EqPopover';
 
-vi.mock('../../audio/eqProcessor', () => ({
-  default: {
-    setAllGains: vi.fn(),
-    setEnabled: vi.fn(),
-    setGain: vi.fn(),
-    applyPreset: vi.fn(),
-    getPreset: vi.fn(() => 'flat'),
-    BAND_DEFS: [
-      { frequency: 60, label: '60' },
-      { frequency: 230, label: '230' },
-      { frequency: 910, label: '910' },
-      { frequency: 3600, label: '3.6k' },
-      { frequency: 14000, label: '14k' },
+vi.mock('../../audio/eqProcessor', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../audio/eqProcessor')>();
+  return {
+    ...actual,
+    default: {
+      setBands: vi.fn(),
+      setPreamp: vi.fn(),
+      setEnabled: vi.fn(),
+      updateBand: vi.fn(),
+      applyPreset: vi.fn(),
+      addBand: vi.fn(() => null),
+      removeBand: vi.fn(() => false),
+      getBands: vi.fn(() => [
+        { id: 'band-1', type: 'lowshelf',  frequency: 60,    gain: 0, Q: 0.707 },
+        { id: 'band-2', type: 'peaking',   frequency: 250,   gain: 0, Q: 1.0 },
+        { id: 'band-3', type: 'peaking',   frequency: 1000,  gain: 0, Q: 1.0 },
+        { id: 'band-4', type: 'peaking',   frequency: 4000,  gain: 0, Q: 1.0 },
+        { id: 'band-5', type: 'highshelf', frequency: 12000, gain: 0, Q: 0.707 },
+      ]),
+      getPreset: vi.fn(() => 'flat'),
+      getPreamp: vi.fn(() => 0),
+      getBandCount: vi.fn(() => 5),
+    },
+    EQ_PRESETS: [
+      {
+        name: 'flat', label: 'Flat', preamp: 0,
+        bands: [
+          { id: 'band-1', type: 'lowshelf',  frequency: 60,    gain: 0, Q: 0.707 },
+          { id: 'band-2', type: 'peaking',   frequency: 250,   gain: 0, Q: 1.0 },
+          { id: 'band-3', type: 'peaking',   frequency: 1000,  gain: 0, Q: 1.0 },
+          { id: 'band-4', type: 'peaking',   frequency: 4000,  gain: 0, Q: 1.0 },
+          { id: 'band-5', type: 'highshelf', frequency: 12000, gain: 0, Q: 0.707 },
+        ],
+      },
+      {
+        name: 'rock', label: 'Rock', preamp: -1,
+        bands: [
+          { id: 'band-1', type: 'lowshelf',  frequency: 60,    gain: 4,  Q: 0.707 },
+          { id: 'band-2', type: 'peaking',   frequency: 250,   gain: 2,  Q: 1.0 },
+          { id: 'band-3', type: 'peaking',   frequency: 1000,  gain: -1, Q: 1.0 },
+          { id: 'band-4', type: 'peaking',   frequency: 4000,  gain: 3,  Q: 1.0 },
+          { id: 'band-5', type: 'highshelf', frequency: 12000, gain: 5,  Q: 0.707 },
+        ],
+      },
     ],
-  },
-  EQ_PRESETS: [
-    { name: 'flat', label: 'Flat', gains: [0, 0, 0, 0, 0] },
-    { name: 'bass-boost', label: 'Bass Boost', gains: [6, 4, 0, 0, 0] },
-    { name: 'rock', label: 'Rock', gains: [4, 2, -1, 3, 5] },
-  ],
-  GAIN_MIN: -12,
-  GAIN_MAX: 12,
-}));
+  };
+});
 
 vi.mock('../../audio/audioPreferences', () => ({
   loadPreferences: vi.fn(() => ({
     eqEnabled: false,
-    eqBands: [0, 0, 0, 0, 0],
+    eqBands: [
+      { id: 'band-1', type: 'lowshelf',  frequency: 60,    gain: 0, Q: 0.707 },
+      { id: 'band-2', type: 'peaking',   frequency: 250,   gain: 0, Q: 1.0 },
+      { id: 'band-3', type: 'peaking',   frequency: 1000,  gain: 0, Q: 1.0 },
+      { id: 'band-4', type: 'peaking',   frequency: 4000,  gain: 0, Q: 1.0 },
+      { id: 'band-5', type: 'highshelf', frequency: 12000, gain: 0, Q: 0.707 },
+    ],
+    eqPreamp: 0,
     eqPreset: 'flat',
   })),
   savePreferences: vi.fn(),
@@ -76,27 +116,27 @@ describe('EqPopover', () => {
     expect(savePreferences).toHaveBeenCalledWith({ eqEnabled: true });
   });
 
-  it('renders 5 band sliders', () => {
+  it('renders 5 band sliders + preamp = 6 sliders total', () => {
     render(<EqPopover />);
     fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
     const sliders = screen.getAllByRole('slider');
-    expect(sliders).toHaveLength(5);
+    expect(sliders).toHaveLength(6); // 5 bands + 1 preamp
   });
 
   it('band sliders have labels with frequency', () => {
     render(<EqPopover />);
     fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
-    expect(screen.getByRole('slider', { name: /60 band/i })).toBeInTheDocument();
-    expect(screen.getByRole('slider', { name: /3\.6k band/i })).toBeInTheDocument();
-    expect(screen.getByRole('slider', { name: /14k band/i })).toBeInTheDocument();
+    expect(screen.getByRole('slider', { name: /60 band gain/i })).toBeInTheDocument();
+    expect(screen.getByRole('slider', { name: /4k band gain/i })).toBeInTheDocument();
+    expect(screen.getByRole('slider', { name: /12k band gain/i })).toBeInTheDocument();
   });
 
-  it('changes band gain and calls eqProcessor + savePreferences', () => {
+  it('changes band gain and calls eqProcessor.updateBand + savePreferences', () => {
     render(<EqPopover />);
     fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
-    const slider60 = screen.getByRole('slider', { name: /60 band/i });
+    const slider60 = screen.getByRole('slider', { name: /60 band gain/i });
     fireEvent.change(slider60, { target: { value: '6' } });
-    expect(eqProcessor.setGain).toHaveBeenCalledWith(0, 6);
+    expect(eqProcessor.updateBand).toHaveBeenCalledWith(0, { gain: 6 });
     expect(savePreferences).toHaveBeenCalled();
   });
 
@@ -136,5 +176,11 @@ describe('EqPopover', () => {
   it('has aria-haspopup on trigger', () => {
     render(<EqPopover />);
     expect(screen.getByRole('button', { name: /equalizer/i })).toHaveAttribute('aria-haspopup', 'dialog');
+  });
+
+  it('renders preamp slider', () => {
+    render(<EqPopover />);
+    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
+    expect(screen.getByRole('slider', { name: /preamp/i })).toBeInTheDocument();
   });
 });

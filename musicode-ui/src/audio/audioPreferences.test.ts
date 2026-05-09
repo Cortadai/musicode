@@ -1,4 +1,8 @@
 import { loadPreferences, savePreferences } from './audioPreferences';
+import { DEFAULT_BANDS } from './eqProcessor';
+
+const defaultBands = DEFAULT_BANDS.map((b) => ({ ...b }));
+const flatGains = defaultBands.map((b) => ({ ...b, gain: 0 }));
 
 describe('audioPreferences', () => {
   beforeEach(() => {
@@ -13,9 +17,40 @@ describe('audioPreferences', () => {
       expect(prefs.repeatMode).toBe('off');
       expect(prefs.crossfadeDuration).toBe(0);
       expect(prefs.eqEnabled).toBe(false);
-      expect(prefs.eqBands).toEqual([0, 0, 0, 0, 0]);
+      expect(prefs.eqBands).toEqual(flatGains);
+      expect(prefs.eqPreamp).toBe(0);
       expect(prefs.eqPreset).toBe('flat');
       expect(prefs.visualizerMode).toBe('vinyl');
+    });
+
+    it('migrates old number[] eqBands to EqBand[] format', () => {
+      localStorage.setItem('musicode-prefs', JSON.stringify({
+        eqBands: [3, -2, 0, 4, 1],
+        eqPreset: 'custom',
+      }));
+      const prefs = loadPreferences();
+      expect(prefs.eqBands).toHaveLength(5);
+      expect(prefs.eqBands[0].gain).toBe(3);
+      expect(prefs.eqBands[0].type).toBe('lowshelf');
+      expect(prefs.eqBands[0].frequency).toBe(60);
+      expect(prefs.eqBands[1].gain).toBe(-2);
+      expect(prefs.eqBands[4].gain).toBe(1);
+    });
+
+    it('loads new EqBand[] format directly', () => {
+      const bands = [
+        { id: 'b1', type: 'peaking', frequency: 500, gain: 3, Q: 2.0 },
+        { id: 'b2', type: 'highshelf', frequency: 8000, gain: -4, Q: 0.707 },
+      ];
+      localStorage.setItem('musicode-prefs', JSON.stringify({
+        eqBands: bands,
+        eqPreamp: -3,
+      }));
+      const prefs = loadPreferences();
+      expect(prefs.eqBands).toHaveLength(2);
+      expect(prefs.eqBands[0].frequency).toBe(500);
+      expect(prefs.eqBands[0].Q).toBe(2.0);
+      expect(prefs.eqPreamp).toBe(-3);
     });
 
     it('loads valid stored values', () => {
@@ -25,8 +60,9 @@ describe('audioPreferences', () => {
         repeatMode: 'all',
         crossfadeDuration: 6,
         eqEnabled: true,
-        eqBands: [3, -2, 0, 4, 1],
-        eqPreset: 'rock',
+        eqBands: defaultBands.map((b, i) => ({ ...b, gain: [3, -2, 0, 4, 1][i] })),
+        eqPreamp: 2,
+        eqPreset: 'custom',
         visualizerMode: 'waveform',
         dynamicTheme: true,
       }));
@@ -36,8 +72,9 @@ describe('audioPreferences', () => {
       expect(prefs.repeatMode).toBe('all');
       expect(prefs.crossfadeDuration).toBe(6);
       expect(prefs.eqEnabled).toBe(true);
-      expect(prefs.eqBands).toEqual([3, -2, 0, 4, 1]);
-      expect(prefs.eqPreset).toBe('rock');
+      expect(prefs.eqBands[0].gain).toBe(3);
+      expect(prefs.eqPreamp).toBe(2);
+      expect(prefs.eqPreset).toBe('custom');
       expect(prefs.visualizerMode).toBe('waveform');
       expect(prefs.dynamicTheme).toBe(true);
     });
@@ -57,14 +94,9 @@ describe('audioPreferences', () => {
       expect(loadPreferences().crossfadeDuration).toBe(0);
     });
 
-    it('falls back to defaults for invalid eqBands', () => {
-      localStorage.setItem('musicode-prefs', JSON.stringify({ eqBands: [1, 2] }));
-      expect(loadPreferences().eqBands).toEqual([0, 0, 0, 0, 0]);
-    });
-
-    it('falls back for eqBands with out-of-range values', () => {
-      localStorage.setItem('musicode-prefs', JSON.stringify({ eqBands: [0, 0, 0, 0, 99] }));
-      expect(loadPreferences().eqBands).toEqual([0, 0, 0, 0, 0]);
+    it('falls back to defaults for non-array eqBands', () => {
+      localStorage.setItem('musicode-prefs', JSON.stringify({ eqBands: 'flat' }));
+      expect(loadPreferences().eqBands).toEqual(flatGains);
     });
 
     it('falls back to defaults for invalid visualizerMode', () => {
@@ -123,9 +155,9 @@ describe('audioPreferences', () => {
       expect(loadPreferences().crossfadeDuration).toBe(0);
     });
 
-    it('falls back for non-array eqBands', () => {
-      localStorage.setItem('musicode-prefs', JSON.stringify({ eqBands: 'flat' }));
-      expect(loadPreferences().eqBands).toEqual([0, 0, 0, 0, 0]);
+    it('falls back for out-of-range eqPreamp', () => {
+      localStorage.setItem('musicode-prefs', JSON.stringify({ eqPreamp: 20 }));
+      expect(loadPreferences().eqPreamp).toBe(0);
     });
   });
 
@@ -143,6 +175,11 @@ describe('audioPreferences', () => {
       const prefs = loadPreferences();
       expect(prefs.volume).toBe(0.3);
       expect(prefs.shuffle).toBe(true);
+    });
+
+    it('saves and loads eqPreamp', () => {
+      savePreferences({ eqPreamp: -5 });
+      expect(loadPreferences().eqPreamp).toBe(-5);
     });
   });
 });

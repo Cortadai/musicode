@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-09T12:34:23Z | Files: 333 | Described: 0/333
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-09T12:34:23Z","fingerprint":"e7e49f36e73f07328bd425ece0783cbd5b372ba0","fileCount":333,"truncated":false} -->
+Generated: 2026-05-09T13:56:24Z | Files: 337 | Described: 0/337
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-09T13:56:24Z","fingerprint":"1e1c2b6497d6486f8e3fdec8b3132c5eb5828dcd","fileCount":337,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -73,7 +73,7 @@ Generated: 2026-05-09T12:34:23Z | Files: 333 | Described: 0/333
 - `musicode-server/src/main/java/com/musicode/filter/RequestIdFilter.java`
 
 ### musicode-server/src/main/java/com/musicode/model/dto/
-- *(23 files: 23 .java)*
+- *(24 files: 24 .java)*
 
 ### musicode-server/src/main/java/com/musicode/model/entity/
 - `musicode-server/src/main/java/com/musicode/model/entity/Album.java`
@@ -309,11 +309,12 @@ Generated: 2026-05-09T12:34:23Z | Files: 333 | Described: 0/333
 
 ### musicode-ui/src/components/library/
 - `musicode-ui/src/components/library/AlbumCard.tsx`
+- `musicode-ui/src/components/library/AlbumInfoCard.tsx`
 - `musicode-ui/src/components/library/ArtistCard.tsx`
 - `musicode-ui/src/components/library/TrackList.tsx`
 
 ### musicode-ui/src/components/player/
-- *(23 files: 23 .tsx)*
+- *(24 files: 24 .tsx)*
 
 ### musicode-ui/src/components/player/cassette/
 - `musicode-ui/src/components/player/cassette/CassetteCanvas.tsx`
@@ -326,6 +327,7 @@ Generated: 2026-05-09T12:34:23Z | Files: 333 | Described: 0/333
 ### musicode-ui/src/context/
 - `musicode-ui/src/context/AuthContext.test.ts`
 - `musicode-ui/src/context/AuthContext.tsx`
+- `musicode-ui/src/context/LyricsSidebarContext.tsx`
 - `musicode-ui/src/context/PlayerContext.test.ts`
 - `musicode-ui/src/context/PlayerContext.tsx`
 - `musicode-ui/src/context/QueuePanelContext.tsx`
