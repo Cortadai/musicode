@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router';
 import { Outlet } from 'react-router';
 import { Home, Library, Music, Search, Settings, LogOut, TrendingUp, HeartPulse } from 'lucide-react';
+import GitHubIcon from '../../icons/GitHubIcon';
 import { useAuth } from '../../../context/AuthContext';
 import { useState, useRef, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import audioGraph from '../../../audio/audioGraph';
@@ -84,6 +85,9 @@ export default function NovaShell() {
         <div className="mb-3">
           <Music className="w-5 h-5" style={{ color: 'var(--mc-accent-primary)' }} />
         </div>
+        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" title="GitHub" className="mb-3 mc-interactive-muted transition-colors">
+          <GitHubIcon className="w-4 h-4" />
+        </a>
 
         <nav className="flex-1 flex flex-col items-center justify-center gap-1">
           {navItems.map(({ to, icon: Icon, label, end }) => (

@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router';
 import { Home, Library, Settings, LogOut, TrendingUp, HeartPulse, Music } from 'lucide-react';
+import GitHubIcon from '../icons/GitHubIcon';
 import { useAuth } from '../../context/AuthContext';
 import audioGraph from '../../audio/audioGraph';
 import ActivityFeed from '../activity/ActivityFeed';
@@ -33,11 +34,14 @@ export default function Sidebar() {
       }}
     >
       {/* Header */}
-      <div className="py-5 px-5 flex items-center">
+      <div className="py-5 px-5 flex items-center gap-3">
         <h1 className="font-bold tracking-tight flex items-center gap-2 text-lg" style={{ color: 'var(--mc-text-primary)' }}>
           <Music className="w-5 h-5 shrink-0" style={{ color: 'var(--mc-accent-primary)' }} />
           <span>Musicode</span>
         </h1>
+        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" title="GitHub" className="mc-interactive-muted transition-colors">
+          <GitHubIcon className="w-4 h-4" />
+        </a>
       </div>
 
       {/* Navigation */}

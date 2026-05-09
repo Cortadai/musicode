@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router';
 import { Outlet } from 'react-router';
 import { useState, useMemo, lazy, Suspense } from 'react';
 import { Home, Library, Music, Search, Settings, TrendingUp, HeartPulse, LogOut } from 'lucide-react';
+import GitHubIcon from '../../icons/GitHubIcon';
 import { useAuth } from '../../../context/AuthContext';
 import audioGraph from '../../../audio/audioGraph';
 import PlayerBar from '../../player/PlayerBar';
@@ -57,6 +58,9 @@ export default function MinimalShell() {
           <Music className="w-4 h-4" />
           Musicode
         </span>
+        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" title="GitHub" className="mc-interactive-muted transition-colors">
+          <GitHubIcon className="w-3.5 h-3.5" />
+        </a>
 
         <nav className="flex items-center gap-1">
           {navItems.map(({ to, label, end }) => (
