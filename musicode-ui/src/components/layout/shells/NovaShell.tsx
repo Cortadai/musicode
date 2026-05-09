@@ -79,7 +79,7 @@ export default function NovaShell() {
           <Music className="w-5 h-5" style={{ color: 'var(--mc-accent-primary)' }} />
         </div>
 
-        <nav className="flex-1 flex flex-col items-center gap-1">
+        <nav className="flex-1 flex flex-col items-center justify-center gap-1">
           {navItems.map(({ to, icon: Icon, label, end }) => (
             <NavLink
               key={to}
