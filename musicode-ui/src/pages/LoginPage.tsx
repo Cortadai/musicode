@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useState, useRef, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
-import { Music } from 'lucide-react';
+import { useParticlesEnabled } from '../hooks/useParticles';
+import { Music, Loader2 } from 'lucide-react';
+import LoginTransition from '../components/auth/LoginTransition';
+
+const ParticlesBackground = lazy(() => import('../components/layout/ParticlesBackground'));
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const particles = useParticlesEnabled();
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -18,17 +25,22 @@ export default function LoginPage() {
 
     try {
       await login(username, password);
-      navigate('/', { replace: true });
+      setTransitioning(true);
     } catch {
       setError('Invalid username or password');
-    } finally {
       setSubmitting(false);
     }
   }
 
+  function handleTransitionComplete() {
+    navigate('/', { replace: true });
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--mc-bg-base)' }}>
-      <div className="w-full max-w-sm p-8">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: 'var(--mc-bg-base)' }}>
+      {particles && <Suspense><ParticlesBackground /></Suspense>}
+
+      <div className="w-full max-w-sm p-8 relative z-[1]">
         <div className="flex items-center justify-center gap-2 mb-8">
           <Music className="w-8 h-8" style={{ color: 'var(--mc-accent-primary)' }} />
           <h1 className="text-2xl font-bold" style={{ color: 'var(--mc-text-primary)' }}>Musicode</h1>
@@ -47,6 +59,7 @@ export default function LoginPage() {
               autoComplete="username"
               autoFocus
               required
+              disabled={submitting}
               className="w-full px-4 py-2.5 text-sm mc-input"
               placeholder="Enter your username"
             />
@@ -63,6 +76,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
+              disabled={submitting}
               className="w-full px-4 py-2.5 text-sm mc-input"
               placeholder="Enter your password"
             />
@@ -73,14 +87,28 @@ export default function LoginPage() {
           )}
 
           <button
+            ref={btnRef}
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 mc-btn-primary text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            className="w-full py-2.5 mc-btn-primary text-sm font-medium rounded-lg transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
           >
-            {submitting ? 'Signing in…' : 'Sign in'}
+            {submitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Signing in…
+              </>
+            ) : (
+              'Sign in'
+            )}
           </button>
         </form>
       </div>
+
+      <LoginTransition
+        active={transitioning}
+        originRef={btnRef}
+        onComplete={handleTransitionComplete}
+      />
     </div>
   );
 }

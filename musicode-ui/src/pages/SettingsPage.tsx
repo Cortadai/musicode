@@ -4,7 +4,8 @@ import api from '../api/client';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus, resetLibrary } from '../api/library';
 import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers, Sparkles } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers, Sparkles, Wand2 } from 'lucide-react';
+import type { LoginTransition } from '../audio/audioPreferences';
 import ThemeSelector from '../components/layout/ThemeSelector';
 import PaletteSelector from '../components/layout/PaletteSelector';
 import { useAuth } from '../context/AuthContext';
@@ -25,6 +26,7 @@ export default function SettingsPage() {
   const marquee = useMarqueeSettings();
   const [greetingMessages, setGreetingMessages] = useState(() => loadPreferences().greetingMessages);
   const [particlesEnabled, setParticlesEnabled] = useState(() => loadPreferences().particlesEnabled);
+  const [loginTransition, setLoginTransition] = useState<LoginTransition>(() => loadPreferences().loginTransition);
 
   const { data: folders, isLoading: foldersLoading } = useQuery({
     queryKey: ['folders'],
@@ -182,6 +184,42 @@ export default function SettingsPage() {
             >
               <span className="mc-toggle__thumb" />
             </button>
+          </div>
+          <div className="px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Wand2 className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+              <div>
+                <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Login transition</span>
+                <p className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>Animated transition after signing in</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {([
+                ['random', 'Random'],
+                ['ripple', 'Ripple'],
+                ['curtain', 'Curtain'],
+                ['fade', 'Fade'],
+                ['sweep', 'Sweep'],
+                ['pixels', 'Pixels'],
+                ['diagonal', 'Diagonal'],
+                ['wave', 'Wave'],
+                ['none', 'None'],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => {
+                    setLoginTransition(value);
+                    savePreferences({ loginTransition: value });
+                  }}
+                  className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+                  style={loginTransition === value
+                    ? { backgroundColor: 'var(--mc-accent-primary)', color: 'var(--mc-accent-text)' }
+                    : { backgroundColor: 'var(--mc-bg-surface-hover)', color: 'var(--mc-text-secondary)' }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>

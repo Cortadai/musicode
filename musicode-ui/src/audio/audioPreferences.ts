@@ -16,6 +16,7 @@ import { DEFAULT_BANDS, GAIN_MIN, GAIN_MAX, PREAMP_MIN, PREAMP_MAX, Q_MIN, Q_MAX
 const STORAGE_KEY = 'musicode-prefs';
 
 export type VisualizerMode = 'bars' | 'waveform' | 'circular' | 'vinyl';
+export type LoginTransition = 'random' | 'ripple' | 'curtain' | 'fade' | 'sweep' | 'pixels' | 'diagonal' | 'wave' | 'none';
 
 export interface AudioPreferences {
   volume: number;
@@ -33,6 +34,7 @@ export interface AudioPreferences {
   marqueeAlbumCards: boolean;
   greetingMessages: boolean;
   particlesEnabled: boolean;
+  loginTransition: LoginTransition;
 }
 
 const DEFAULTS: AudioPreferences = {
@@ -51,6 +53,7 @@ const DEFAULTS: AudioPreferences = {
   marqueeAlbumCards: true,
   greetingMessages: true,
   particlesEnabled: false,
+  loginTransition: 'random',
 };
 
 const VALID_FILTER_TYPES: EqFilterType[] = ['lowshelf', 'peaking', 'highshelf', 'highpass', 'lowpass'];
@@ -156,7 +159,12 @@ export function loadPreferences(): AudioPreferences {
     const greetingMessages = typeof parsed.greetingMessages === 'boolean' ? parsed.greetingMessages : DEFAULTS.greetingMessages;
     const particlesEnabled = typeof parsed.particlesEnabled === 'boolean' ? parsed.particlesEnabled : DEFAULTS.particlesEnabled;
 
-    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreamp, eqPreset, visualizerMode, dynamicTheme, waveformEnabled, marqueePlaybar, marqueeAlbumCards, greetingMessages, particlesEnabled };
+    const VALID_TRANSITIONS: LoginTransition[] = ['random', 'ripple', 'curtain', 'fade', 'sweep', 'pixels', 'diagonal', 'wave', 'none'];
+    const loginTransition: LoginTransition = VALID_TRANSITIONS.includes(parsed.loginTransition)
+      ? parsed.loginTransition as LoginTransition
+      : DEFAULTS.loginTransition;
+
+    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreamp, eqPreset, visualizerMode, dynamicTheme, waveformEnabled, marqueePlaybar, marqueeAlbumCards, greetingMessages, particlesEnabled, loginTransition };
   } catch {
     localStorage.removeItem(STORAGE_KEY);
     return { ...DEFAULTS, eqBands: DEFAULTS.eqBands.map((b) => ({ ...b })) };
