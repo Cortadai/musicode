@@ -98,6 +98,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyTokensToRoot(theme.tokens);
     document.documentElement.setAttribute('data-theme', prefs.shell);
     document.documentElement.setAttribute('data-palette', prefs.palette);
+    window.dispatchEvent(new Event('musicode-theme-changed'));
   }, [theme, prefs.shell, prefs.palette]);
 
   const value = useMemo<ThemeContextValue>(

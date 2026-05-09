@@ -32,6 +32,7 @@ export interface AudioPreferences {
   marqueePlaybar: boolean;
   marqueeAlbumCards: boolean;
   greetingMessages: boolean;
+  particlesEnabled: boolean;
 }
 
 const DEFAULTS: AudioPreferences = {
@@ -49,6 +50,7 @@ const DEFAULTS: AudioPreferences = {
   marqueePlaybar: true,
   marqueeAlbumCards: true,
   greetingMessages: true,
+  particlesEnabled: false,
 };
 
 const VALID_FILTER_TYPES: EqFilterType[] = ['lowshelf', 'peaking', 'highshelf', 'highpass', 'lowpass'];
@@ -152,8 +154,9 @@ export function loadPreferences(): AudioPreferences {
     const marqueePlaybar = typeof parsed.marqueePlaybar === 'boolean' ? parsed.marqueePlaybar : DEFAULTS.marqueePlaybar;
     const marqueeAlbumCards = typeof parsed.marqueeAlbumCards === 'boolean' ? parsed.marqueeAlbumCards : DEFAULTS.marqueeAlbumCards;
     const greetingMessages = typeof parsed.greetingMessages === 'boolean' ? parsed.greetingMessages : DEFAULTS.greetingMessages;
+    const particlesEnabled = typeof parsed.particlesEnabled === 'boolean' ? parsed.particlesEnabled : DEFAULTS.particlesEnabled;
 
-    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreamp, eqPreset, visualizerMode, dynamicTheme, waveformEnabled, marqueePlaybar, marqueeAlbumCards, greetingMessages };
+    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreamp, eqPreset, visualizerMode, dynamicTheme, waveformEnabled, marqueePlaybar, marqueeAlbumCards, greetingMessages, particlesEnabled };
   } catch {
     localStorage.removeItem(STORAGE_KEY);
     return { ...DEFAULTS, eqBands: DEFAULTS.eqBands.map((b) => ({ ...b })) };

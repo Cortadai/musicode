@@ -2,12 +2,15 @@ import { NavLink, useNavigate } from 'react-router';
 import { Outlet } from 'react-router';
 import { Home, Library, Music, Search, Settings, LogOut, TrendingUp, HeartPulse } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import audioGraph from '../../../audio/audioGraph';
 import PlayerBar from '../../player/PlayerBar';
 import QueuePanel from '../../player/QueuePanel';
 import LyricsSidebar from '../../player/LyricsSidebar';
 import { AnalyzerDeck, useDeckStore, buildScopeMap } from '../../analyzer';
+import { useParticlesEnabled } from '../../../hooks/useParticles';
+
+const ParticlesBackground = lazy(() => import('../ParticlesBackground'));
 
 export default function NovaShell() {
   const { logout } = useAuth();
@@ -18,6 +21,7 @@ export default function NovaShell() {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const { visible: deckVisible } = useDeckStore();
   const scopeMap = useMemo(() => buildScopeMap(), []);
+  const particles = useParticlesEnabled();
 
   const navItems = [
     { to: '/', icon: Home, label: 'Home', end: true },
@@ -68,9 +72,10 @@ export default function NovaShell() {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'var(--mc-bg-base)', color: 'var(--mc-text-primary)' }}>
+    <div className="h-screen flex overflow-hidden relative" style={{ backgroundColor: 'var(--mc-bg-base)', color: 'var(--mc-text-primary)' }}>
+      {particles && <Suspense><ParticlesBackground /></Suspense>}
       <aside
-        className="w-14 flex flex-col items-center py-4 gap-1 shrink-0"
+        className="w-14 flex flex-col items-center py-4 gap-1 shrink-0 relative z-[1]"
         style={{
           backgroundColor: 'var(--mc-sidebar-background)',
           borderRight: '1px solid var(--mc-sidebar-border)',
@@ -145,7 +150,7 @@ export default function NovaShell() {
         </button>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative z-[1]">
         <AnalyzerDeck scopeMap={scopeMap} />
         <div className="flex-1 flex min-h-0">
           <main className="flex-1 overflow-y-auto p-6">

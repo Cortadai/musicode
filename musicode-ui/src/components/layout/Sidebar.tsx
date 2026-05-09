@@ -24,7 +24,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="w-56 flex flex-col h-full"
+      className="w-56 flex flex-col h-full relative z-[1]"
       style={{
         background: 'linear-gradient(to bottom, var(--mc-sidebar-background), var(--mc-glass-background))',
         borderRight: '1px solid var(--mc-glass-border)',

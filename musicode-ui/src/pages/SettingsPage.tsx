@@ -4,7 +4,7 @@ import api from '../api/client';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus, resetLibrary } from '../api/library';
 import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers, Sparkles } from 'lucide-react';
 import ThemeSelector from '../components/layout/ThemeSelector';
 import PaletteSelector from '../components/layout/PaletteSelector';
 import { useAuth } from '../context/AuthContext';
@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const roleRef = useRef<HTMLDivElement>(null);
   const marquee = useMarqueeSettings();
   const [greetingMessages, setGreetingMessages] = useState(() => loadPreferences().greetingMessages);
+  const [particlesEnabled, setParticlesEnabled] = useState(() => loadPreferences().particlesEnabled);
 
   const { data: folders, isLoading: foldersLoading } = useQuery({
     queryKey: ['folders'],
@@ -158,6 +159,29 @@ export default function SettingsPage() {
               <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Palette</span>
             </div>
             <PaletteSelector />
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+              <div>
+                <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Particles</span>
+                <p className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>Floating particle background with hover interaction</p>
+              </div>
+            </div>
+            <button
+              role="switch"
+              aria-checked={particlesEnabled}
+              onClick={() => {
+                const next = !particlesEnabled;
+                setParticlesEnabled(next);
+                savePreferences({ particlesEnabled: next });
+                window.dispatchEvent(new Event('musicode-particles-changed'));
+              }}
+              className="mc-toggle"
+              data-on={particlesEnabled || undefined}
+            >
+              <span className="mc-toggle__thumb" />
+            </button>
           </div>
         </div>
       </section>
