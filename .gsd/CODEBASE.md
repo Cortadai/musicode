@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-10T08:37:15Z | Files: 350 | Described: 0/350
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-10T08:37:15Z","fingerprint":"5cbe4e5f83d22193e129e94fab147d6e7b699047","fileCount":350,"truncated":false} -->
+Generated: 2026-05-10T08:54:17Z | Files: 359 | Described: 0/359
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-10T08:54:17Z","fingerprint":"88c5c7f052c2f7366d208dbb996c3f137291e540","fileCount":359,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -227,6 +227,7 @@ Generated: 2026-05-10T08:37:15Z | Files: 350 | Described: 0/350
 - `musicode-ui/public/sw.js`
 
 ### musicode-ui/src/
+- `musicode-ui/src/a11y.test.tsx`
 - `musicode-ui/src/App.tsx`
 - `musicode-ui/src/index.css`
 - `musicode-ui/src/main.tsx`
@@ -296,6 +297,7 @@ Generated: 2026-05-10T08:37:15Z | Files: 350 | Described: 0/350
 - `musicode-ui/src/components/common/ErrorBoundary.tsx`
 - `musicode-ui/src/components/common/ErrorMessage.tsx`
 - `musicode-ui/src/components/common/HeartButton.tsx`
+- `musicode-ui/src/components/common/OfflineBanner.tsx`
 - `musicode-ui/src/components/common/Skeletons.tsx`
 - `musicode-ui/src/components/common/Spinner.tsx`
 
@@ -338,9 +340,11 @@ Generated: 2026-05-10T08:37:15Z | Files: 350 | Described: 0/350
 ### musicode-ui/src/context/
 - `musicode-ui/src/context/AuthContext.test.ts`
 - `musicode-ui/src/context/AuthContext.tsx`
+- `musicode-ui/src/context/LyricsSidebarContext.test.tsx`
 - `musicode-ui/src/context/LyricsSidebarContext.tsx`
 - `musicode-ui/src/context/PlayerContext.test.ts`
 - `musicode-ui/src/context/PlayerContext.tsx`
+- `musicode-ui/src/context/QueuePanelContext.test.tsx`
 - `musicode-ui/src/context/QueuePanelContext.tsx`
 
 ### musicode-ui/src/hooks/
@@ -350,6 +354,7 @@ Generated: 2026-05-10T08:37:15Z | Files: 350 | Described: 0/350
 - `musicode-ui/src/hooks/useGapless.ts`
 - `musicode-ui/src/hooks/useMarqueePref.ts`
 - `musicode-ui/src/hooks/useMediaSession.ts`
+- `musicode-ui/src/hooks/useOnlineStatus.ts`
 - `musicode-ui/src/hooks/useParticles.ts`
 - `musicode-ui/src/hooks/usePlayer.ts`
 - `musicode-ui/src/hooks/useScrobble.ts`
@@ -371,6 +376,7 @@ Generated: 2026-05-10T08:37:15Z | Files: 350 | Described: 0/350
 
 ### musicode-ui/src/themes/
 - `musicode-ui/src/themes/index.ts`
+- `musicode-ui/src/themes/ThemeProvider.test.tsx`
 - `musicode-ui/src/themes/ThemeProvider.tsx`
 - `musicode-ui/src/themes/types.ts`
 - `musicode-ui/src/themes/useTheme.ts`
@@ -396,12 +402,15 @@ Generated: 2026-05-10T08:37:15Z | Files: 350 | Described: 0/350
 - `musicode-ui/src/types/index.ts`
 
 ### musicode-ui/src/utils/
+- `musicode-ui/src/utils/artistAvatar.test.ts`
 - `musicode-ui/src/utils/artistAvatar.ts`
 - `musicode-ui/src/utils/errors.test.ts`
 - `musicode-ui/src/utils/errors.ts`
 - `musicode-ui/src/utils/format.test.ts`
 - `musicode-ui/src/utils/format.ts`
+- `musicode-ui/src/utils/greetings.test.ts`
 - `musicode-ui/src/utils/greetings.ts`
+- `musicode-ui/src/utils/lrcParser.test.ts`
 - `musicode-ui/src/utils/lrcParser.ts`
 
 ### scripts/
