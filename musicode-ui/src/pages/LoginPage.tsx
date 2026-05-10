@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useParticlesEnabled } from '../hooks/useParticles';
 import { Music, Loader2 } from 'lucide-react';
-import LoginTransition from '../components/auth/LoginTransition';
-
 const ParticlesBackground = lazy(() => import('../components/layout/ParticlesBackground'));
+const LoginTransition = lazy(() => import('../components/auth/LoginTransition'));
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -104,11 +103,15 @@ export default function LoginPage() {
         </form>
       </div>
 
-      <LoginTransition
-        active={transitioning}
-        originRef={btnRef}
-        onComplete={handleTransitionComplete}
-      />
+      {transitioning && (
+        <Suspense>
+          <LoginTransition
+            active={transitioning}
+            originRef={btnRef}
+            onComplete={handleTransitionComplete}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

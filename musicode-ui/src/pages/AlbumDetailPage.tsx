@@ -39,7 +39,7 @@ function PlayAlbumButton({ onClick, albumTitle, totalDuration, isAlbumPlaying }:
   );
 }
 
-function ArtistLine({ artistName, artistId: _artistId, year, trackCount, lastfmUrl }: {
+function ArtistLine({ artistName, year, trackCount, lastfmUrl }: {
   artistName: string; artistId: number; year?: number; trackCount: number; lastfmUrl: string | null;
 }) {
   return (

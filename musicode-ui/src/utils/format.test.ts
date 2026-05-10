@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatDuration } from './format';
+import { formatDuration, formatAlbumDuration } from './format';
 
 describe('formatDuration', () => {
   it('returns dash for null', () => {
@@ -28,5 +28,27 @@ describe('formatDuration', () => {
 
   it('formats 5:09 correctly', () => {
     expect(formatDuration(309)).toBe('5:09');
+  });
+});
+
+describe('formatAlbumDuration', () => {
+  it('formats minutes only when under an hour', () => {
+    expect(formatAlbumDuration(1800)).toBe('30 min');
+  });
+
+  it('formats hours and minutes', () => {
+    expect(formatAlbumDuration(3661)).toBe('1h 1 min');
+  });
+
+  it('formats exact hour', () => {
+    expect(formatAlbumDuration(3600)).toBe('1h 0 min');
+  });
+
+  it('formats 0 seconds', () => {
+    expect(formatAlbumDuration(0)).toBe('0 min');
+  });
+
+  it('formats multiple hours', () => {
+    expect(formatAlbumDuration(7380)).toBe('2h 3 min');
   });
 });

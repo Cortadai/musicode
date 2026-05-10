@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-09T14:13:58Z | Files: 345 | Described: 0/345
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-09T14:13:58Z","fingerprint":"d91068b92e101d163a06fb5b90c732a56ebb172b","fileCount":345,"truncated":false} -->
+Generated: 2026-05-10T08:37:15Z | Files: 350 | Described: 0/350
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-10T08:37:15Z","fingerprint":"5cbe4e5f83d22193e129e94fab147d6e7b699047","fileCount":350,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -231,6 +231,7 @@ Generated: 2026-05-09T14:13:58Z | Files: 345 | Described: 0/345
 - `musicode-ui/src/index.css`
 - `musicode-ui/src/main.tsx`
 - `musicode-ui/src/test-setup.ts`
+- `musicode-ui/src/web-audio-compat.d.ts`
 
 ### musicode-ui/src/api/
 - `musicode-ui/src/api/activity.ts`
@@ -288,6 +289,7 @@ Generated: 2026-05-09T14:13:58Z | Files: 345 | Described: 0/345
 - `musicode-ui/src/components/analyzer/scopes/Waveform.ts`
 
 ### musicode-ui/src/components/auth/
+- `musicode-ui/src/components/auth/LoginTransition.tsx`
 - `musicode-ui/src/components/auth/ProtectedRoute.tsx`
 
 ### musicode-ui/src/components/common/
@@ -300,9 +302,13 @@ Generated: 2026-05-09T14:13:58Z | Files: 345 | Described: 0/345
 ### musicode-ui/src/components/home/
 - `musicode-ui/src/components/home/Carousel.tsx`
 
+### musicode-ui/src/components/icons/
+- `musicode-ui/src/components/icons/GitHubIcon.tsx`
+
 ### musicode-ui/src/components/layout/
 - `musicode-ui/src/components/layout/AppShell.tsx`
 - `musicode-ui/src/components/layout/PaletteSelector.tsx`
+- `musicode-ui/src/components/layout/ParticlesBackground.tsx`
 - `musicode-ui/src/components/layout/Sidebar.tsx`
 - `musicode-ui/src/components/layout/ThemeSelector.tsx`
 - `musicode-ui/src/components/layout/TopBar.tsx`
@@ -344,6 +350,7 @@ Generated: 2026-05-09T14:13:58Z | Files: 345 | Described: 0/345
 - `musicode-ui/src/hooks/useGapless.ts`
 - `musicode-ui/src/hooks/useMarqueePref.ts`
 - `musicode-ui/src/hooks/useMediaSession.ts`
+- `musicode-ui/src/hooks/useParticles.ts`
 - `musicode-ui/src/hooks/usePlayer.ts`
 - `musicode-ui/src/hooks/useScrobble.ts`
 - `musicode-ui/src/hooks/useWaveform.ts`

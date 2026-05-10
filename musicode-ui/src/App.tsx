@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { PlayerProvider } from './context/PlayerContext';
 import { ThemeProvider } from './themes';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import OfflineBanner from './components/common/OfflineBanner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AppShell from './components/layout/AppShell';
 import Spinner from './components/common/Spinner';
@@ -37,6 +38,7 @@ export default function App() {
           <AuthProvider>
             <PlayerProvider>
               <BrowserRouter>
+              <OfflineBanner />
             <Routes>
               {/* Public route */}
               <Route path="/login" element={<Suspense fallback={<Spinner />}><LoginPage /></Suspense>} />

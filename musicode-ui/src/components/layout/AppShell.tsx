@@ -26,7 +26,7 @@ export default function AppShell() {
         case ' ':
           e.preventDefault();
           if (!currentTrack) return;
-          isPlaying ? pause() : resume();
+          if (isPlaying) pause(); else resume();
           break;
         case 'ArrowRight':
           e.preventDefault();

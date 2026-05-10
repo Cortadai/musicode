@@ -17,7 +17,7 @@ export default function MinimalShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const { visible: _deckVisible } = useDeckStore();
+  useDeckStore();
   const scopeMap = useMemo(() => buildScopeMap(), []);
   const particles = useParticlesEnabled();
 

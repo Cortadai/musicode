@@ -19,7 +19,7 @@ export default function NovaShell() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const { visible: _deckVisible } = useDeckStore();
+  useDeckStore();
   const scopeMap = useMemo(() => buildScopeMap(), []);
   const particles = useParticlesEnabled();
 

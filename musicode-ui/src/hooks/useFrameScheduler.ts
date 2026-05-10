@@ -36,7 +36,7 @@ export function useFrameScheduler(
       }
       try {
         callbackRef.current(timestamp);
-      } catch (e) {
+      } catch {
         // Don't let a render error kill the rAF loop
       }
       rafRef.current = requestAnimationFrame(loop);

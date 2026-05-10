@@ -1,21 +1,27 @@
 {
+  "id": "/",
   "name": "Musicode",
   "short_name": "Musicode",
   "description": "Personal web-based music player for local audio files",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "theme_color": "#6366f1",
   "background_color": "#09090b",
+  "categories": ["music", "entertainment"],
   "icons": [
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
