@@ -22,11 +22,11 @@ Spring Boot 3 backend for Sonance. Scans local music folders, reads audio metada
 ```bash
 # Dev mode
 mvn spring-boot:run
-# http://localhost:8080
-# Swagger UI: http://localhost:8080/swagger-ui.html
-# H2 Console: http://localhost:8080/h2-console (dev only)
+# http://localhost:17380
+# Swagger UI: http://localhost:17380/swagger-ui.html
+# H2 Console: http://localhost:17380/h2-console (dev only)
 
-# Tests (272 tests)
+# Tests (282 tests)
 mvn clean verify
 ```
 
@@ -239,6 +239,27 @@ graph LR
 | DELETE | `/api/scrobble/settings/lastfm` | Disconnect Last.fm |
 | DELETE | `/api/scrobble/settings/listenbrainz` | Disconnect ListenBrainz |
 
+### Favorites (per user)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/favorites` | List user's favorite track IDs |
+| POST | `/api/favorites/{trackId}` | Add track to favorites |
+| DELETE | `/api/favorites/{trackId}` | Remove track from favorites |
+
+### Playlists (per user)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/playlists` | List user's playlists |
+| GET | `/api/playlists/{id}` | Playlist with tracks |
+| POST | `/api/playlists` | Create playlist |
+| PUT | `/api/playlists/{id}` | Update playlist name/description |
+| DELETE | `/api/playlists/{id}` | Delete playlist |
+| POST | `/api/playlists/{id}/tracks` | Add tracks to playlist |
+| DELETE | `/api/playlists/{id}/tracks` | Remove tracks from playlist |
+| PUT | `/api/playlists/{id}/tracks/reorder` | Reorder tracks in playlist |
+
 ### Activity Feed
 
 | Method | Endpoint | Description |
@@ -253,21 +274,23 @@ graph LR
 ```
 src/main/java/com/musicode/
 ├── config/          Security, AdminSeeder, Async, Jackson, OpenAPI, LastFM, CORS, TokenMigration
-├── controller/      16 REST controllers
+├── controller/      18 REST controllers
 ├── exception/       GlobalExceptionHandler + custom exceptions (BadRequest, Conflict, NotFound)
 ├── filter/          JwtAuthFilter, LoginRateLimitFilter, RequestIdFilter
 ├── model/
-│   ├── dto/         22 records (LoginRequest, UserResponse, StatsSummary, ActivityEvent, ...)
-│   └── entity/      9 JPA entities (Track, Album, Artist, User, RefreshToken, PlaybackEvent,
-│                    LibraryFolder, LyricsStatus, Role)
-├── repository/      7 Spring Data JPA repositories
-├── service/         17 services (Auth, JWT, Scan, Stream, CoverArt, Waveform, Lyrics,
-│                    Stats, Scrobble, LastFM, ListenBrainz, Activity, Health, Metadata, ...)
+│   ├── dto/         29 records (LoginRequest, UserResponse, StatsSummary, ActivityEvent,
+│   │                CreatePlaylistRequest, ScrobbleSettingsRequest, HealthIssue, ...)
+│   └── entity/      12 JPA entities (Track, Album, Artist, User, RefreshToken, PlaybackEvent,
+│                    LibraryFolder, LyricsStatus, Role, Favorite, Playlist, PlaylistTrack)
+├── repository/      10 Spring Data JPA repositories
+├── service/         18 services (Auth, JWT, Scan, Stream, CoverArt, Waveform, Lyrics,
+│                    Stats, Scrobble, LastFM, ListenBrainz, Activity, Health, Metadata,
+│                    Playlist, TokenEncryption, ...)
 └── util/            CookieUtil, TokenHashUtil, EncryptedStringConverter
 
-src/test/java/       272 tests across 37 test classes
+src/test/java/       282 tests across 38 test classes
 ├── config/          AdminSeeder, TokenMigrationRunner
-├── controller/      Integration tests for all 16 controllers
+├── controller/      Integration tests for all 18 controllers
 └── service/         Unit + WireMock contract tests for all services
 
 src/main/resources/
@@ -275,8 +298,10 @@ src/main/resources/
 ├── application-docker.yml   Docker profile (secure cookies, env secrets)
 ├── logback-spring.xml       Colored console (dev) / JSON (docker)
 └── db/migration/
-    ├── V1__baseline.sql     Schema: users, tracks, albums, artists, tokens, events, folders
-    └── V2__add_lyrics_columns.sql
+    ├── V1__baseline.sql              Schema: users, tracks, albums, artists, tokens, events, folders
+    ├── V2__add_lyrics_columns.sql    Lyrics status + instrumental flag
+    ├── V3__user_favorites.sql        User favorites table
+    └── V4__playlists.sql             Playlists + playlist_tracks tables
 ```
 
 ---
@@ -330,13 +355,13 @@ Every request gets a unique `X-Request-Id` (via `RequestIdFilter`) propagated th
 ## Tests
 
 ```bash
-mvn clean verify   # Runs all 272 tests + JaCoCo coverage check
+mvn clean verify   # Runs all 282 tests + JaCoCo coverage check
 ```
 
 | Category | Count | Description |
 |---|---|---|
-| **Controller integration** | ~110 | `@WebMvcTest` with `@WithMockUser`, real filter chain |
-| **Service unit** | ~120 | Mockito-based, logic isolation |
+| **Controller integration** | ~115 | `@WebMvcTest` with `@WithMockUser`, real filter chain |
+| **Service unit** | ~125 | Mockito-based, logic isolation |
 | **Contract (WireMock)** | ~40 | Last.fm + ListenBrainz wire format validation |
 | **Config** | ~4 | AdminSeeder, TokenMigrationRunner |
 

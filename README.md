@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/React-19-blue?logo=react" alt="React 19" />
   <img src="https://img.shields.io/badge/TypeScript-5-blue?logo=typescript" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?logo=tailwindcss" alt="Tailwind CSS v4" />
-  <img src="https://img.shields.io/badge/Tests-410+-green" alt="Tests 410+" />
+  <img src="https://img.shields.io/badge/Tests-547+-green" alt="Tests 547+" />
   <img src="https://img.shields.io/badge/License-Private-lightgrey" alt="Private" />
 </p>
 
@@ -32,7 +32,7 @@
 |---|---|---|
 | :headphones: | **Gapless & Crossfade** | Dual HTMLAudioElement engine with pre-loading and configurable 0-12s crossfade |
 | :musical_score: | **5-Band EQ** | Parametric equalizer (60 Hz - 14 kHz) with 5 presets |
-| :bar_chart: | **4 Visualizers** | Frequency bars, waveform, circular, and vinyl — all driven by Web Audio API |
+| :bar_chart: | **5 Visualizers** | Frequency bars, waveform, circular, vinyl, and cassette deck — all driven by Web Audio API |
 | :vhs: | **Cassette Deck** | Full retro mode with animated reels, VU meters, odometer, and 3 visual themes |
 | :microphone: | **Synced Lyrics** | Auto-scrolling lyrics panel with LRC timing support |
 | :cd: | **Scrobbling** | Last.fm + ListenBrainz integration with async retry |
@@ -40,7 +40,11 @@
 | :performing_arts: | **Dynamic Colors** | UI theme extracted from album artwork with saturation-weighted scoring |
 | :ocean: | **Waveform Seek Bar** | Server-generated audio waveform as the progress bar |
 | :busts_in_silhouette: | **Multi-User** | JWT auth with ADMIN/LISTENER roles, per-user scrobble config |
+| :heart: | **Favorites** | Heart any track — persisted per user, filterable in library |
+| :clipboard: | **Playlists** | Create, reorder, drag-and-drop — with context menu integration |
+| :notes: | **Queue Panel** | View, reorder, and clear the playback queue on the fly |
 | :satellite: | **Activity Feed** | Real-time SSE stream showing what users are listening to |
+| :house: | **Home Dashboard** | Recently played, top artists, quick stats — personalized landing page |
 | :iphone: | **Responsive** | Collapsible sidebar, adaptive player bar, desktop to tablet |
 
 ---
@@ -58,9 +62,9 @@ graph LR
         TLS["Automatic HTTPS"]
     end
 
-    subgraph Server ["Spring Boot :8080"]
+    subgraph Server ["Spring Boot :17380"]
         Security["JWT Auth<br/>HttpOnly Cookies"]
-        API["REST API<br/>16 Controllers"]
+        API["REST API<br/>18 Controllers"]
         Services["Services<br/>Scan · Stream · Stats<br/>Scrobble · Lyrics · SSE"]
         DB["H2 Embedded<br/>Flyway Migrations"]
     end
@@ -131,12 +135,12 @@ Open `https://localhost`. Default credentials: `admin` / `changeme`.
 # Backend
 cd sonance-server
 mvn spring-boot:run
-# http://localhost:8080 | Swagger UI: http://localhost:8080/swagger-ui.html
+# http://localhost:17380 | Swagger UI: http://localhost:17380/swagger-ui.html
 
 # Frontend (separate terminal)
 cd sonance-ui
 npm install && npm run dev
-# http://localhost:5173 (proxies /api to :8080)
+# http://localhost:17381 (proxies /api to :17380)
 
 # Desktop (Electron wrapper, optional)
 cd sonance-desktop
@@ -187,6 +191,7 @@ graph LR
 | **Waveform** | Time-domain data with temporal smoothing (lerp 0.25) and glow effect |
 | **Circular** | Radial frequency bars (64 bins) with inner glow gradient |
 | **Vinyl** | CSS-animated spinning disc with cover art, slides out on play |
+| **Cassette Deck** | Full-screen retro mode with animated reels, VU meters, and odometer (see below) |
 
 All canvas-based modes run at 60fps via `requestAnimationFrame`, pause on page visibility change, and fade out gracefully when playback stops.
 
@@ -232,9 +237,27 @@ Colors extracted from album artwork adapt the entire player UI — progress bar,
 - States: Loading, Not Found, Instrumental, Synced, Plain Text
 - Retry button for failed fetches
 
+### Favorites & Playlists
+
+<!-- 📸 SCREENSHOT: Playlist detail page with drag-and-drop reorder + sidebar playlist list -->
+
+**Favorites** — heart any track from anywhere in the UI; favorites are per-user and persisted on the server. **Playlists** — create, rename, delete playlists with drag-and-drop track reorder and context menu integration from album/track views.
+
+### Queue Panel
+
+<!-- 📸 SCREENSHOT: Queue panel slide-out from the player bar -->
+
+Slide-out panel showing the current playback queue. Reorder tracks, remove individual items, or clear the entire queue.
+
+### Home Dashboard
+
+<!-- 📸 SCREENSHOT: Home page with recent plays, top artists widget, quick stats -->
+
+Personalized landing page with recently played tracks, top artists, and quick listening stats.
+
 ### Listening Stats & Scrobbling
 
-<!-- Stats screenshot pending — waiting for more listening data -->
+<!-- 📸 SCREENSHOT: Stats page with summary cards, daily chart, and top lists -->
 
 **Play tracking** fires at 50% of track duration — no accidental skips counted.
 
@@ -345,12 +368,12 @@ sonance/
 │   ├── scripts/             Build & JRE download scripts
 │   └── package.json         electron-builder config
 ├── sonance-server/          Spring Boot backend (see server README)
-│   ├── src/main/java/        16 controllers, 17 services, 9 entities
-│   ├── src/test/java/        272 tests (unit + integration + WireMock)
+│   ├── src/main/java/        18 controllers, 18 services, 12 entities
+│   ├── src/test/java/        282 tests (unit + integration + WireMock)
 │   └── pom.xml               Maven build with JaCoCo ≥80%
 ├── sonance-ui/              React frontend (see UI README)
 │   ├── src/                  Components, hooks, audio pipeline, pages
-│   ├── e2e/                  21 Playwright E2E tests
+│   ├── e2e/                  Playwright E2E tests
 │   └── package.json          Vite 8, Vitest, Tailwind v4
 ├── caddy/                    Caddy Dockerfile
 ├── Caddyfile                 Reverse proxy + static serving config
@@ -381,27 +404,37 @@ See `.env.example` for full documentation. See `SCROBBLING.md` for Last.fm/Liste
 ## Tests
 
 ```bash
-# Backend — 272 tests (unit + integration + WireMock contract)
+# Backend — 282 tests (unit + integration + WireMock contract)
 cd sonance-server && mvn clean verify     # JaCoCo ≥80% enforced
 
-# Frontend — 117 unit tests
+# Frontend — 244 unit tests
 cd sonance-ui && npm run test:coverage    # Vitest v8 coverage thresholds
 
-# E2E — 21 Playwright tests (requires backend on :8080)
+# E2E — Playwright tests (requires backend on :17380)
 cd sonance-ui && npm run test:e2e
 ```
 
 | Suite | Count | What it covers |
 |---|---|---|
-| **Backend unit** | ~120 | Service logic, DTO mapping, utilities |
+| **Backend unit** | ~130 | Service logic, DTO mapping, utilities |
 | **Backend integration** | ~110 | Controller endpoints, auth flows, DB queries |
 | **Backend contract** | ~40 | WireMock stubs for Last.fm + ListenBrainz wire format |
-| **Frontend unit** | 117 | Components, contexts, hooks, error handling |
+| **Frontend unit** | 244 | Components, contexts, hooks, pages, error handling |
 | **E2E (Playwright)** | 21 | Auth, browse, playback, admin, search, stats, settings |
 
 ---
 
 ## More Screenshots
+
+<!-- 📸 SCREENSHOT: Album detail page with track list, cover art, and player bar -->
+
+<!-- 📸 SCREENSHOT: Artist detail page with album discography -->
+
+<!-- 📸 SCREENSHOT: Search results page showing tracks, albums, and artists -->
+
+<!-- 📸 SCREENSHOT: Settings page with scrobble config and EQ popover open -->
+
+<!-- 📸 SCREENSHOT: Login page with particle background -->
 
 <p align="center">
   <img src="docs/assets/sonance-health.png" alt="Library Health dashboard" width="700" />

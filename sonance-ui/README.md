@@ -20,16 +20,16 @@ React frontend for Sonance. Browse your music library, play tracks with gapless 
 
 ```bash
 npm install
-npm run dev            # Dev server on http://localhost:5173
+npm run dev            # Dev server on http://localhost:17381
 npm run build          # Production build to dist/
 npm run preview        # Preview production build
 npm test               # Run unit tests
 npm run test:coverage  # Tests with coverage thresholds
-npm run test:e2e       # Playwright E2E (requires backend on :8080)
+npm run test:e2e       # Playwright E2E (requires backend on :17380)
 npm run test:e2e:ui    # Playwright with interactive UI
 ```
 
-The dev server proxies `/api` requests to `http://localhost:8080` (Spring Boot).
+The dev server proxies `/api` requests to `http://localhost:17380` (Spring Boot).
 
 ---
 
@@ -184,16 +184,19 @@ sequenceDiagram
 | Route | Component | Auth | Description |
 |---|---|---|---|
 | `/login` | LoginPage | public | Username + password form |
-| `/` | AlbumsPage | any | Album grid with cover art |
+| `/` | HomePage | any | Dashboard with recent plays, top artists, quick stats |
+| `/albums` | AlbumsPage | any | Album grid with cover art |
 | `/albums/:id` | AlbumDetailPage | any | Album with track list |
 | `/artists` | ArtistsPage | any | Artist list |
 | `/artists/:id` | ArtistDetailPage | any | Artist with albums |
 | `/tracks` | TracksPage | any | Paginated track table |
+| `/playlists` | PlaylistsPage | any | User playlists with create/delete |
+| `/playlists/:id` | PlaylistDetailPage | any | Playlist with drag-and-drop reorder |
 | `/search` | SearchPage | any | Combined search (tracks, albums, artists) |
 | `/stats` | StatsPage | any | Listening statistics dashboard |
-| `/settings` | SettingsPage | ADMIN | Library folders, scan, scrobble config |
+| `/library` | LibraryPage | ADMIN | Library folders, scan management |
+| `/settings` | SettingsPage | ADMIN | Scrobble config, preferences |
 | `/settings/health` | LibraryHealthPage | ADMIN | Library health issues dashboard |
-| `/users` | UsersPage | ADMIN | User management (CRUD) |
 
 ---
 
@@ -269,6 +272,30 @@ Real-time SSE (`EventSource`) in the sidebar showing recent plays across all use
 | **Top tracks** | Ranked by play count |
 | **Period filter** | Week, Month, Year, All Time |
 
+### Favorites
+
+- Heart icon on any track to toggle favorite (per-user, persisted server-side)
+- `useFavorites` hook manages state with TanStack Query optimistic updates
+
+### Playlists
+
+- Create, rename, delete playlists
+- Add tracks from context menu or album/track views
+- Drag-and-drop reorder within playlist
+- Sidebar integration for quick access
+
+### Queue Panel
+
+- Slide-out panel showing the current playback queue
+- Reorder tracks, remove individual items, clear queue
+- Visible from the player bar
+
+### UI Themes
+
+- 3 built-in themes — switchable from settings
+- Glassmorphism effects on overlays and panels
+- Dynamic album-extracted colors layer on top of the base theme
+
 ### Responsive Layout
 
 - Sidebar collapses from 224px to 64px (icon-only mode)
@@ -292,8 +319,11 @@ src/
 │   └── colorExtraction.ts  Cover art → color palette (canvas quantization)
 ├── components/
 │   ├── activity/     ActivityFeed (SSE EventSource)
+│   ├── analyzer/     Audio analysis visualizer components
 │   ├── auth/         ProtectedRoute (role-based redirect)
 │   ├── common/       Spinner, ErrorMessage, ErrorBoundary
+│   ├── home/         Home dashboard widgets
+│   ├── icons/        Custom SVG icon components
 │   ├── layout/       AppShell, Sidebar, TopBar
 │   ├── library/      AlbumCard, TrackList
 │   └── player/
@@ -302,14 +332,17 @@ src/
 │       ├── ProgressBar.tsx         Standard seek bar
 │       ├── WaveformBar.tsx         Waveform-rendered seek bar
 │       ├── VolumeControl.tsx       Volume slider
-│       ├── EqPopover.tsx           5-band EQ with presets
+│       ├── QueuePanel.tsx          Slide-out playback queue
+│       ├── EqPopover.tsx           5-band EQ with presets + frequency response
 │       ├── CrossfadePopover.tsx    Crossfade duration config
 │       ├── Visualizer.tsx          Bars/Waveform/Circular (Canvas 2D)
 │       ├── VinylVisualizer.tsx     CSS spinning disc
-│       ├── NowPlayingOverlay.tsx   Full-screen immersive view
+│       ├── NowPlayingOverlay.tsx   Full-screen immersive view (5 modes)
 │       ├── LyricsPanel.tsx         Synced lyrics with auto-scroll
-│       ├── TrackInfo.tsx           Album art + track details
+│       ├── LyricsSidebar.tsx       Lyrics in sidebar mode
+│       ├── TrackInfo.tsx           Album art + marquee track details
 │       ├── ScrobbleIndicator.tsx   Sync status badge
+│       ├── TechBadges.tsx          Audio format/bitrate badges
 │       ├── RetroMode.tsx           Cassette deck entry point
 │       └── cassette/
 │           ├── CassetteCanvas.tsx  Main canvas renderer
@@ -322,10 +355,20 @@ src/
 │   ├── AuthContext.tsx    Login/logout/restore + useAuth() hook
 │   └── PlayerContext.tsx  useReducer + dual contexts + usePlayer/useGapless
 ├── hooks/
-│   ├── usePlayer.ts          Owner-pattern singleton, state→audioGraph sync
-│   ├── useGapless.ts         Pre-load + crossfade trigger logic
-│   └── useAudioAnalyser.ts   AnalyserNode access for visualizers
-├── pages/            Route components (11 pages)
+│   ├── usePlayer.ts            Owner-pattern singleton, state→audioGraph sync
+│   ├── useGapless.ts           Pre-load + crossfade trigger logic
+│   ├── useDynamicTheme.ts      Album cover → CSS custom properties
+│   ├── useElectronMediaKeys.ts Media key support in Electron
+│   ├── useFavorites.ts         Favorite tracks (optimistic TanStack Query)
+│   ├── useFrameScheduler.ts    rAF scheduling for canvas renderers
+│   ├── useMarqueePref.ts       Marquee text scroll preference
+│   ├── useMediaSession.ts      Media Session API integration
+│   ├── useOnlineStatus.ts      Online/offline detection
+│   ├── useParticles.ts         Particle background effects
+│   ├── usePlaylists.ts         Playlist CRUD with TanStack Query
+│   ├── useScrobble.ts          Scrobble status tracking
+│   └── useWaveform.ts          Waveform data fetching
+├── pages/            Route components (14 pages)
 ├── types/            TypeScript interfaces
 └── utils/
     ├── errors.ts     Error extraction (backend ErrorResponse → string)
@@ -368,17 +411,17 @@ Both HTMLAudioElements fire `timeupdate` and `ended`. The graph module checks wh
 ## Tests
 
 ```bash
-npm run test:coverage    # 117 unit tests with coverage thresholds
-npm run test:e2e         # 21 Playwright E2E tests (requires backend on :8080)
+npm run test:coverage    # 244 unit tests with coverage thresholds
+npm run test:e2e         # Playwright E2E tests (requires backend on :17380)
 npm run test:e2e:ui      # Playwright E2E with interactive UI
 ```
 
 ### Unit Tests (Vitest)
 
-Coverage thresholds enforced on `context/` and `utils/` (lines ≥80%, branches ≥80%, functions ≥50%). Components, pages, hooks, and API layer excluded from thresholds — tested via E2E integration.
+244 tests covering components, contexts, hooks, pages, and utilities. Coverage thresholds enforced on `context/` and `utils/` (lines ≥80%, branches ≥80%, functions ≥50%).
 
 ### E2E Tests (Playwright)
 
 21 tests covering: authentication, album/artist/track browsing, playback controls, admin settings, search, navigation, stats dashboard, error states.
 
-Config: single worker, sequential execution, HTML reporter, screenshots + traces on failure. Backend must be running on `:8080`.
+Config: single worker, sequential execution, HTML reporter, screenshots + traces on failure. Backend must be running on `:17380`.
