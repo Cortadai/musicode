@@ -1,8 +1,45 @@
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { Track } from '../../types';
 import { formatDuration } from '../../utils/format';
 import { useCurrentTrackInfo } from '../../context/PlayerContext';
-import { Play } from 'lucide-react';
+import { Play, Disc3 } from 'lucide-react';
+import { getCoverUrl } from '../../api/albums';
+import HeartButton from '../common/HeartButton';
+import { useFavorites } from '../../hooks/useFavorites';
+import TrackContextMenu from '../common/TrackContextMenu';
+
+const CODEC_MAP: Record<string, string> = {
+  flac: 'FLAC', mp3: 'MP3', ogg: 'OGG', m4a: 'AAC', wav: 'WAV',
+  opus: 'OPUS', aac: 'AAC', wma: 'WMA', alac: 'ALAC', aiff: 'AIFF', aif: 'AIFF',
+};
+
+function extractCodec(filePath: string): string {
+  const ext = filePath.split('.').pop()?.toLowerCase() ?? '';
+  return CODEC_MAP[ext] ?? ext.toUpperCase();
+}
+
+function CoverThumb({ albumId, title }: { albumId: number; title: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div
+        className="w-8 h-8 rounded shrink-0 flex items-center justify-center"
+        style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}
+      >
+        <Disc3 className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={getCoverUrl(albumId)}
+      alt={title}
+      className="w-8 h-8 rounded shrink-0 object-cover"
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
 interface TrackRowProps {
   track: Track;
@@ -13,11 +50,15 @@ interface TrackRowProps {
   isScrollTarget: boolean;
   scrollTargetRef?: React.Ref<HTMLDivElement>;
   onPlay?: (track: Track, index: number) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (trackId: number) => void;
+  onContextMenu?: (track: Track, e: React.MouseEvent) => void;
 }
 
 const TrackRow = memo(function TrackRow({
   track, index, showAlbum, isCurrent, isPlaying,
   isScrollTarget, scrollTargetRef, onPlay,
+  isFavorite: favorited, onToggleFavorite, onContextMenu: onCtx,
 }: TrackRowProps) {
   const handleClick = useCallback(
     () => onPlay?.(track, index),
@@ -34,6 +75,11 @@ const TrackRow = memo(function TrackRow({
     [onPlay, track, index]
   );
 
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => { onCtx?.(track, e); },
+    [onCtx, track]
+  );
+
   const artistName = track.artist?.name ?? 'Unknown';
 
   return (
@@ -43,37 +89,73 @@ const TrackRow = memo(function TrackRow({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onContextMenu={handleContextMenu}
       aria-label={`Play ${track.title} by ${artistName}`}
       aria-current={isCurrent ? 'true' : undefined}
       className={`flex items-center gap-4 px-4 py-2.5 rounded-lg cursor-pointer transition-colors group
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-900 ${
-        isCurrent ? 'bg-zinc-800' : 'hover:bg-zinc-800/50'
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${
+        isCurrent ? '' : 'mc-nav-item'
       }`}
+      style={{
+        ...(isCurrent ? { backgroundColor: 'var(--mc-bg-surface-hover)' } : {}),
+        ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
+        ['--tw-ring-offset-color' as string]: 'var(--mc-bg-surface)',
+      }}
     >
-      <span className="w-8 text-right text-xs tabular-nums relative">
+      <span className="w-8 text-right text-xs tabular-nums relative shrink-0">
         {isCurrent && isPlaying ? (
-          <span className="text-indigo-400 text-sm">♪</span>
+          <span className="text-sm" style={{ color: 'var(--mc-accent-primary)' }}>♪</span>
         ) : (
           <>
-            <span className="group-hover:hidden text-zinc-500">
+            <span className="group-hover:hidden" style={{ color: 'var(--mc-text-muted)' }}>
               {track.trackNumber ?? '—'}
             </span>
-            <span className="hidden group-hover:inline text-zinc-300">
+            <span className="hidden group-hover:inline" style={{ color: 'var(--mc-text-primary)' }}>
               <Play className="w-3.5 h-3.5 inline" />
             </span>
           </>
         )}
       </span>
+      {showAlbum && track.album?.hasCoverArt && track.album ? (
+        <CoverThumb albumId={track.album.id} title={track.album.title} />
+      ) : showAlbum ? (
+        <div
+          className="w-8 h-8 rounded shrink-0 flex items-center justify-center"
+          style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}
+        >
+          <Disc3 className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+        </div>
+      ) : null}
       <div className="flex-1 min-w-0">
-        <p className={`text-sm truncate ${isCurrent ? 'text-indigo-400 font-medium' : 'text-zinc-100'}`}>
+        <p className="text-sm truncate" style={{ color: isCurrent ? 'var(--mc-accent-primary)' : 'var(--mc-text-primary)', fontWeight: isCurrent ? 500 : undefined }}>
           {track.title}
         </p>
-        <p className="text-xs text-zinc-500 truncate">
+        <p className="text-xs truncate" style={{ color: 'var(--mc-text-muted)' }}>
           {track.artist?.name ?? 'Unknown'}
           {showAlbum && track.album && ` · ${track.album.title}`}
         </p>
       </div>
-      <span className="text-xs text-zinc-500 tabular-nums">
+      {onToggleFavorite && (
+        <span className="flex shrink-0 justify-center w-6">
+          <HeartButton
+            active={!!favorited}
+            onClick={() => onToggleFavorite(track.id)}
+            size={14}
+          />
+        </span>
+      )}
+      <span className="flex w-14 shrink-0 justify-center">
+        <span
+          className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--mc-text-muted) 15%, transparent)',
+            color: 'var(--mc-text-muted)',
+          }}
+        >
+          {extractCodec(track.filePath)}
+        </span>
+      </span>
+      <span className="text-xs tabular-nums shrink-0 w-12 text-right" style={{ color: 'var(--mc-text-muted)' }}>
         {formatDuration(track.duration)}
       </span>
     </div>
@@ -83,21 +165,29 @@ const TrackRow = memo(function TrackRow({
 interface Props {
   tracks: Track[];
   showAlbum?: boolean;
+  showFavorites?: boolean;
   scrollToTrackId?: number;
   onPlay?: (track: Track, index: number) => void;
 }
 
-export default function TrackList({ tracks, showAlbum = false, scrollToTrackId, onPlay }: Props) {
+export default function TrackList({ tracks, showAlbum = false, showFavorites = false, scrollToTrackId, onPlay }: Props) {
   const { trackId: currentTrackId, isPlaying } = useCurrentTrackInfo();
+  const { isFavorite, toggle: toggleFavorite } = useFavorites();
   const scrollTargetRef = useRef<HTMLDivElement>(null);
   const hasScrolled = useRef(false);
+  const [ctxMenu, setCtxMenu] = useState<{ track: Track; x: number; y: number } | null>(null);
 
-  // Reset scroll flag when the target track changes
+  const handleTrackContextMenu = useCallback((track: Track, e: React.MouseEvent) => {
+    e.preventDefault();
+    setCtxMenu({ track, x: e.clientX, y: e.clientY });
+  }, []);
+
+  const closeCtxMenu = useCallback(() => setCtxMenu(null), []);
+
   useEffect(() => {
     hasScrolled.current = false;
   }, [scrollToTrackId]);
 
-  // Scroll to the target track once after mount/change
   useEffect(() => {
     if (scrollToTrackId && scrollTargetRef.current && !hasScrolled.current) {
       hasScrolled.current = true;
@@ -109,6 +199,19 @@ export default function TrackList({ tracks, showAlbum = false, scrollToTrackId, 
 
   return (
     <div className="space-y-0.5">
+      {showAlbum && (
+        <div
+          className="flex items-center gap-4 px-4 py-1.5 text-[11px] uppercase tracking-wider"
+          style={{ color: 'var(--mc-text-muted)' }}
+        >
+          <span className="w-8 text-right shrink-0">#</span>
+          <span className="w-8 shrink-0" />
+          <span className="flex-1 min-w-0">Title</span>
+          {showFavorites && <span className="w-6 shrink-0" />}
+          <span className="w-14 shrink-0 text-center">Codec</span>
+          <span className="w-12 text-right shrink-0">Time</span>
+        </div>
+      )}
       {tracks.map((track, index) => (
         <TrackRow
           key={track.id}
@@ -120,8 +223,19 @@ export default function TrackList({ tracks, showAlbum = false, scrollToTrackId, 
           isScrollTarget={track.id === scrollToTrackId}
           scrollTargetRef={scrollTargetRef}
           onPlay={onPlay}
+          isFavorite={showFavorites ? isFavorite(track.id) : undefined}
+          onToggleFavorite={showFavorites ? toggleFavorite : undefined}
+          onContextMenu={handleTrackContextMenu}
         />
       ))}
+      {ctxMenu && (
+        <TrackContextMenu
+          track={ctxMenu.track}
+          x={ctxMenu.x}
+          y={ctxMenu.y}
+          onClose={closeCtxMenu}
+        />
+      )}
     </div>
   );
 }

@@ -11,8 +11,8 @@ export default function ProtectedRoute({ requiredRole }: ProtectedRouteProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-        <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--mc-bg-base)' }}>
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--mc-accent-primary)' }} />
       </div>
     );
   }

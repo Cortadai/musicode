@@ -2,6 +2,8 @@ package com.musicode.config;
 
 import com.musicode.model.entity.Role;
 import com.musicode.repository.PlaybackEventRepository;
+import com.musicode.repository.PlaylistRepository;
+import com.musicode.repository.PlaylistTrackRepository;
 import com.musicode.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,12 +20,16 @@ class AdminSeederTest {
 
     @Autowired private UserRepository userRepository;
     @Autowired private PlaybackEventRepository playbackEventRepository;
+    @Autowired private PlaylistTrackRepository playlistTrackRepository;
+    @Autowired private PlaylistRepository playlistRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private AdminSeeder adminSeeder;
 
     @BeforeEach
     void setUp() {
         playbackEventRepository.deleteAll();
+        playlistTrackRepository.deleteAll();
+        playlistRepository.deleteAll();
         userRepository.deleteAll();
     }
 

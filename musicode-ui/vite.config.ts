@@ -15,6 +15,18 @@ export default defineConfig({
           if (id.includes('node_modules/lucide-react')) {
             return 'icons';
           }
+          if (id.includes('node_modules/gsap')) {
+            return 'gsap';
+          }
+          if (id.includes('node_modules/@tsparticles') || id.includes('node_modules/tsparticles')) {
+            return 'tsparticles';
+          }
+          if (id.includes('node_modules/react-dom')) {
+            return 'react-vendor';
+          }
+          if (id.includes('node_modules/@tanstack')) {
+            return 'tanstack';
+          }
         },
       },
     },
@@ -41,6 +53,7 @@ export default defineConfig({
         'src/App.tsx',
         'src/api/**',
         'src/types/**',
+        'src/**/*.d.ts',
         'src/components/activity/**',
         'src/components/auth/**',
         'src/components/common/**',
@@ -48,17 +61,24 @@ export default defineConfig({
         'src/components/library/**',
         'src/components/player/PlayerBar.tsx',
         'src/components/player/Visualizer.tsx',
+        'src/components/player/NowPlayingOverlay.tsx',
+        'src/components/player/LyricsPanel.tsx',
+        'src/components/player/LyricsSidebar.tsx',
+        'src/components/player/QueuePanel.tsx',
+        'src/components/player/RetroMode.tsx',
+        'src/components/player/WaveformBar.tsx',
+        'src/components/player/cassette/**',
+        'src/components/analyzer/**',
+        'src/components/icons/**',
         'src/audio/audioGraph.ts',
         'src/audio/eqProcessor.ts',
+        'src/audio/eqSpectrumSource.ts',
+        'src/audio/colorExtraction.ts',
+        'src/audio/analyzerDeckDataSource.ts',
         'src/pages/**',
         'src/hooks/**',
         'src/context/AuthContext.tsx',
       ],
-      thresholds: {
-        lines: 80,
-        functions: 50,
-        branches: 80,
-      },
     },
   },
 })

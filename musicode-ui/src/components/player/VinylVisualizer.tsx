@@ -50,8 +50,8 @@ export default function VinylVisualizer({ coverSrc, isPlaying }: Props) {
           {coverSrc ? (
             <img src={coverSrc} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
-              <span className="text-5xl text-zinc-600">&#9835;</span>
+            <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}>
+              <span className="text-5xl" style={{ color: 'var(--mc-text-muted)' }}>&#9835;</span>
             </div>
           )}
         </div>

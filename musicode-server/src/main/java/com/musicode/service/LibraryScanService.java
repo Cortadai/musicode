@@ -8,6 +8,7 @@ import com.musicode.model.entity.LibraryFolder;
 import com.musicode.model.entity.Track;
 import com.musicode.repository.AlbumRepository;
 import com.musicode.repository.ArtistRepository;
+import com.musicode.repository.FavoriteRepository;
 import com.musicode.repository.LibraryFolderRepository;
 import com.musicode.repository.PlaybackEventRepository;
 import com.musicode.repository.TrackRepository;
@@ -39,6 +40,7 @@ public class LibraryScanService {
     private final TrackRepository trackRepository;
     private final LibraryFolderRepository libraryFolderRepository;
     private final PlaybackEventRepository playbackEventRepository;
+    private final FavoriteRepository favoriteRepository;
 
     private final ScanStatus scanStatus = new ScanStatus();
 
@@ -314,6 +316,7 @@ public class LibraryScanService {
         if (tracks.isEmpty()) return 0;
 
         Set<Long> trackIds = tracks.stream().map(Track::getId).collect(Collectors.toSet());
+        favoriteRepository.deleteByTrackIdIn(trackIds);
         playbackEventRepository.deleteByTrackIdIn(trackIds);
         trackRepository.deleteAll(tracks);
         log.info("Removed {} tracks from folder: {}", tracks.size(), folderPath);
@@ -326,6 +329,7 @@ public class LibraryScanService {
     public void resetLibrary() {
         log.info("Resetting entire library...");
 
+        favoriteRepository.deleteAll();
         playbackEventRepository.deleteAll();
         trackRepository.deleteAll();
 

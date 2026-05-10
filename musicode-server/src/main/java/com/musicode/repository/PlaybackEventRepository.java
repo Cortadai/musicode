@@ -26,10 +26,10 @@ public interface PlaybackEventRepository extends JpaRepository<PlaybackEvent, Lo
 
     // --- Top albums ---
     @Query("""
-            SELECT t.album.title AS name, t.album.id AS albumId, t.artist.name AS artistName, COUNT(pe) AS playCount
+            SELECT t.album.title AS name, t.album.id AS albumId, MIN(t.album.artist.name) AS artistName, COUNT(pe) AS playCount
             FROM PlaybackEvent pe JOIN pe.track t
             WHERE pe.user = :user AND pe.playedAt >= :since
-            GROUP BY t.album.title, t.album.id, t.artist.name
+            GROUP BY t.album.id, t.album.title
             ORDER BY COUNT(pe) DESC
             LIMIT :limit
             """)
@@ -56,6 +56,16 @@ public interface PlaybackEventRepository extends JpaRepository<PlaybackEvent, Lo
             WHERE pe.user = :user AND pe.playedAt >= :since
             """)
     List<Object[]> findSummary(User user, Instant since);
+
+    // --- Recent plays (user-scoped) ---
+    @Query("""
+            SELECT t.title, t.artist.name, t.album.title, t.album.id, t.album.coverArtPath, pe.playedAt
+            FROM PlaybackEvent pe JOIN pe.track t
+            WHERE pe.user = :user
+            ORDER BY pe.playedAt DESC
+            LIMIT :limit
+            """)
+    List<Object[]> findRecentPlays(User user, int limit);
 
     // --- Daily play counts (for charting) ---
     @Query("""

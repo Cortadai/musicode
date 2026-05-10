@@ -56,7 +56,7 @@ export default function CrossfadePopover({ getCrossfadeDuration, setCrossfadeDur
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label={value === 0 ? 'Crossfade: Gapless' : `Crossfade: ${value}s`}
-        className={`flex items-center justify-center transition-colors ${value > 0 ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+        className={`flex items-center justify-center transition-colors ${value > 0 ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
       >
         <Blend className="w-4 h-4" />
       </button>
@@ -64,11 +64,12 @@ export default function CrossfadePopover({ getCrossfadeDuration, setCrossfadeDur
         <div
           role="dialog"
           aria-label="Crossfade settings"
-          className="absolute bottom-8 right-0 bg-zinc-800 border border-zinc-700 rounded-lg p-3 shadow-xl z-50 w-48"
+          className="absolute bottom-8 right-0 border rounded-lg p-3 shadow-xl z-50 w-48"
+          style={{ backgroundColor: 'var(--mc-bg-surface-hover)', borderColor: 'var(--mc-waveform-buffered)' }}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-zinc-400" id="crossfade-label">Crossfade</span>
-            <span className="text-xs font-medium text-zinc-200" aria-live="polite">
+            <span className="text-xs" style={{ color: 'var(--mc-text-secondary)' }} id="crossfade-label">Crossfade</span>
+            <span className="text-xs font-medium" style={{ color: 'var(--mc-text-primary)' }} aria-live="polite">
               {value === 0 ? 'Gapless' : `${value}s`}
             </span>
           </div>
@@ -82,12 +83,17 @@ export default function CrossfadePopover({ getCrossfadeDuration, setCrossfadeDur
             onChange={handleChange}
             aria-label="Crossfade duration"
             aria-valuetext={value === 0 ? 'Gapless' : `${value} seconds`}
-            className="w-full h-1 bg-zinc-600 rounded-full appearance-none cursor-pointer accent-indigo-500
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            className="w-full h-1 rounded-full appearance-none cursor-pointer
+              focus-visible:outline-none focus-visible:ring-2"
+            style={{
+              backgroundColor: 'var(--mc-waveform-buffered)',
+              accentColor: 'var(--mc-accent-primary)',
+              ['--tw-ring-color' as string]: 'var(--mc-accent-primary)',
+            }}
           />
           <div className="flex justify-between mt-1">
-            <span className="text-[10px] text-zinc-500">0s</span>
-            <span className="text-[10px] text-zinc-500">12s</span>
+            <span className="text-[10px]" style={{ color: 'var(--mc-text-muted)' }}>0s</span>
+            <span className="text-[10px]" style={{ color: 'var(--mc-text-muted)' }}>12s</span>
           </div>
         </div>
       )}

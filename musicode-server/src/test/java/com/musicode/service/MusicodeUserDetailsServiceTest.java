@@ -3,6 +3,8 @@ package com.musicode.service;
 import com.musicode.model.entity.Role;
 import com.musicode.model.entity.User;
 import com.musicode.repository.PlaybackEventRepository;
+import com.musicode.repository.PlaylistTrackRepository;
+import com.musicode.repository.PlaylistRepository;
 import com.musicode.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,10 +23,14 @@ class MusicodeUserDetailsServiceTest {
     @Autowired private MusicodeUserDetailsService userDetailsService;
     @Autowired private UserRepository userRepository;
     @Autowired private PlaybackEventRepository playbackEventRepository;
+    @Autowired private PlaylistTrackRepository playlistTrackRepository;
+    @Autowired private PlaylistRepository playlistRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
+        playlistTrackRepository.deleteAll();
+        playlistRepository.deleteAll();
         playbackEventRepository.deleteAll();
         userRepository.deleteAll();
     }

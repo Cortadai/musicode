@@ -28,7 +28,7 @@ function LED({ label, color, active, theme }: { label: string; color: string; ac
         }}
       />
       <span
-        className="font-mono text-[9px] font-bold tracking-[0.15em] uppercase select-none"
+        className="font-mono text-[9px] font-bold tracking-[0.15em] uppercase"
         style={{ color: active ? activeLabel : inactiveLabel }}
       >
         {label}

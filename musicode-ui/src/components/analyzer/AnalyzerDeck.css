@@ -1,0 +1,242 @@
+.analyzer-deck {
+  position: relative;
+  display: flex;
+  gap: 1px;
+  background: var(--mc-deck-bg);
+  border-bottom: 1px solid var(--mc-deck-border);
+  overflow: hidden;
+  flex-shrink: 0;
+  height: 0;
+  opacity: 0;
+  transition: height 0.3s ease, opacity 0.25s ease;
+}
+
+.analyzer-deck--open {
+  height: var(--deck-height, 100px);
+  opacity: 1;
+}
+
+.analyzer-deck__scope {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.analyzer-deck__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.analyzer-deck__splitter {
+  width: 9px;
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Vertical track line */
+.analyzer-deck__splitter::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--mc-deck-handle) 25%, transparent);
+  transition: background 0.15s;
+}
+
+/* Grip dots (3 pills stacked vertically) */
+.analyzer-deck__splitter::after {
+  content: '';
+  position: relative;
+  z-index: 1;
+  width: 5px;
+  height: 24px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--mc-deck-handle) 30%, transparent);
+  box-shadow:
+    inset 0  7px 0 -2px color-mix(in srgb, var(--mc-deck-handle) 70%, transparent),
+    inset 0  0px 0 -2px color-mix(in srgb, var(--mc-deck-handle) 70%, transparent),
+    inset 0 -7px 0 -2px color-mix(in srgb, var(--mc-deck-handle) 70%, transparent);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.analyzer-deck__splitter:hover::before,
+.analyzer-deck__splitter:active::before {
+  background: color-mix(in srgb, var(--mc-deck-handle) 50%, transparent);
+}
+
+.analyzer-deck__splitter:hover::after,
+.analyzer-deck__splitter:active::after {
+  background: color-mix(in srgb, var(--mc-deck-handle) 50%, transparent);
+  box-shadow:
+    inset 0  7px 0 -2px var(--mc-deck-handle),
+    inset 0  0px 0 -2px var(--mc-deck-handle),
+    inset 0 -7px 0 -2px var(--mc-deck-handle);
+}
+
+.analyzer-deck__label {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--mc-deck-label);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Settings gear — floating pill */
+.analyzer-deck__settings {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 10;
+}
+
+.analyzer-deck__settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.analyzer-deck__settings-btn:hover {
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Popover panel */
+.analyzer-deck__settings-panel {
+  min-width: 160px;
+  padding: 6px 0;
+  border-radius: 6px;
+  background: var(--mc-glass-background, #1a1a2e);
+  border: 1px solid var(--mc-glass-border, rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.analyzer-deck__settings-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  font-size: 11px;
+  color: var(--mc-text-primary, #e0e0e0);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+}
+
+.analyzer-deck__settings-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.analyzer-deck__settings-item--disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.analyzer-deck__settings-item input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  accent-color: var(--mc-accent, #818cf8);
+  cursor: pointer;
+}
+
+.analyzer-deck__settings-item--disabled input[type="checkbox"] {
+  cursor: default;
+}
+
+/* Clickable scope labels (for scopes with options) */
+.analyzer-deck__label--clickable {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.analyzer-deck__label--clickable:hover {
+  color: var(--mc-accent, #818cf8);
+}
+
+/* Scope options popover */
+.scope-options {
+  min-width: 140px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--mc-glass-background, #1a1a2e);
+  border: 1px solid var(--mc-glass-border, rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.scope-options__row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.scope-options__label {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mc-text-secondary, rgba(255, 255, 255, 0.5));
+}
+
+.scope-options__fft-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.scope-options__fft-btn {
+  padding: 3px 7px;
+  font-size: 10px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--mc-text-primary, #e0e0e0);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.scope-options__fft-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.scope-options__fft-btn--active {
+  background: var(--mc-accent, #818cf8);
+  color: #fff;
+  border-color: var(--mc-accent, #818cf8);
+}
+
+.scope-options__fft-btn--active:hover {
+  background: var(--mc-accent, #818cf8);
+  border-color: var(--mc-accent, #818cf8);
+}

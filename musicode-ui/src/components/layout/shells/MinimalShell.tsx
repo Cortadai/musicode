@@ -1,0 +1,128 @@
+import { NavLink, useNavigate } from 'react-router';
+import { Outlet } from 'react-router';
+import { useState, useMemo, lazy, Suspense } from 'react';
+import { Home, Library, ListMusic, Music, Search, Settings, TrendingUp, HeartPulse, LogOut } from 'lucide-react';
+import GitHubIcon from '../../icons/GitHubIcon';
+import { useAuth } from '../../../context/AuthContext';
+import audioGraph from '../../../audio/audioGraph';
+import PlayerBar from '../../player/PlayerBar';
+import QueuePanel from '../../player/QueuePanel';
+import LyricsSidebar from '../../player/LyricsSidebar';
+import { AnalyzerDeck, useDeckStore, buildScopeMap } from '../../analyzer';
+import { useParticlesEnabled } from '../../../hooks/useParticles';
+
+const ParticlesBackground = lazy(() => import('../ParticlesBackground'));
+
+export default function MinimalShell() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  useDeckStore();
+  const scopeMap = useMemo(() => buildScopeMap(), []);
+  const particles = useParticlesEnabled();
+
+  const navItems = [
+    { to: '/', icon: Home, label: 'Home', end: true },
+    { to: '/library', icon: Library, label: 'Library' },
+    { to: '/playlists', icon: ListMusic, label: 'Playlists' },
+    { to: '/stats', icon: TrendingUp, label: 'Stats' },
+    { to: '/settings/health', icon: HeartPulse, label: 'Health' },
+    { to: '/settings', icon: Settings, label: 'Settings', end: true },
+  ];
+
+  async function handleLogout() {
+    audioGraph.stop();
+    await logout();
+    navigate('/login', { replace: true });
+  }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  }
+
+  return (
+    <div className="h-screen flex flex-col overflow-hidden relative" style={{ backgroundColor: 'var(--mc-bg-base)', color: 'var(--mc-text-primary)' }}>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-3 focus:bg-[var(--mc-bg-surface)] focus:text-[var(--mc-text-primary)] focus:rounded-md focus:m-2">
+        Skip to main content
+      </a>
+      {particles && <Suspense><ParticlesBackground /></Suspense>}
+      <header
+        className="h-12 flex items-center px-5 gap-6 shrink-0 relative z-[1]"
+        style={{
+          background: 'linear-gradient(to right, var(--mc-sidebar-background), var(--mc-glass-background))',
+          borderBottom: '1px solid var(--mc-glass-border)',
+          backdropFilter: 'blur(var(--mc-glass-blur))',
+          WebkitBackdropFilter: 'blur(var(--mc-glass-blur))',
+        }}
+      >
+        <span className="font-semibold text-sm tracking-tight flex items-center gap-1.5" style={{ color: 'var(--mc-accent-primary)' }}>
+          <Music className="w-4 h-4" />
+          Musicode
+        </span>
+        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" className="mc-interactive-muted transition-colors">
+          <GitHubIcon className="w-3.5 h-3.5" />
+        </a>
+
+        <nav className="flex items-center gap-1">
+          {navItems.map(({ to, label, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                `px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  isActive
+                    ? 'mc-nav-active'
+                    : 'mc-interactive-muted'
+                }`
+              }
+              style={({ isActive }) => isActive ? { backgroundColor: 'var(--mc-sidebar-active-background)' } : undefined}
+            >
+              {label}
+            </NavLink>
+          ))}
+
+        </nav>
+
+        <form onSubmit={handleSearch} className="ml-auto flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--mc-text-muted)' }} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search tracks, albums, artists"
+              placeholder="Search…"
+              className="w-56 pl-8 pr-3 py-1 text-xs mc-input transition-colors"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>{user?.username}</span>
+            <button
+              onClick={handleLogout}
+              aria-label="Sign out"
+              className="mc-interactive-muted transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </form>
+      </header>
+
+      <AnalyzerDeck scopeMap={scopeMap} />
+      <div className="flex-1 flex min-h-0 relative z-[1]">
+        <main id="main-content" className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+        <QueuePanel />
+        <LyricsSidebar />
+      </div>
+
+      <PlayerBar />
+    </div>
+  );
+}

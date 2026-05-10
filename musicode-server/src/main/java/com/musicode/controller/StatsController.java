@@ -22,6 +22,14 @@ public class StatsController {
     private final StatsService statsService;
     private final UserRepository userRepository;
 
+    @GetMapping("/recent-plays")
+    @Operation(summary = "Recent plays", description = "Most recent play events for the authenticated user.")
+    public List<RecentPlay> recentPlays(
+            Principal principal,
+            @RequestParam(defaultValue = "20") int limit) {
+        return statsService.getRecentPlays(resolveUser(principal.getName()), limit);
+    }
+
     @GetMapping("/top-artists")
     @Operation(summary = "Top artists", description = "Most-played artists ranked by play count.")
     public List<TopArtistStat> topArtists(

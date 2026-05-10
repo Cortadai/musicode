@@ -1,19 +1,22 @@
 import { usePlayer } from '../../hooks/usePlayer';
 import audioGraph from '../../audio/audioGraph';
-import { useCallback, useState } from 'react';
-import { BarChart3, Activity, CassetteTape } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { BarChart3, Activity, CassetteTape, ListMusic, Mic2 } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
-import type { VisualizerMode } from '../../audio/audioPreferences';
 import TrackInfo from './TrackInfo';
 import TransportControls from './TransportControls';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
 import CrossfadePopover from './CrossfadePopover';
 import EqPopover from './EqPopover';
-import Visualizer from './Visualizer';
 import NowPlayingOverlay from './NowPlayingOverlay';
 import RetroMode from './RetroMode';
 import ScrobbleIndicator from './ScrobbleIndicator';
+import HeartButton from '../common/HeartButton';
+import { useFavorites } from '../../hooks/useFavorites';
+import { useQueuePanel } from '../../context/QueuePanelContext';
+import { useLyricsSidebar } from '../../context/LyricsSidebarContext';
+import { useDeckStore } from '../analyzer/useDeckStore';
 
 export default function PlayerBar() {
   const {
@@ -24,11 +27,11 @@ export default function PlayerBar() {
     scrobbleStatus,
   } = usePlayer();
 
-  const [showVisualizer, setShowVisualizer] = useState(false);
-  const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => {
-    const saved = loadPreferences().visualizerMode;
-    return saved === 'vinyl' ? 'bars' : saved;
-  });
+  const { isFavorite, toggle: toggleFavorite } = useFavorites();
+  const { isOpen: isQueueOpen, toggle: toggleQueue, close: closeQueue } = useQueuePanel();
+  const { isOpen: isLyricsOpen, toggle: toggleLyrics, close: closeLyrics } = useLyricsSidebar();
+  const { visible: deckVisible, toggleVisible: toggleDeck } = useDeckStore();
+
   const [showNowPlaying, setShowNowPlaying] = useState(false);
   const [showRetroMode, setShowRetroMode] = useState(false);
   const [waveformEnabled, setWaveformEnabled] = useState(() => loadPreferences().waveformEnabled);
@@ -45,15 +48,27 @@ export default function PlayerBar() {
     if (isPlaying) pause(); else resume();
   }, [isPlaying, pause, resume]);
 
-  const handleToggleVisualizer = useCallback(() => {
+  const handleToggleDeck = useCallback(() => {
     audioGraph.init();
-    setShowVisualizer((v) => !v);
-  }, []);
+    toggleDeck();
+  }, [toggleDeck]);
 
-  const handleVisualizerModeChange = useCallback((mode: VisualizerMode) => {
-    setVisualizerMode(mode);
-    savePreferences({ visualizerMode: mode });
-  }, []);
+  const handleToggleQueue = useCallback(() => {
+    if (!isQueueOpen) closeLyrics();
+    toggleQueue();
+  }, [isQueueOpen, closeLyrics, toggleQueue]);
+
+  const handleToggleLyrics = useCallback(() => {
+    if (!isLyricsOpen) closeQueue();
+    toggleLyrics();
+  }, [isLyricsOpen, closeQueue, toggleLyrics]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--mc-player-height',
+      waveformEnabled ? '8rem' : '7rem',
+    );
+  }, [waveformEnabled]);
 
   if (!currentTrack) return null;
 
@@ -61,20 +76,30 @@ export default function PlayerBar() {
   const hasPrev = queueIndex > 0 || currentTime > 3 || repeatMode === 'all';
 
   return (
-    <div role="region" aria-label="Music player" className="bg-zinc-900 border-t border-zinc-800 shrink-0 animate-slide-up">
-      <Visualizer visible={showVisualizer} mode={visualizerMode} onModeChange={handleVisualizerModeChange} />
+    <div role="region" aria-label="Music player" className="shrink-0 animate-slide-up" style={{ background: 'linear-gradient(to top, var(--mc-player-background), var(--mc-glass-background))', borderTop: '1px solid var(--mc-glass-border)', backdropFilter: 'blur(var(--mc-glass-blur))', WebkitBackdropFilter: 'blur(var(--mc-glass-blur))' }}>
+      <div className={`flex items-center px-4 gap-4 transition-[height] duration-200 ${waveformEnabled ? 'h-32' : 'h-28'}`}>
+        {/* Left: Track info + Heart */}
+        <div className="flex items-center gap-4 shrink-0 w-[260px]">
+          <TrackInfo
+            title={currentTrack.title}
+            artistName={currentTrack.artist?.name ?? 'Unknown'}
+            albumId={currentTrack.album?.id}
+            hasCover={currentTrack.album?.hasCoverArt}
+            isPlaying={isPlaying}
+            onArtworkClick={() => setShowNowPlaying(true)}
+            filePath={currentTrack.filePath}
+            bitRate={currentTrack.bitRate}
+            sampleRate={currentTrack.sampleRate}
+            bitsPerSample={currentTrack.bitsPerSample}
+          />
+          <HeartButton
+            active={isFavorite(currentTrack.id)}
+            onClick={() => toggleFavorite(currentTrack.id)}
+          />
+        </div>
 
-      <div className={`${waveformEnabled ? 'h-24' : 'h-20'} flex items-center px-4 gap-4 transition-[height] duration-200`}>
-        <TrackInfo
-          title={currentTrack.title}
-          artistName={currentTrack.artist?.name ?? 'Unknown'}
-          albumId={currentTrack.album?.id}
-          hasCover={currentTrack.album?.hasCoverArt}
-          isPlaying={isPlaying}
-          onArtworkClick={() => setShowNowPlaying(true)}
-        />
-
-        <div className="flex-1 flex flex-col items-center gap-1 min-w-0 md:max-w-2xl md:mx-auto">
+        {/* Center: Transport stacked above Waveform/Progress */}
+        <div className="flex-1 flex flex-col items-center justify-center gap-1 min-w-0">
           <TransportControls
             isPlaying={isPlaying}
             shuffle={shuffle}
@@ -87,37 +112,54 @@ export default function PlayerBar() {
             onToggleShuffle={toggleShuffle}
             onToggleRepeat={toggleRepeat}
           />
-          <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} trackId={currentTrack.id} waveformEnabled={waveformEnabled} />
+          <div className="w-full">
+            <ProgressBar currentTime={currentTime} duration={duration} onSeek={seek} trackId={currentTrack.id} waveformEnabled={waveformEnabled} />
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 w-auto md:w-48 shrink-0 md:shrink justify-end">
+        {/* Right: Buttons + Volume */}
+        <div className="flex items-center gap-3 shrink-0">
           <ScrobbleIndicator status={scrobbleStatus} />
           <button
             onClick={handleToggleWaveform}
             aria-label={waveformEnabled ? 'Switch to flat progress bar' : 'Switch to waveform'}
             aria-pressed={waveformEnabled}
-            className={`hidden md:flex items-center justify-center transition-colors ${waveformEnabled ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`flex items-center justify-center transition-colors ${waveformEnabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
           >
-            <Activity className="w-4 h-4" />
+            <Activity className="w-[18px] h-[18px]" />
           </button>
-          <span className="hidden md:contents">
-            <CrossfadePopover getCrossfadeDuration={getCrossfadeDuration} setCrossfadeDuration={setCrossfadeDuration} />
-            <EqPopover />
-          </span>
+          <CrossfadePopover getCrossfadeDuration={getCrossfadeDuration} setCrossfadeDuration={setCrossfadeDuration} />
+          <EqPopover />
           <button
-            onClick={handleToggleVisualizer}
-            aria-label={showVisualizer ? 'Hide visualizer' : 'Show visualizer'}
-            aria-pressed={showVisualizer}
-            className={`hidden md:flex items-center justify-center transition-colors ${showVisualizer ? 'text-indigo-400 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            onClick={handleToggleDeck}
+            aria-label={deckVisible ? 'Hide analyzer deck' : 'Show analyzer deck'}
+            aria-pressed={deckVisible}
+            className={`flex items-center justify-center transition-colors ${deckVisible ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
           >
-            <BarChart3 className="w-4 h-4" />
+            <BarChart3 className="w-[18px] h-[18px]" />
           </button>
           <button
             onClick={() => setShowRetroMode(true)}
             aria-label="Retro cassette mode"
-            className="hidden md:flex items-center justify-center transition-colors text-zinc-500 hover:text-amber-400"
+            className="flex items-center justify-center transition-colors mc-interactive-warning"
           >
-            <CassetteTape className="w-4 h-4" />
+            <CassetteTape className="w-[18px] h-[18px]" />
+          </button>
+          <button
+            onClick={handleToggleLyrics}
+            aria-label={isLyricsOpen ? 'Hide lyrics' : 'Show lyrics'}
+            aria-pressed={isLyricsOpen}
+            className={`flex items-center justify-center transition-colors ${isLyricsOpen ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+          >
+            <Mic2 className="w-[18px] h-[18px]" />
+          </button>
+          <button
+            onClick={handleToggleQueue}
+            aria-label={isQueueOpen ? 'Hide queue' : 'Show queue'}
+            aria-pressed={isQueueOpen}
+            className={`flex items-center justify-center transition-colors ${isQueueOpen ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+          >
+            <ListMusic className="w-[18px] h-[18px]" />
           </button>
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
         </div>

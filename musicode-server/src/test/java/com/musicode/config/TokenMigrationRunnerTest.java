@@ -3,6 +3,8 @@ package com.musicode.config;
 import com.musicode.model.entity.Role;
 import com.musicode.model.entity.User;
 import com.musicode.repository.PlaybackEventRepository;
+import com.musicode.repository.PlaylistRepository;
+import com.musicode.repository.PlaylistTrackRepository;
 import com.musicode.repository.RefreshTokenRepository;
 import com.musicode.repository.UserRepository;
 import com.musicode.service.TokenEncryptionService;
@@ -26,6 +28,8 @@ class TokenMigrationRunnerTest {
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private UserRepository userRepository;
     @Autowired private PlaybackEventRepository playbackEventRepository;
+    @Autowired private PlaylistTrackRepository playlistTrackRepository;
+    @Autowired private PlaylistRepository playlistRepository;
     @Autowired private RefreshTokenRepository refreshTokenRepository;
     @Autowired private TokenEncryptionService encryptionService;
 
@@ -33,6 +37,8 @@ class TokenMigrationRunnerTest {
     void cleanDatabase() {
         playbackEventRepository.deleteAll();
         refreshTokenRepository.deleteAll();
+        playlistTrackRepository.deleteAll();
+        playlistRepository.deleteAll();
         userRepository.deleteAll();
     }
 

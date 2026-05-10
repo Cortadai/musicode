@@ -31,7 +31,21 @@ export interface DailyPlayCount {
   count: number;
 }
 
+export interface RecentPlay {
+  trackTitle: string;
+  artistName: string;
+  albumTitle: string;
+  albumId: number;
+  hasCoverArt: boolean;
+  playedAt: string;
+}
+
 export type Period = 'week' | 'month' | 'year' | 'all';
+
+export async function getRecentPlays(limit = 20) {
+  const { data } = await api.get<RecentPlay[]>('/stats/recent-plays', { params: { limit } });
+  return data;
+}
 
 export async function getTopArtists(period: Period = 'month', limit = 10) {
   const { data } = await api.get<TopArtistStat[]>('/stats/top-artists', { params: { period, limit } });

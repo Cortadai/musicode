@@ -278,6 +278,117 @@ describe('playerReducer', () => {
     });
   });
 
+  // --- JUMP_TO_INDEX ---
+  describe('JUMP_TO_INDEX', () => {
+    it('jumps to valid index', () => {
+      const playing = stateWith({
+        currentTrack: t1,
+        queue: threeTrackQueue,
+        queueIndex: 0,
+      });
+      const state = playerReducer(playing, { type: 'JUMP_TO_INDEX', index: 2 });
+      expect(state.currentTrack).toEqual(t3);
+      expect(state.queueIndex).toBe(2);
+      expect(state.isPlaying).toBe(true);
+      expect(state.currentTime).toBe(0);
+    });
+
+    it('ignores negative index', () => {
+      const playing = stateWith({
+        currentTrack: t1,
+        queue: threeTrackQueue,
+        queueIndex: 0,
+      });
+      const state = playerReducer(playing, { type: 'JUMP_TO_INDEX', index: -1 });
+      expect(state).toEqual(playing);
+    });
+
+    it('ignores out-of-bounds index', () => {
+      const playing = stateWith({
+        currentTrack: t1,
+        queue: threeTrackQueue,
+        queueIndex: 0,
+      });
+      const state = playerReducer(playing, { type: 'JUMP_TO_INDEX', index: 10 });
+      expect(state).toEqual(playing);
+    });
+  });
+
+  // --- REMOVE_FROM_QUEUE ---
+  describe('REMOVE_FROM_QUEUE', () => {
+    it('removes track before current — adjusts index', () => {
+      const playing = stateWith({
+        currentTrack: t3,
+        queue: threeTrackQueue,
+        originalQueue: threeTrackQueue,
+        queueIndex: 2,
+      });
+      const state = playerReducer(playing, { type: 'REMOVE_FROM_QUEUE', index: 0 });
+      expect(state.queue).toHaveLength(2);
+      expect(state.queueIndex).toBe(1); // shifted down
+      expect(state.currentTrack).toEqual(t3); // unchanged
+    });
+
+    it('removes track after current — no index change', () => {
+      const playing = stateWith({
+        currentTrack: t1,
+        queue: threeTrackQueue,
+        originalQueue: threeTrackQueue,
+        queueIndex: 0,
+      });
+      const state = playerReducer(playing, { type: 'REMOVE_FROM_QUEUE', index: 2 });
+      expect(state.queue).toHaveLength(2);
+      expect(state.queueIndex).toBe(0); // unchanged
+      expect(state.currentTrack).toEqual(t1);
+    });
+
+    it('removes current track — advances to next', () => {
+      const playing = stateWith({
+        currentTrack: t2,
+        queue: threeTrackQueue,
+        originalQueue: threeTrackQueue,
+        queueIndex: 1,
+      });
+      const state = playerReducer(playing, { type: 'REMOVE_FROM_QUEUE', index: 1 });
+      expect(state.queue).toHaveLength(2);
+      expect(state.currentTrack).toEqual(t3);
+      expect(state.currentTime).toBe(0);
+    });
+
+    it('does nothing for single-track queue', () => {
+      const playing = stateWith({
+        currentTrack: t1,
+        queue: [t1],
+        originalQueue: [t1],
+        queueIndex: 0,
+      });
+      const state = playerReducer(playing, { type: 'REMOVE_FROM_QUEUE', index: 0 });
+      expect(state.queue).toHaveLength(1); // unchanged
+    });
+  });
+
+  // --- CLEAR_QUEUE ---
+  describe('CLEAR_QUEUE', () => {
+    it('resets but preserves volume, shuffle, repeatMode', () => {
+      const playing = stateWith({
+        currentTrack: t2,
+        queue: threeTrackQueue,
+        queueIndex: 1,
+        isPlaying: true,
+        volume: 0.7,
+        shuffle: true,
+        repeatMode: 'all',
+      });
+      const state = playerReducer(playing, { type: 'CLEAR_QUEUE' });
+      expect(state.currentTrack).toBeNull();
+      expect(state.queue).toEqual([]);
+      expect(state.isPlaying).toBe(false);
+      expect(state.volume).toBe(0.7);
+      expect(state.shuffle).toBe(true);
+      expect(state.repeatMode).toBe('all');
+    });
+  });
+
   // --- STOP ---
   describe('STOP', () => {
     it('resets to initial state but preserves volume', () => {

@@ -3,6 +3,8 @@ package com.musicode.controller;
 import com.musicode.model.entity.Role;
 import com.musicode.model.entity.User;
 import com.musicode.repository.PlaybackEventRepository;
+import com.musicode.repository.PlaylistRepository;
+import com.musicode.repository.PlaylistTrackRepository;
 import com.musicode.repository.RefreshTokenRepository;
 import com.musicode.repository.UserRepository;
 import com.musicode.service.JwtService;
@@ -32,6 +34,8 @@ class AuthControllerTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private UserRepository userRepository;
     @Autowired private PlaybackEventRepository playbackEventRepository;
+    @Autowired private PlaylistTrackRepository playlistTrackRepository;
+    @Autowired private PlaylistRepository playlistRepository;
     @Autowired private RefreshTokenRepository refreshTokenRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private JwtService jwtService;
@@ -40,6 +44,8 @@ class AuthControllerTest {
     void setUp() {
         playbackEventRepository.deleteAll();
         refreshTokenRepository.deleteAll();
+        playlistTrackRepository.deleteAll();
+        playlistRepository.deleteAll();
         userRepository.deleteAll();
 
         userRepository.save(User.builder()

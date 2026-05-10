@@ -71,6 +71,9 @@ export type PlayerAction =
   | { type: 'SET_VOLUME'; volume: number }
   | { type: 'TOGGLE_SHUFFLE' }
   | { type: 'TOGGLE_REPEAT' }
+  | { type: 'JUMP_TO_INDEX'; index: number }
+  | { type: 'REMOVE_FROM_QUEUE'; index: number }
+  | { type: 'CLEAR_QUEUE' }
   | { type: 'STOP' };
 
 function shuffleArray<T>(arr: T[], keepIndex: number): { shuffled: T[]; newIndex: number } {
@@ -204,6 +207,41 @@ export function playerReducer(state: PlayerState, action: PlayerAction): PlayerS
       const currentIdx = modes.indexOf(state.repeatMode);
       return { ...state, repeatMode: modes[(currentIdx + 1) % modes.length] };
     }
+    case 'JUMP_TO_INDEX': {
+      const idx = action.index;
+      if (idx < 0 || idx >= state.queue.length) return state;
+      return {
+        ...state,
+        currentTrack: state.queue[idx],
+        queueIndex: idx,
+        isPlaying: true,
+        currentTime: 0,
+        duration: 0,
+      };
+    }
+    case 'REMOVE_FROM_QUEUE': {
+      const ri = action.index;
+      if (ri < 0 || ri >= state.queue.length || state.queue.length <= 1) return state;
+      const newQueue = state.queue.filter((_, i) => i !== ri);
+      const newOriginal = state.originalQueue.filter(t => t.id !== state.queue[ri].id);
+      let newIdx = state.queueIndex;
+      if (ri < state.queueIndex) newIdx--;
+      else if (ri === state.queueIndex) {
+        newIdx = Math.min(newIdx, newQueue.length - 1);
+        return {
+          ...state,
+          queue: newQueue,
+          originalQueue: newOriginal,
+          queueIndex: newIdx,
+          currentTrack: newQueue[newIdx],
+          currentTime: 0,
+          duration: 0,
+        };
+      }
+      return { ...state, queue: newQueue, originalQueue: newOriginal, queueIndex: newIdx };
+    }
+    case 'CLEAR_QUEUE':
+      return { ...initialState, volume: state.volume, shuffle: state.shuffle, repeatMode: state.repeatMode };
     case 'STOP':
       return { ...initialState, volume: state.volume };
     default:

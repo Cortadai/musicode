@@ -17,6 +17,19 @@ public class StatsService {
 
     private final PlaybackEventRepository playbackEventRepository;
 
+    public List<RecentPlay> getRecentPlays(User user, int limit) {
+        return playbackEventRepository.findRecentPlays(user, limit).stream()
+                .map(row -> new RecentPlay(
+                        (String) row[0],
+                        (String) row[1],
+                        (String) row[2],
+                        (Long) row[3],
+                        row[4] != null,
+                        (Instant) row[5]
+                ))
+                .toList();
+    }
+
     public List<TopArtistStat> getTopArtists(User user, String period, int limit) {
         var since = periodToInstant(period);
         return playbackEventRepository.findTopArtists(user, since, limit).stream()

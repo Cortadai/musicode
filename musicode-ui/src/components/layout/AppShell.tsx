@@ -1,19 +1,24 @@
 import { useEffect } from 'react';
-import { Outlet } from 'react-router';
-import Sidebar from './Sidebar';
-import TopBar from './TopBar';
-import PlayerBar from '../player/PlayerBar';
 import { usePlayer } from '../../hooks/usePlayer';
-import { useSidebarCollapse } from '../../hooks/useSidebarCollapse';
+import { useTheme } from '../../themes';
+import { QueuePanelProvider } from '../../context/QueuePanelContext';
+import { LyricsSidebarProvider } from '../../context/LyricsSidebarContext';
+import EvolvedShell from './shells/EvolvedShell';
+import NovaShell from './shells/NovaShell';
+import MinimalShell from './shells/MinimalShell';
+
+const shellByLayout = {
+  'sidebar-expanded': EvolvedShell,
+  'sidebar-icons': NovaShell,
+  'horizontal': MinimalShell,
+} as const;
 
 export default function AppShell() {
   const { isPlaying, currentTrack, pause, resume, next, prev, setVolume, volume } = usePlayer();
-  const { collapsed, toggle } = useSidebarCollapse();
+  const { theme } = useTheme();
 
-  // Global keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Don't capture keys when typing in inputs
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
@@ -21,7 +26,7 @@ export default function AppShell() {
         case ' ':
           e.preventDefault();
           if (!currentTrack) return;
-          isPlaying ? pause() : resume();
+          if (isPlaying) pause(); else resume();
           break;
         case 'ArrowRight':
           e.preventDefault();
@@ -39,20 +44,28 @@ export default function AppShell() {
       }
     }
 
+    function handleContextMenu(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      const tag = target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) return;
+      if (target.closest('.selectable')) return;
+      e.preventDefault();
+    }
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('contextmenu', handleContextMenu);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
   }, [isPlaying, currentTrack, pause, resume, next, prev, setVolume, volume]);
 
+  const Shell = shellByLayout[theme.layout];
   return (
-    <div className="h-screen flex overflow-hidden bg-zinc-950 text-zinc-100">
-      <Sidebar collapsed={collapsed} onToggle={toggle} />
-      <div className="flex-1 flex flex-col min-w-0">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
-        </main>
-        <PlayerBar />
-      </div>
-    </div>
+    <QueuePanelProvider>
+      <LyricsSidebarProvider>
+        <Shell />
+      </LyricsSidebarProvider>
+    </QueuePanelProvider>
   );
 }

@@ -3,6 +3,8 @@ package com.musicode.repository;
 import com.musicode.model.entity.Role;
 import com.musicode.model.entity.User;
 import com.musicode.repository.PlaybackEventRepository;
+import com.musicode.repository.PlaylistRepository;
+import com.musicode.repository.PlaylistTrackRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +23,17 @@ class UserRepositoryTest {
     @Autowired
     private PlaybackEventRepository playbackEventRepository;
 
+    @Autowired
+    private PlaylistTrackRepository playlistTrackRepository;
+
+    @Autowired
+    private PlaylistRepository playlistRepository;
+
     @BeforeEach
     void setUp() {
         playbackEventRepository.deleteAll();
+        playlistTrackRepository.deleteAll();
+        playlistRepository.deleteAll();
         userRepository.deleteAll();
     }
 

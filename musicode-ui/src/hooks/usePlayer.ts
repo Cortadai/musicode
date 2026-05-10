@@ -172,12 +172,18 @@ export function usePlayer() {
     [dispatch]
   );
 
+  const stop = useCallback(() => {
+    audioGraph.stop();
+    dispatch({ type: 'STOP' });
+  }, [dispatch]);
+
   return {
     ...state,
     playTrack,
     playAlbum,
     pause,
     resume,
+    stop,
     next,
     prev,
     seek,

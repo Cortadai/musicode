@@ -123,7 +123,7 @@ export default function RetroMode({ open, onClose }: Props) {
       <button
         onClick={onClose}
         aria-label="Close retro mode"
-        className="absolute top-4 right-4 z-20 text-zinc-500 hover:text-zinc-300 transition-colors p-2"
+        className="absolute top-4 right-4 z-20 mc-interactive-muted transition-colors p-2"
       >
         <X className="w-5 h-5" />
       </button>

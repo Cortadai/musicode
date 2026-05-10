@@ -3,6 +3,7 @@ import { getTracks } from '../api/tracks';
 import TrackList from '../components/library/TrackList';
 import { usePlayer } from '../hooks/usePlayer';
 import Spinner from '../components/common/Spinner';
+import { TrackListSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
 import { useEffect, useRef, useCallback, useMemo } from 'react';
@@ -59,14 +60,14 @@ export default function TracksPage() {
     [playTrack, allTracks]
   );
 
-  if (isLoading) return <Spinner text="Loading tracks…" />;
+  if (isLoading) return <TrackListSkeleton />;
   if (error) return <ErrorMessage message="Failed to load tracks" detail={getErrorMessage(error)} />;
 
   if (allTracks.length === 0) {
     return (
       <div>
         <h2 className="text-xl font-semibold mb-4">Tracks</h2>
-        <p className="text-zinc-500">No tracks found. Scan a folder in Settings.</p>
+        <p style={{ color: 'var(--mc-text-muted)' }}>No tracks found. Scan a folder in Settings.</p>
       </div>
     );
   }
@@ -74,7 +75,7 @@ export default function TracksPage() {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">
-        Tracks <span className="text-sm font-normal text-zinc-500">({totalElements})</span>
+        Tracks <span className="text-sm font-normal" style={{ color: 'var(--mc-text-muted)' }}>({totalElements})</span>
       </h2>
       <TrackList
         tracks={allTracks}

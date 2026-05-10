@@ -1,29 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router';
 import { getRecentActivity } from '../../api/activity';
 import type { ActivityEvent } from '../../api/activity';
 import { Music } from 'lucide-react';
 
-/**
- * Real-time activity feed using Server-Sent Events.
- * Shows what users are listening to — updates live when anyone plays a track.
- * Falls back to polling /api/activity/recent on initial load.
- *
- * EventSource auto-reconnects on disconnect (browser-native behavior).
- */
 export default function ActivityFeed() {
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [loadError, setLoadError] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const navigate = useNavigate();
 
-  // Load initial recent events
   useEffect(() => {
     getRecentActivity()
       .then((data) => { setEvents(data); setLoadError(false); })
       .catch(() => setLoadError(true));
   }, []);
 
-  // SSE connection
   useEffect(() => {
     const es = new EventSource('/api/activity/stream');
     eventSourceRef.current = es;
@@ -67,27 +60,44 @@ export default function ActivityFeed() {
   }
 
   return (
-    <div className="px-3 pb-3">
-      <div className="flex items-center gap-2 px-3 mb-2">
-        <p className="text-xs text-zinc-600 uppercase tracking-wider">Activity</p>
+    <div
+      className="flex flex-col min-h-0 flex-1 px-3 pb-2 pt-4"
+      style={{ borderTop: '1px solid var(--mc-border-default)' }}
+    >
+      <div className="flex items-center gap-2 px-3 mb-2 shrink-0">
+        <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--mc-text-muted)' }}>Activity</p>
         {reconnecting && (
-          <span className="text-[10px] text-amber-500/70">reconnecting…</span>
+          <span className="text-[10px]" style={{ color: 'var(--mc-text-warning)', opacity: 0.7 }}>reconnecting…</span>
         )}
       </div>
       {loadError && events.length === 0 && (
-        <p className="text-xs text-zinc-600 px-3">Could not load activity</p>
+        <p className="text-xs px-3" style={{ color: 'var(--mc-text-muted)' }}>Could not load activity</p>
       )}
-      <div className="space-y-1 max-h-40 overflow-y-auto">
-        {events.slice(0, 5).map((event, i) => (
-          <div key={`${event.timestamp}-${i}`} className="flex items-start gap-2 px-3 py-1.5 rounded text-xs">
-            <Music className="w-3 h-3 text-indigo-400 mt-0.5 shrink-0" />
+      <div className="space-y-1 overflow-y-auto min-h-0 flex-1">
+        {events.slice(0, 10).map((event, i) => (
+          <div key={`${event.timestamp}-${i}`} className="flex items-start gap-2 px-2 py-1.5 rounded text-xs">
+            {event.hasCoverArt && event.albumId ? (
+              <button
+                onClick={() => navigate(`/albums/${event.albumId}`)}
+                className="shrink-0 mt-0.5 rounded overflow-hidden hover:opacity-80 transition-opacity"
+                title={event.albumTitle}
+              >
+                <img
+                  src={`/api/covers/${event.albumId}`}
+                  alt=""
+                  className="w-7 h-7 object-cover"
+                />
+              </button>
+            ) : (
+              <Music className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: 'var(--mc-accent-primary)' }} />
+            )}
             <div className="min-w-0">
-              <p className="text-zinc-400 truncate">
-                <span className="text-zinc-300">{event.username}</span>
+              <p className="truncate" style={{ color: 'var(--mc-text-secondary)' }}>
+                <span style={{ color: 'var(--mc-text-primary)' }}>{event.username}</span>
                 {' · '}
-                <span className="text-zinc-200">{event.trackTitle}</span>
+                <span style={{ color: 'var(--mc-text-primary)' }}>{event.trackTitle}</span>
               </p>
-              <p className="text-zinc-600 truncate">
+              <p className="truncate" style={{ color: 'var(--mc-text-muted)' }}>
                 {event.artistName} · {formatTime(event.timestamp)}
               </p>
             </div>

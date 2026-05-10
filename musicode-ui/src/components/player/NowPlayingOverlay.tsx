@@ -8,6 +8,7 @@ import { getCoverUrl } from '../../api/albums';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import type { VisualizerMode } from '../../audio/audioPreferences';
 import TransportControls from './TransportControls';
+import TechBadges from './TechBadges';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
 import Visualizer from './Visualizer';
@@ -114,7 +115,7 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
   const isVinylMode = showVisualizer && visualizerMode === 'vinyl';
 
   const bgStyle = !isVinylMode && dynamicEnabled && colors
-    ? { background: `radial-gradient(ellipse at center, ${colors.primary}18 0%, ${colors.background} 70%) no-repeat, #09090b` }
+    ? { background: `radial-gradient(ellipse at center, ${colors.primary}18 0%, ${colors.background} 70%) no-repeat, var(--mc-bg-base)` }
     : {};
 
   return createPortal(
@@ -144,18 +145,29 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
 
       {/* Top bar */}
       <div className="relative z-10 flex items-center justify-between px-6 pt-4 pb-2">
-        <button
-          onClick={onClose}
-          className="flex items-center gap-2 text-zinc-400 hover:text-zinc-100 transition-colors group"
-        >
-          <ChevronDown className="w-5 h-5 transition-transform group-hover:translate-y-0.5" />
-          <span className="text-sm uppercase tracking-wider font-medium flex items-center gap-2">
-            Now Playing
-            {isPlaying && (
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            )}
-          </span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-2 mc-interactive-muted transition-colors group"
+          >
+            <ChevronDown className="w-5 h-5 transition-transform group-hover:translate-y-0.5" />
+            <span className="text-sm uppercase tracking-wider font-medium flex items-center gap-2">
+              Now Playing
+              {isPlaying && (
+                <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--mc-accent-primary)' }} />
+              )}
+            </span>
+          </button>
+          {currentTrack && (
+            <TechBadges
+              filePath={currentTrack.filePath}
+              bitRate={currentTrack.bitRate}
+              sampleRate={currentTrack.sampleRate}
+              bitsPerSample={currentTrack.bitsPerSample}
+              className="flex items-center gap-1"
+            />
+          )}
+        </div>
 
         <div className="flex items-center gap-1">
           {([
@@ -171,20 +183,22 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
                 onClick={() => handleSelectVisualizer(mode)}
                 aria-label={active ? `Hide ${label}` : label}
                 aria-pressed={active}
-                className={`p-1.5 rounded transition-colors ${active ? 'text-indigo-400 bg-indigo-400/10 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+                className={`p-1.5 rounded transition-colors ${active ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+                style={active ? { backgroundColor: 'var(--mc-accent-primary-muted)' } : undefined}
               >
                 <Icon className="w-4 h-4" />
               </button>
             );
           })}
 
-          <div className="w-px h-4 bg-zinc-700 mx-1" />
+          <div className="w-px h-4 mx-1" style={{ backgroundColor: 'var(--mc-waveform-buffered)' }} />
 
           <button
             onClick={toggleDynamic}
             aria-label={dynamicEnabled ? 'Disable dynamic colors' : 'Enable dynamic colors'}
             aria-pressed={dynamicEnabled}
-            className={`p-1.5 rounded transition-colors ${dynamicEnabled ? 'text-indigo-400 bg-indigo-400/10 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`p-1.5 rounded transition-colors ${dynamicEnabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+            style={dynamicEnabled ? { backgroundColor: 'var(--mc-accent-primary-muted)' } : undefined}
           >
             <Palette className="w-4 h-4" />
           </button>
@@ -193,7 +207,8 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
             onClick={handleToggleWaveform}
             aria-label={waveformEnabled ? 'Switch to flat progress bar' : 'Switch to waveform'}
             aria-pressed={waveformEnabled}
-            className={`p-1.5 rounded transition-colors ${waveformEnabled ? 'text-indigo-400 bg-indigo-400/10 hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`p-1.5 rounded transition-colors ${waveformEnabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+            style={waveformEnabled ? { backgroundColor: 'var(--mc-accent-primary-muted)' } : undefined}
           >
             <Activity className="w-4 h-4" />
           </button>
@@ -202,17 +217,18 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
             onClick={() => setShowLyrics(prev => !prev)}
             aria-label={showLyrics ? 'Hide lyrics' : 'Show lyrics'}
             aria-pressed={showLyrics}
-            className={`p-1.5 rounded transition-all duration-300 ${showLyrics ? 'text-indigo-400 bg-indigo-400/15 shadow-[0_0_8px_rgba(129,140,248,0.3)] hover:text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`p-1.5 rounded transition-all duration-300 ${showLyrics ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+            style={showLyrics ? { backgroundColor: 'var(--mc-accent-primary-muted)' } : undefined}
           >
             <MicVocal className="w-4 h-4" />
           </button>
 
-          <div className="w-px h-4 bg-zinc-700 mx-1" />
+          <div className="w-px h-4 mx-1" style={{ backgroundColor: 'var(--mc-waveform-buffered)' }} />
 
           <button
             onClick={onClose}
             aria-label="Close"
-            className="text-zinc-400 hover:text-zinc-100 transition-colors p-1.5 rounded"
+            className="mc-interactive-muted transition-colors p-1.5 rounded"
           >
             <X className="w-4 h-4" />
           </button>
@@ -232,8 +248,8 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
             <div
               className={`relative rounded-2xl overflow-hidden shadow-2xl ${
                 showLyrics
-                  ? 'w-48 h-48 md:w-56 md:h-56 lg:w-72 lg:h-72'
-                  : 'w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96'
+                  ? 'w-72 h-72'
+                  : 'w-96 h-96'
               }`}
               style={dynamicEnabled && colors ? { boxShadow: `0 20px 60px ${colors.primary}30` } : {}}
             >
@@ -252,8 +268,8 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
                   className={`w-full h-full object-cover ${coverFading ? 'np-cover-enter' : ''}`}
                 />
               ) : (
-                <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
-                  <span className="text-6xl text-zinc-600">&#9835;</span>
+                <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: 'var(--mc-bg-surface-hover)' }}>
+                  <span className="text-6xl" style={{ color: 'var(--mc-text-muted)' }}>&#9835;</span>
                 </div>
               )}
             </div>
@@ -261,8 +277,8 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
 
           {/* Track info */}
           <div className="text-center max-w-md">
-            <h2 className="text-xl font-semibold text-zinc-100 truncate">{currentTrack.title}</h2>
-            <p className="text-sm text-zinc-400 mt-0.5 truncate">
+            <h2 className="text-xl font-semibold truncate" style={{ color: 'var(--mc-text-primary)' }}>{currentTrack.title}</h2>
+            <p className="text-sm mt-0.5 truncate" style={{ color: 'var(--mc-text-secondary)' }}>
               {currentTrack.artist?.name ?? 'Unknown Artist'}
               {currentTrack.album?.title ? ` \u2014 ${currentTrack.album.title}` : ''}
             </p>
@@ -292,14 +308,13 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
           {/* Volume */}
           <div className="flex items-center justify-center gap-2">
             <VolumeControl volume={volume} onVolumeChange={setVolume} />
-            <div className="w-4" aria-hidden="true" />
           </div>
 
           {/* Up Next */}
           {nextTrack && (
             <div className="text-center mt-1">
-              <span className="text-[11px] text-zinc-600 uppercase tracking-wider">Up Next</span>
-              <p className="text-sm text-zinc-400 truncate max-w-xs mx-auto">
+              <span className="text-[11px] uppercase tracking-wider" style={{ color: 'var(--mc-text-muted)' }}>Up Next</span>
+              <p className="text-sm truncate max-w-xs mx-auto" style={{ color: 'var(--mc-text-secondary)' }}>
                 {nextTrack.title} {'\u2014'} {nextTrack.artist?.name ?? 'Unknown'}
               </p>
             </div>
@@ -307,7 +322,7 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
         </div>
 
         {/* Right side — Lyrics panel */}
-        <div className={`border-l border-zinc-800/50 min-h-0 overflow-hidden transition-opacity duration-300 ${
+        <div className={`min-h-0 overflow-hidden transition-opacity duration-300 ${
           showLyrics ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}>
           {showLyrics && (
