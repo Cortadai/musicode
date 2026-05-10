@@ -79,6 +79,8 @@ public class SecurityConfig {
                 // re-checking would fail because SecurityContext is thread-local
                 // and the dispatch runs on a different Tomcat thread.
                 .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
+                // Static frontend assets — served by Spring in desktop mode
+                .requestMatchers("/", "/index.html", "/assets/**", "/favicon*", "/manifest.json").permitAll()
                 // Public: login and refresh don't require an existing token
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/refresh").permitAll()

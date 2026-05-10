@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
  * Users authenticate individually via auth.getMobileSession to get a session key.
  */
 @Configuration
-@ConfigurationProperties(prefix = "musicode.lastfm")
+@ConfigurationProperties(prefix = "sonance.lastfm")
 @Getter @Setter
 public class LastfmConfig {
     private String apiKey = "";

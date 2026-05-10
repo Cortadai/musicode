@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:${sonance.data-dir:${user.home}/.sonance/data}/sonance-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+
+  h2:
+    console:
+      enabled: false
+
+sonance:
+  covers-dir: ${sonance.data-dir:${user.home}/.sonance/data}/covers
+  waveforms-dir: ${sonance.data-dir:${user.home}/.sonance/data}/waveforms
+  cookies:
+    secure: false
+  security:
+    login-rate-limit:
+      max-attempts: 50
+      window-seconds: 60
