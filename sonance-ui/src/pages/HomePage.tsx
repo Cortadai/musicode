@@ -323,10 +323,11 @@ export default function HomePage() {
           <EmptyState message="No top artists yet. Your listening stats will appear here." />
         ) : (
           topArtists.data.map((artist) => (
-            <div
-              key={artist.name}
+            <Link
+              key={artist.artistId}
+              to={`/artists/${artist.artistId}`}
               className="flex-shrink-0 w-32 flex flex-col items-center gap-2 py-3"
-              style={{ scrollSnapAlign: 'start' }}
+              style={{ scrollSnapAlign: 'start', textDecoration: 'none' }}
             >
               <div
                 className="w-20 h-20 rounded-full flex items-center justify-center mc-card-lift"
@@ -343,7 +344,7 @@ export default function HomePage() {
               <p className="text-xs font-medium" style={{ color: 'var(--mc-accent-primary)' }}>
                 {artist.playCount} {artist.playCount === 1 ? 'play' : 'plays'}
               </p>
-            </div>
+            </Link>
           ))
         )}
       </Carousel>

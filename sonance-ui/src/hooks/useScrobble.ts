@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { recordPlay } from '../api/plays';
 
 export type ScrobbleStatus = 'idle' | 'reported' | 'error';
@@ -11,6 +12,7 @@ interface UseScrobbleParams {
 }
 
 export function useScrobble({ trackId, currentTime, duration, enabled }: UseScrobbleParams) {
+  const queryClient = useQueryClient();
   const playReportedRef = useRef<number | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [status, setStatus] = useState<ScrobbleStatus>('idle');
@@ -30,7 +32,10 @@ export function useScrobble({ trackId, currentTime, duration, enabled }: UseScro
       abortControllerRef.current = controller;
       recordPlay(trackId, listenDuration, { signal: controller.signal })
         .then(() => {
-          if (!controller.signal.aborted) setStatus('reported');
+          if (!controller.signal.aborted) {
+            setStatus('reported');
+            queryClient.invalidateQueries({ queryKey: ['stats'] });
+          }
         })
         .catch((err) => {
           if (controller.signal.aborted) return;
@@ -38,7 +43,7 @@ export function useScrobble({ trackId, currentTime, duration, enabled }: UseScro
           setStatus('error');
         });
     }
-  }, [trackId, currentTime, duration, enabled]);
+  }, [trackId, currentTime, duration, enabled, queryClient]);
 
   // Reset when track changes
   useEffect(() => {

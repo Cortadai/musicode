@@ -19,12 +19,12 @@ export default function ArtistDetailPage() {
     queryFn: () => getArtist(artistId),
     enabled: !isNaN(artistId),
   });
+  const lastfmUrl = useArtistLastfmUrl(artistId);
 
   if (isLoading) return <ArtistDetailSkeleton />;
   if (error || !artist) return <ErrorMessage message="Artist not found" detail={getErrorMessage(error)} />;
 
   const albums: Album[] = artist.albums ? [...artist.albums] : [];
-  const lastfmUrl = useArtistLastfmUrl(artistId);
 
   return (
     <div>

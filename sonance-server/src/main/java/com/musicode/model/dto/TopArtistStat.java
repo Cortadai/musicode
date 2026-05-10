@@ -1,3 +1,3 @@
 package com.musicode.model.dto;
 
-public record TopArtistStat(String name, long playCount) {}
+public record TopArtistStat(long artistId, String name, long playCount) {}

@@ -121,6 +121,7 @@ export function useArtistLastfmUrl(artistId: number) {
     queryKey: ['artist-bio', artistId],
     queryFn: () => getArtistBio(artistId),
     staleTime: 1000 * 60 * 60,
+    enabled: artistId > 0,
   });
   return bio && !bio.empty ? bio.lastfmUrl : null;
 }

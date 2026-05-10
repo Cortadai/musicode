@@ -15,10 +15,10 @@ public interface PlaybackEventRepository extends JpaRepository<PlaybackEvent, Lo
 
     // --- Top artists ---
     @Query("""
-            SELECT t.artist.name AS name, COUNT(pe) AS playCount
+            SELECT t.artist.id AS artistId, t.artist.name AS name, COUNT(pe) AS playCount
             FROM PlaybackEvent pe JOIN pe.track t
             WHERE pe.user = :user AND pe.playedAt >= :since
-            GROUP BY t.artist.name
+            GROUP BY t.artist.id, t.artist.name
             ORDER BY COUNT(pe) DESC
             LIMIT :limit
             """)

@@ -33,7 +33,7 @@ public class StatsService {
     public List<TopArtistStat> getTopArtists(User user, String period, int limit) {
         var since = periodToInstant(period);
         return playbackEventRepository.findTopArtists(user, since, limit).stream()
-                .map(row -> new TopArtistStat((String) row[0], (long) row[1]))
+                .map(row -> new TopArtistStat((long) row[0], (String) row[1], (long) row[2]))
                 .toList();
     }
 

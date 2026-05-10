@@ -1,6 +1,7 @@
 import api from './client';
 
 export interface TopArtistStat {
+  artistId: number;
   name: string;
   playCount: number;
 }

@@ -2,11 +2,13 @@ import { NavLink, useNavigate } from 'react-router';
 import { Home, Library, ListMusic, Settings, LogOut, TrendingUp, HeartPulse, Music } from 'lucide-react';
 import GitHubIcon from '../icons/GitHubIcon';
 import { useAuth } from '../../context/AuthContext';
+import { usePlayerDispatch } from '../../context/PlayerContext';
 import audioGraph from '../../audio/audioGraph';
 import ActivityFeed from '../activity/ActivityFeed';
 
 export default function Sidebar() {
   const { isAdmin, user, logout } = useAuth();
+  const dispatch = usePlayerDispatch();
   const navigate = useNavigate();
 
   const navItems = [
@@ -20,6 +22,7 @@ export default function Sidebar() {
 
   async function handleLogout() {
     audioGraph.stop();
+    dispatch({ type: 'STOP' });
     await logout();
     navigate('/login', { replace: true });
   }

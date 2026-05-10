@@ -31,6 +31,8 @@ export function useGapless({
   const crossfadeDurationRef = useRef<number>(loadPreferences().crossfadeDuration);
   const crossfadeTriggeredRef = useRef<number | null>(null);
   const preloadTriggeredRef = useRef<number | null>(null);
+  const retryCountRef = useRef(0);
+  const lastRetryTrackRef = useRef<number | null>(null);
 
   // Keep refs in sync to avoid stale closures in audioGraph callbacks
   const queueRef = useRef(queue);
@@ -133,12 +135,23 @@ export function useGapless({
     audioGraph.setOnError((element: HTMLAudioElement) => {
       const code = element.error?.code;
       const msg = element.error?.message ?? 'unknown';
-      console.warn(`[gapless] Audio error (code=${code}): ${msg}`);
+      const trackId = currentTrackRef.current?.id ?? null;
+      console.warn(`[gapless] Audio error (code=${code}): ${msg}`, { src: element.src, trackId });
 
-      // Network/decode error — try refreshing the token and retrying once
       if (code === MediaError.MEDIA_ERR_NETWORK || code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+        if (lastRetryTrackRef.current !== trackId) {
+          retryCountRef.current = 0;
+          lastRetryTrackRef.current = trackId;
+        }
+
+        if (retryCountRef.current >= 1) {
+          console.warn('[gapless] Already retried — giving up. Check network tab for stream response status.');
+          return;
+        }
+
+        retryCountRef.current++;
         const src = element.src;
-        console.debug('[gapless] Attempting token refresh + stream retry');
+        console.debug('[gapless] Attempting token refresh + stream retry (attempt', retryCountRef.current + ')');
         refresh()
           .then(() => {
             element.src = src;
@@ -159,10 +172,11 @@ export function useGapless({
     };
   }, [isOwner, dispatch, getNextTrackSrc, onTimeUpdate]);
 
-  // Reset preload/crossfade tracking on track change
   useEffect(() => {
     preloadTriggeredRef.current = null;
     crossfadeTriggeredRef.current = null;
+    retryCountRef.current = 0;
+    lastRetryTrackRef.current = null;
   }, [currentTrack?.id]);
 
   const setCrossfadeDuration = useCallback((seconds: number) => {
