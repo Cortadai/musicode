@@ -39,12 +39,12 @@ function PlayAlbumButton({ onClick, albumTitle, totalDuration, isAlbumPlaying }:
   );
 }
 
-function ArtistLine({ artistName, year, trackCount, lastfmUrl }: {
+function ArtistLine({ artistName, artistId, year, trackCount, lastfmUrl }: {
   artistName: string; artistId: number; year?: number; trackCount: number; lastfmUrl: string | null;
 }) {
   return (
     <p className="text-sm flex items-center gap-1 flex-wrap" style={{ color: 'var(--mc-text-secondary)' }}>
-      <span>{artistName}</span>
+      <Link to={`/artists/${artistId}`} className="hover:underline mc-interactive-muted">{artistName}</Link>
       {year && <span>· {year}</span>}
       <span>· {trackCount} tracks</span>
       {lastfmUrl && (
@@ -127,7 +127,7 @@ export default function AlbumDetailPage() {
 
   return (
     <div>
-      <Link to="/" className="inline-flex items-center gap-1.5 text-sm mc-interactive-muted mb-6">
+      <Link to="/library?tab=albums" className="inline-flex items-center gap-1.5 text-sm mc-interactive-muted mb-6">
         <ArrowLeft className="w-4 h-4" /> Back to albums
       </Link>
 

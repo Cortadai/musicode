@@ -52,7 +52,7 @@ const DEFAULTS: AudioPreferences = {
   marqueePlaybar: true,
   marqueeAlbumCards: true,
   greetingMessages: true,
-  particlesEnabled: false,
+  particlesEnabled: true,
   loginTransition: 'random',
 };
 

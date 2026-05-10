@@ -43,7 +43,15 @@ export default function App() {
               <OfflineBanner />
             <Routes>
               {/* Public route */}
-              <Route path="/login" element={<Suspense fallback={<Spinner />}><LoginPage /></Suspense>} />
+              <Route path="/login" element={
+                <Suspense fallback={
+                  <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--mc-bg-base)' }}>
+                    <Spinner />
+                  </div>
+                }>
+                  <LoginPage />
+                </Suspense>
+              } />
 
               {/* Protected routes — any authenticated user */}
               <Route element={<ProtectedRoute />}>

@@ -74,7 +74,7 @@ function ParticlesBackground() {
         },
         number: {
           density: { enable: true },
-          value: 60,
+          value: 100, // default: 60
         },
         opacity: { value: { min: 0.3, max: 0.7 } },
         shape: { type: 'circle' },
