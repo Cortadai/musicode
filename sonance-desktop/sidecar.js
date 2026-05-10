@@ -1,5 +1,7 @@
 const { spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
 const { app } = require('electron');
 const http = require('http');
 
@@ -10,12 +12,34 @@ const HEALTH_TIMEOUT = 45000;
 let javaProcess = null;
 let killed = false;
 
+function getAppDataDir() {
+  return path.join(app.getPath('appData'), 'Sonance');
+}
+
+function getDataDir() {
+  return path.join(app.getPath('home'), '.sonance', 'data');
+}
+
+function getEncryptionKey() {
+  const appDataDir = getAppDataDir();
+  const keyFile = path.join(appDataDir, 'encryption.key');
+
+  if (fs.existsSync(keyFile)) {
+    return fs.readFileSync(keyFile, 'utf8').trim();
+  }
+
+  fs.mkdirSync(appDataDir, { recursive: true });
+  const key = crypto.randomBytes(32).toString('hex');
+  fs.writeFileSync(keyFile, key, { mode: 0o600 });
+  console.log(`[sidecar] Generated encryption key at ${keyFile}`);
+  return key;
+}
+
 function getJarPath() {
   if (app.isPackaged) {
     return path.join(process.resourcesPath, 'server', 'sonance-server.jar');
   }
   const targetDir = path.join(__dirname, '..', 'sonance-server', 'target');
-  const fs = require('fs');
   const jars = fs.readdirSync(targetDir).filter(
     (f) => f.startsWith('sonance-server') && f.endsWith('.jar') && !f.includes('original')
   );
@@ -77,13 +101,25 @@ function start() {
   killed = false;
   const jarPath = getJarPath();
   const javaPath = getJavaPath();
+  const encryptionKey = getEncryptionKey();
+  const dataDir = getDataDir();
 
-  console.log(`[sidecar] Starting: ${javaPath} -jar ${jarPath}`);
+  fs.mkdirSync(dataDir, { recursive: true });
+  fs.mkdirSync(path.join(dataDir, 'covers'), { recursive: true });
+  fs.mkdirSync(path.join(dataDir, 'waveforms'), { recursive: true });
 
-  javaProcess = spawn(javaPath, ['-jar', jarPath], {
+  const jvmArgs = [
+    `-Dsonance.data-dir=${dataDir.replace(/\\/g, '/')}`,
+    '-jar', jarPath,
+    '--spring.profiles.active=desktop',
+  ];
+
+  console.log(`[sidecar] Starting: ${javaPath} ${jvmArgs.join(' ')}`);
+
+  javaProcess = spawn(javaPath, jvmArgs, {
     stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
-    env: { ...process.env },
+    env: { ...process.env, SONANCE_TOKEN_ENCRYPTION_KEY: encryptionKey },
   });
 
   javaProcess.stdout.on('data', (data) => {

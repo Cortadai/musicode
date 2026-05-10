@@ -7,6 +7,7 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
+    "start:desktop": "electron . --desktop",
     "dev": "concurrently --kill-others \"npm run dev:ui\" \"npm run dev:electron\"",
     "dev:ui": "cd ../sonance-ui && npm run dev",
     "dev:electron": "wait-on http://localhost:17381 && electron .",

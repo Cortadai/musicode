@@ -2,7 +2,8 @@ const { app, BrowserWindow, globalShortcut, Tray, Menu, nativeImage } = require(
 const path = require('path');
 const sidecar = require('./sidecar');
 
-const isDev = !app.isPackaged;
+const forceDesktop = process.argv.includes('--desktop');
+const isDev = !app.isPackaged && !forceDesktop;
 
 let mainWindow;
 let tray;
