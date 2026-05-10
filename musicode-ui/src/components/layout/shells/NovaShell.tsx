@@ -67,6 +67,9 @@ export default function NovaShell() {
 
   return (
     <div className="h-screen flex overflow-hidden relative" style={{ backgroundColor: 'var(--mc-bg-base)', color: 'var(--mc-text-primary)' }}>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-3 focus:bg-[var(--mc-bg-surface)] focus:text-[var(--mc-text-primary)] focus:rounded-md focus:m-2">
+        Skip to main content
+      </a>
       {particles && <Suspense><ParticlesBackground /></Suspense>}
       <aside
         className="w-14 flex flex-col items-center py-4 gap-1 shrink-0 relative z-[1]"
@@ -78,7 +81,7 @@ export default function NovaShell() {
         <div className="mb-3">
           <Music className="w-5 h-5" style={{ color: 'var(--mc-accent-primary)' }} />
         </div>
-        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" title="GitHub" className="mc-interactive-muted transition-colors">
+        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" className="mc-interactive-muted transition-colors">
           <GitHubIcon className="w-4 h-4" />
         </a>
 
@@ -89,7 +92,7 @@ export default function NovaShell() {
           <NavLink
             to="/"
             end
-            title="Home"
+            aria-label="Home"
             className={({ isActive }) =>
               `flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                 isActive ? 'mc-nav-active' : 'mc-nav-item'
@@ -103,7 +106,7 @@ export default function NovaShell() {
           {/* Search — Spotlight style */}
           <button
             onClick={() => setSearchOpen(true)}
-            title="Search (Ctrl+K)"
+            aria-label="Search (Ctrl+K)"
             className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
               searchOpen ? 'mc-nav-active' : 'mc-nav-item'
             }`}
@@ -118,7 +121,7 @@ export default function NovaShell() {
               key={to}
               to={to}
               end={end}
-              title={label}
+              aria-label={label}
               className={({ isActive }) =>
                 `flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                   isActive ? 'mc-nav-active' : 'mc-nav-item'
@@ -133,7 +136,7 @@ export default function NovaShell() {
 
         <button
           onClick={handleLogout}
-          title="Sign out"
+          aria-label="Sign out"
           className="flex items-center justify-center w-9 h-9 rounded-lg mc-nav-item transition-colors"
         >
           <LogOut className="w-4 h-4" />
@@ -143,7 +146,7 @@ export default function NovaShell() {
       <div className="flex-1 flex flex-col min-w-0 relative z-[1]">
         <AnalyzerDeck scopeMap={scopeMap} />
         <div className="flex-1 flex min-h-0">
-          <main className="flex-1 overflow-y-auto p-6">
+          <main id="main-content" className="flex-1 overflow-y-auto p-6">
             <Outlet />
           </main>
           <QueuePanel />
@@ -154,6 +157,8 @@ export default function NovaShell() {
 
       {searchOpen && (
         <div
+          role="dialog"
+          aria-label="Search"
           className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
           onClick={e => { if (e.target === e.currentTarget) setSearchOpen(false); }}
@@ -172,6 +177,7 @@ export default function NovaShell() {
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
+                aria-label="Search artists, albums, tracks"
                 placeholder="Search artists, albums, tracks…"
                 className="flex-1 py-4 text-base bg-transparent outline-none selectable"
                 style={{ color: 'var(--mc-text-primary)', outline: 'none' }}

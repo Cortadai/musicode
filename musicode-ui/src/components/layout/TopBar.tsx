@@ -22,6 +22,7 @@ export default function TopBar() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search tracks, albums, artists"
             placeholder="Search tracks, albums, artists…"
             className="w-full pl-10 pr-4 py-1.5 text-sm mc-input transition-colors"
           />

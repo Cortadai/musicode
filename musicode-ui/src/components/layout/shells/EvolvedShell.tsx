@@ -16,13 +16,16 @@ export default function EvolvedShell() {
 
   return (
     <div className="h-screen flex overflow-hidden relative" style={{ backgroundColor: 'var(--mc-bg-base)', color: 'var(--mc-text-primary)' }}>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-3 focus:bg-[var(--mc-bg-surface)] focus:text-[var(--mc-text-primary)] focus:rounded-md focus:m-2">
+        Skip to main content
+      </a>
       {particles && <Suspense><ParticlesBackground /></Suspense>}
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 relative z-[1]">
         <TopBar />
         <AnalyzerDeck scopeMap={scopeMap} />
         <div className="flex-1 flex min-h-0">
-          <main className="flex-1 overflow-y-auto p-6">
+          <main id="main-content" className="flex-1 overflow-y-auto p-6">
             <Outlet />
           </main>
           <QueuePanel />

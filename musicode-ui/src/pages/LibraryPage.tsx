@@ -38,10 +38,13 @@ export default function LibraryPage() {
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex items-center gap-1 mb-6 border-b" style={{ borderColor: 'var(--mc-border-default)' }}>
+      <div role="tablist" aria-label="Library sections" className="flex items-center gap-1 mb-6 border-b" style={{ borderColor: 'var(--mc-border-default)' }}>
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
+            role="tab"
+            aria-selected={activeTab === id}
+            aria-controls={`tabpanel-${id}`}
             onClick={() => setTab(id)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
               activeTab === id

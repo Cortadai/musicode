@@ -44,6 +44,9 @@ export default function MinimalShell() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden relative" style={{ backgroundColor: 'var(--mc-bg-base)', color: 'var(--mc-text-primary)' }}>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-3 focus:bg-[var(--mc-bg-surface)] focus:text-[var(--mc-text-primary)] focus:rounded-md focus:m-2">
+        Skip to main content
+      </a>
       {particles && <Suspense><ParticlesBackground /></Suspense>}
       <header
         className="h-12 flex items-center px-5 gap-6 shrink-0 relative z-[1]"
@@ -58,7 +61,7 @@ export default function MinimalShell() {
           <Music className="w-4 h-4" />
           Musicode
         </span>
-        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" title="GitHub" className="mc-interactive-muted transition-colors">
+        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" className="mc-interactive-muted transition-colors">
           <GitHubIcon className="w-3.5 h-3.5" />
         </a>
 
@@ -90,6 +93,7 @@ export default function MinimalShell() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search tracks, albums, artists"
               placeholder="Search…"
               className="w-56 pl-8 pr-3 py-1 text-xs mc-input transition-colors"
             />
@@ -99,7 +103,7 @@ export default function MinimalShell() {
             <span className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>{user?.username}</span>
             <button
               onClick={handleLogout}
-              title="Sign out"
+              aria-label="Sign out"
               className="mc-interactive-muted transition-colors"
             >
               <LogOut className="w-3.5 h-3.5" />
@@ -110,7 +114,7 @@ export default function MinimalShell() {
 
       <AnalyzerDeck scopeMap={scopeMap} />
       <div className="flex-1 flex min-h-0 relative z-[1]">
-        <main className="flex-1 overflow-y-auto p-6">
+        <main id="main-content" className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
         <QueuePanel />

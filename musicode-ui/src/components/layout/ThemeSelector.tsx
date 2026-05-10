@@ -12,6 +12,8 @@ export default function ThemeSelector() {
 
   return (
     <div
+      role="radiogroup"
+      aria-label="Shell layout"
       className="flex rounded-lg p-0.5 gap-0.5"
       style={{ backgroundColor: 'var(--mc-bg-surface)' }}
     >
@@ -20,6 +22,8 @@ export default function ThemeSelector() {
         return (
           <button
             key={name}
+            role="radio"
+            aria-checked={active}
             onClick={() => setTheme(name)}
             className="px-3 py-1 rounded-md text-xs font-medium transition-all duration-150"
             style={{

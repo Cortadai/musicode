@@ -10,7 +10,8 @@ function Swatch({ name, active, onClick }: { name: PaletteName; active: boolean;
   return (
     <button
       onClick={onClick}
-      title={palette.label}
+      aria-label={`Select ${palette.label} palette`}
+      aria-pressed={active}
       className="flex flex-col items-center gap-1.5 transition-all duration-150"
     >
       <div

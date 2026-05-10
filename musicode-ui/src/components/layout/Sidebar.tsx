@@ -39,7 +39,7 @@ export default function Sidebar() {
           <Music className="w-5 h-5 shrink-0" style={{ color: 'var(--mc-accent-primary)' }} />
           <span>Musicode</span>
         </h1>
-        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" title="GitHub" className="mc-interactive-muted transition-colors">
+        <a href="https://github.com/Cortadai/musicode" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" className="mc-interactive-muted transition-colors">
           <GitHubIcon className="w-4 h-4" />
         </a>
       </div>

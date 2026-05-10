@@ -318,7 +318,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => deleteUserMutation.mutate(u.id)}
                       className="mc-interactive-danger transition-colors"
-                      title="Delete user"
+                      aria-label="Delete user"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -339,6 +339,7 @@ export default function SettingsPage() {
                 type="text"
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
+                aria-label="New username"
                 placeholder="Username"
                 required
                 className="w-full px-4 py-2 text-sm mc-input"
@@ -347,6 +348,7 @@ export default function SettingsPage() {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                aria-label="New password"
                 placeholder="Password"
                 required
                 className="w-full px-4 py-2 text-sm mc-input"
@@ -419,7 +421,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => removeMutation.mutate(folder.id)}
                       className="mc-interactive-danger transition-colors"
-                      title="Remove folder"
+                      aria-label="Remove folder"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -435,6 +437,7 @@ export default function SettingsPage() {
                 type="text"
                 value={newPath}
                 onChange={(e) => setNewPath(e.target.value)}
+                aria-label="Library folder path"
                 placeholder="C:\Users\you\Music"
                 className="flex-1 px-4 py-2 text-sm mc-input"
               />
@@ -606,6 +609,7 @@ function ScrobbleSection() {
               type="text"
               value={lbToken}
               onChange={(e) => setLbToken(e.target.value)}
+              aria-label="ListenBrainz token"
               placeholder="Paste your ListenBrainz token"
               className="flex-1 px-3 py-1.5 text-xs mc-input"
             />
@@ -642,9 +646,11 @@ function ScrobbleSection() {
           <form onSubmit={(e) => { e.preventDefault(); connectMutation.mutate({ lastfmUsername: lfmUsername, lastfmPassword: lfmPassword }); }} className="space-y-2">
             <div className="flex gap-2">
               <input type="text" value={lfmUsername} onChange={(e) => setLfmUsername(e.target.value)}
+                aria-label="Last.fm username"
                 placeholder="Last.fm username"
                 className="flex-1 px-3 py-1.5 text-xs mc-input" />
               <input type="password" value={lfmPassword} onChange={(e) => setLfmPassword(e.target.value)}
+                aria-label="Last.fm password"
                 placeholder="Last.fm password"
                 className="flex-1 px-3 py-1.5 text-xs mc-input" />
             </div>
