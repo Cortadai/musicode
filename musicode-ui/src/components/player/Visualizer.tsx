@@ -400,8 +400,7 @@ export default function Visualizer({ visible, mode, onModeChange, fullSize, hide
             aria-label="Audio visualizer"
             role="img"
             className="w-full h-24 rounded-t-lg"
-            style={{ backgroundColor: 'color-mix(in srgb, var(--mc-bg-base) 50%, transparent)' }}
-            style={{ imageRendering: mode === 'bars' ? 'pixelated' : 'auto' }}
+            style={{ backgroundColor: 'color-mix(in srgb, var(--mc-bg-base) 50%, transparent)', imageRendering: mode === 'bars' ? 'pixelated' : 'auto' }}
           />
           {/* Mode selector — overlaid top-right */}
           <div className="absolute top-1.5 right-1.5 flex gap-0.5 backdrop-blur-sm rounded-md p-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--mc-bg-surface) 80%, transparent)' }} role="group" aria-label="Visualizer mode">

@@ -39,7 +39,7 @@ function PlayAlbumButton({ onClick, albumTitle, totalDuration, isAlbumPlaying }:
   );
 }
 
-function ArtistLine({ artistName, artistId, year, trackCount, lastfmUrl }: {
+function ArtistLine({ artistName, artistId: _artistId, year, trackCount, lastfmUrl }: {
   artistName: string; artistId: number; year?: number; trackCount: number; lastfmUrl: string | null;
 }) {
   return (
@@ -148,7 +148,7 @@ export default function AlbumDetailPage() {
           <ArtistLine
             artistName={album.artist?.name ?? 'Unknown Artist'}
             artistId={album.artist.id}
-            year={album.year}
+            year={album.year ?? undefined}
             trackCount={tracks.length}
             lastfmUrl={lastfmUrl}
           />

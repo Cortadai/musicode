@@ -1,5 +1,5 @@
-import type { EqBand, EqFilterType } from './eqProcessor';
-import { FREQ_MIN, FREQ_MAX, GAIN_MIN, GAIN_MAX, isPassFilter } from './eqProcessor';
+import type { EqBand } from './eqProcessor';
+import { FREQ_MIN, FREQ_MAX, GAIN_MIN, GAIN_MAX } from './eqProcessor';
 
 export function computeFilterMagnitude(band: EqBand, testFreq: number, sampleRate: number): number {
   if (sampleRate <= 0) return 0;

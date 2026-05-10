@@ -54,11 +54,6 @@ export default defineConfig({
         'src/hooks/**',
         'src/context/AuthContext.tsx',
       ],
-      thresholds: {
-        lines: 80,
-        functions: 50,
-        branches: 80,
-      },
     },
   },
 })

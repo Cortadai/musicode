@@ -201,8 +201,8 @@ function ensureNeedleGrid(w: number, h: number): OffscreenCanvas | null {
 
   const gap = 8;
   const meterW = (w - gap) / 2;
-  drawNeedleFace(ctx, 0, 0, meterW, h, 'L', accent);
-  drawNeedleFace(ctx, meterW + gap, 0, meterW, h, 'R', accent);
+  drawNeedleFace(ctx as unknown as CanvasRenderingContext2D, 0, 0, meterW, h, 'L', accent);
+  drawNeedleFace(ctx as unknown as CanvasRenderingContext2D, meterW + gap, 0, meterW, h, 'R', accent);
   return needleGridCanvas;
 }
 

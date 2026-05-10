@@ -16,9 +16,6 @@ const POLAR_DOT_SIZE = 0.9;
 const PADDING = 4;
 
 let gridCanvas: OffscreenCanvas | null = null;
-let gridW = 0;
-let gridH = 0;
-let gridDpr = 0;
 let gridKey = '';
 
 let trailCanvas: OffscreenCanvas | null = null;
@@ -47,9 +44,6 @@ function ensureGrid(w: number, h: number, mode: 'lissajous' | 'polar'): void {
   const key = `${w}|${h}|${dpr}|${gridColor}|${mode}`;
   if (gridCanvas && gridKey === key) return;
 
-  gridW = w;
-  gridH = h;
-  gridDpr = dpr;
   gridKey = key;
   const pw = Math.round(w * dpr);
   const ph = Math.round(h * dpr);

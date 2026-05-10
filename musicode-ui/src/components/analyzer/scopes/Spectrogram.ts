@@ -118,9 +118,6 @@ function ensureWaterfall(w: number, h: number): void {
 
 // Frequency axis label grid overlay
 let gridCanvas: OffscreenCanvas | null = null;
-let gridW = 0;
-let gridH = 0;
-let gridDpr = 0;
 let gridKey = '';
 
 const FREQ_LABELS: [number, string][] = [
@@ -144,9 +141,6 @@ function ensureGrid(w: number, h: number): void {
   const key = `${w}|${h}|${dpr}|${gridColor}`;
   if (gridCanvas && gridKey === key) return;
 
-  gridW = w;
-  gridH = h;
-  gridDpr = dpr;
   gridKey = key;
   gridCanvas = new OffscreenCanvas(Math.round(w * dpr), Math.round(h * dpr));
   const ctx = gridCanvas.getContext('2d');

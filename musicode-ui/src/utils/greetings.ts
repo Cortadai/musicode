@@ -138,7 +138,6 @@ export function chooseGreeting(): Greeting {
   const roll = Math.random();
   let cumulative = 0;
 
-  const shuffled = [...pools].sort(() => Math.random() - 0.5);
   let selectedPool: Pool | null = null;
 
   for (const pool of pools) {
