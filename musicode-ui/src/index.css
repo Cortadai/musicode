@@ -8,9 +8,9 @@
   user-select: none;
 }
 
-/* Desktop-only: enforce minimum width (half a 1920 screen) */
+/* Desktop-only: enforce minimum width (industry standard for music apps) */
 html {
-  min-width: 960px;
+  min-width: 900px;
 }
 
 /* Kill overscroll bounce/pull-to-refresh */
@@ -23,6 +23,13 @@ body {
   cursor: default;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Pointer cursor on all interactive elements */
+a, button, [role="button"], select, label[for],
+input[type="checkbox"], input[type="radio"], input[type="range"],
+summary, .cursor-pointer {
+  cursor: pointer;
 }
 
 /* Only show focus rings on keyboard navigation, not mouse clicks */

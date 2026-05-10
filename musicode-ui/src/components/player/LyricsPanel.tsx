@@ -135,7 +135,7 @@ export default function LyricsPanel({ trackId, currentTime, compact = false }: P
           onScroll={handleScroll}
           className="flex-1 overflow-y-auto px-6 scroll-smooth min-h-0"
         >
-          <div className="flex flex-col gap-2 min-h-full justify-center">
+          <div className="flex flex-col gap-2 min-h-full justify-center selectable">
             {lines.map((line, i) => (
               <p
                 key={i}
@@ -160,7 +160,7 @@ export default function LyricsPanel({ trackId, currentTime, compact = false }: P
     return (
       <div className="h-full flex flex-col py-12">
         <div className="flex-1 overflow-y-auto px-6 min-h-0">
-          <div className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: 'var(--mc-text-secondary)' }}>
+          <div className="whitespace-pre-wrap text-sm leading-relaxed selectable" style={{ color: 'var(--mc-text-secondary)' }}>
             {lyrics.plainLyrics}
           </div>
         </div>

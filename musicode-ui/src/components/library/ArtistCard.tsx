@@ -22,7 +22,7 @@ export default function ArtistCard({ artist }: ArtistCardProps) {
         className="w-20 h-20 rounded-full flex items-center justify-center transition-shadow duration-200 group-hover:shadow-md"
         style={{ background: artistGradient(artist.name) }}
       >
-        <span className="text-xl font-bold text-white/90 select-none">
+        <span className="text-xl font-bold text-white/90">
           {artistInitials(artist.name)}
         </span>
       </div>

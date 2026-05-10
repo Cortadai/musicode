@@ -55,7 +55,7 @@ function VolumeControl({ volume, onVolumeChange }: Props) {
       <button
         onClick={() => onVolumeChange(0.8)}
         aria-label={`Volume ${Math.round(pct)}% — click to reset`}
-        className="text-xs font-mono tabular-nums cursor-pointer select-none hover:opacity-75 transition-opacity shrink-0"
+        className="text-xs font-mono tabular-nums hover:opacity-75 transition-opacity shrink-0"
         style={{ color: 'var(--mc-accent-primary)', background: 'none', border: 'none', padding: 0, minWidth: '1.5rem' }}
       >
         {Math.round(pct)}

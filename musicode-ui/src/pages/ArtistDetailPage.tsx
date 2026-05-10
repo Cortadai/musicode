@@ -2,12 +2,13 @@ import { useParams, Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getArtist } from '../api/artists';
 import AlbumCard from '../components/library/AlbumCard';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { artistGradient, artistInitials } from '../utils/artistAvatar';
 import type { Album } from '../types';
 import { ArtistDetailSkeleton } from '../components/common/Skeletons';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { getErrorMessage } from '../utils/errors';
+import { useArtistLastfmUrl } from '../components/library/AlbumInfoCard';
 
 export default function ArtistDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,7 @@ export default function ArtistDetailPage() {
   if (error || !artist) return <ErrorMessage message="Artist not found" detail={getErrorMessage(error)} />;
 
   const albums: Album[] = artist.albums ? [...artist.albums] : [];
+  const lastfmUrl = useArtistLastfmUrl(artistId);
 
   return (
     <div>
@@ -32,12 +34,26 @@ export default function ArtistDetailPage() {
 
       <div className="flex items-center gap-6 mb-8">
         <div className="w-24 h-24 rounded-full flex items-center justify-center shrink-0" style={{ background: artistGradient(artist.name) }}>
-          <span className="text-2xl font-bold text-white/90 select-none">{artistInitials(artist.name)}</span>
+          <span className="text-2xl font-bold text-white/90">{artistInitials(artist.name)}</span>
         </div>
         <div>
           <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--mc-text-muted)' }}>Artist</p>
           <h2 className="text-3xl font-bold" style={{ color: 'var(--mc-text-primary)' }}>{artist.name}</h2>
-          <p className="text-sm mt-1" style={{ color: 'var(--mc-text-secondary)' }}>{albums.length} album{albums.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--mc-text-secondary)' }}>
+            {albums.length} album{albums.length !== 1 ? 's' : ''}
+            {lastfmUrl && (
+              <a
+                href={lastfmUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-0.5 mc-interactive-muted ml-2"
+                title="View on Last.fm"
+              >
+                <ExternalLink className="w-3 h-3" />
+                <span className="text-xs">Last.fm</span>
+              </a>
+            )}
+          </p>
         </div>
       </div>
 

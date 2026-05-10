@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-10T09:32:03Z","fingerprint":"88c5c7f052c2f7366d208dbb996c3f137291e540","fileCount":359,"truncated":false} -->
+Generated: 2026-05-10T13:02:22Z | Files: 377 | Described: 0/377
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-10T13:02:22Z","fingerprint":"0da0c8f97bde90eddec6f0b209d695df776d831c","fileCount":377,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -52,6 +52,7 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-server/src/main/java/com/musicode/controller/LibraryHealthController.java`
 - `musicode-server/src/main/java/com/musicode/controller/LyricsController.java`
 - `musicode-server/src/main/java/com/musicode/controller/PlayController.java`
+- `musicode-server/src/main/java/com/musicode/controller/PlaylistController.java`
 - `musicode-server/src/main/java/com/musicode/controller/ScrobbleController.java`
 - `musicode-server/src/main/java/com/musicode/controller/SearchController.java`
 - `musicode-server/src/main/java/com/musicode/controller/StatsController.java`
@@ -73,7 +74,7 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-server/src/main/java/com/musicode/filter/RequestIdFilter.java`
 
 ### musicode-server/src/main/java/com/musicode/model/dto/
-- *(24 files: 24 .java)*
+- *(29 files: 29 .java)*
 
 ### musicode-server/src/main/java/com/musicode/model/entity/
 - `musicode-server/src/main/java/com/musicode/model/entity/Album.java`
@@ -82,6 +83,8 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-server/src/main/java/com/musicode/model/entity/LibraryFolder.java`
 - `musicode-server/src/main/java/com/musicode/model/entity/LyricsStatus.java`
 - `musicode-server/src/main/java/com/musicode/model/entity/PlaybackEvent.java`
+- `musicode-server/src/main/java/com/musicode/model/entity/Playlist.java`
+- `musicode-server/src/main/java/com/musicode/model/entity/PlaylistTrack.java`
 - `musicode-server/src/main/java/com/musicode/model/entity/RefreshToken.java`
 - `musicode-server/src/main/java/com/musicode/model/entity/Role.java`
 - `musicode-server/src/main/java/com/musicode/model/entity/Track.java`
@@ -93,6 +96,8 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-server/src/main/java/com/musicode/repository/FavoriteRepository.java`
 - `musicode-server/src/main/java/com/musicode/repository/LibraryFolderRepository.java`
 - `musicode-server/src/main/java/com/musicode/repository/PlaybackEventRepository.java`
+- `musicode-server/src/main/java/com/musicode/repository/PlaylistRepository.java`
+- `musicode-server/src/main/java/com/musicode/repository/PlaylistTrackRepository.java`
 - `musicode-server/src/main/java/com/musicode/repository/RefreshTokenRepository.java`
 - `musicode-server/src/main/java/com/musicode/repository/TrackRepository.java`
 - `musicode-server/src/main/java/com/musicode/repository/UserRepository.java`
@@ -110,6 +115,7 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-server/src/main/java/com/musicode/service/LyricsService.java`
 - `musicode-server/src/main/java/com/musicode/service/MetadataService.java`
 - `musicode-server/src/main/java/com/musicode/service/MusicodeUserDetailsService.java`
+- `musicode-server/src/main/java/com/musicode/service/PlaylistService.java`
 - `musicode-server/src/main/java/com/musicode/service/RefreshTokenService.java`
 - `musicode-server/src/main/java/com/musicode/service/ScrobbleService.java`
 - `musicode-server/src/main/java/com/musicode/service/StatsService.java`
@@ -130,6 +136,7 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-server/src/main/resources/db/migration/V1__baseline.sql`
 - `musicode-server/src/main/resources/db/migration/V2__add_lyrics_columns.sql`
 - `musicode-server/src/main/resources/db/migration/V3__user_favorites.sql`
+- `musicode-server/src/main/resources/db/migration/V4__playlists.sql`
 
 ### musicode-server/src/main/resources/static/
 - `musicode-server/src/main/resources/static/test.html`
@@ -147,6 +154,7 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-server/src/test/java/com/musicode/controller/LibraryHealthControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/LyricsControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/PlayControllerTest.java`
+- `musicode-server/src/test/java/com/musicode/controller/PlaylistControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/PlayScrobbleIntegrationTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/ScrobbleControllerTest.java`
 - `musicode-server/src/test/java/com/musicode/controller/SearchControllerTest.java`
@@ -244,6 +252,7 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-ui/src/api/health.ts`
 - `musicode-ui/src/api/library.ts`
 - `musicode-ui/src/api/lyrics.ts`
+- `musicode-ui/src/api/playlists.ts`
 - `musicode-ui/src/api/plays.ts`
 - `musicode-ui/src/api/scrobble.ts`
 - `musicode-ui/src/api/search.ts`
@@ -300,6 +309,7 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-ui/src/components/common/OfflineBanner.tsx`
 - `musicode-ui/src/components/common/Skeletons.tsx`
 - `musicode-ui/src/components/common/Spinner.tsx`
+- `musicode-ui/src/components/common/TrackContextMenu.tsx`
 
 ### musicode-ui/src/components/home/
 - `musicode-ui/src/components/home/Carousel.tsx`
@@ -357,6 +367,7 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-ui/src/hooks/useOnlineStatus.ts`
 - `musicode-ui/src/hooks/useParticles.ts`
 - `musicode-ui/src/hooks/usePlayer.ts`
+- `musicode-ui/src/hooks/usePlaylists.ts`
 - `musicode-ui/src/hooks/useScrobble.ts`
 - `musicode-ui/src/hooks/useWaveform.ts`
 
@@ -369,6 +380,8 @@ Generated: 2026-05-10T09:32:03Z | Files: 359 | Described: 0/359
 - `musicode-ui/src/pages/LibraryHealthPage.tsx`
 - `musicode-ui/src/pages/LibraryPage.tsx`
 - `musicode-ui/src/pages/LoginPage.tsx`
+- `musicode-ui/src/pages/PlaylistDetailPage.tsx`
+- `musicode-ui/src/pages/PlaylistsPage.tsx`
 - `musicode-ui/src/pages/SearchPage.tsx`
 - `musicode-ui/src/pages/SettingsPage.tsx`
 - `musicode-ui/src/pages/StatsPage.tsx`

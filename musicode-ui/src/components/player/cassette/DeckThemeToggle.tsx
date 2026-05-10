@@ -49,7 +49,7 @@ function DeckThemeToggle({ theme, onToggle }: Props) {
         />
       </div>
       <span
-        className="font-mono text-[9px] font-bold tracking-[0.15em] uppercase select-none"
+        className="font-mono text-[9px] font-bold tracking-[0.15em] uppercase"
         style={{ color: s.label }}
       >
         {THEME_LABELS[theme]}

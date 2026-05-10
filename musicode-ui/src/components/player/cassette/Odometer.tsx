@@ -44,7 +44,7 @@ export default function Odometer({ seconds, theme }: Props) {
             style={{ background: cellBg, border: `1px solid ${cellBorder}`, boxShadow: cellShadow }}
           >
             <span
-              className="font-mono text-sm font-bold leading-none select-none"
+              className="font-mono text-sm font-bold leading-none"
               style={{ color: digitColor, textShadow: digitGlow }}
             >
               {d}
@@ -55,7 +55,7 @@ export default function Odometer({ seconds, theme }: Props) {
             style={{ background: 'rgba(0,0,0,0.6)' }}
           />
           {i === 1 && (
-            <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 text-xs font-mono select-none" style={{ color: 'var(--mc-text-muted)' }}>
+            <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 text-xs font-mono" style={{ color: 'var(--mc-text-muted)' }}>
               :
             </div>
           )}
