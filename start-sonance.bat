@@ -26,7 +26,7 @@ for /f "tokens=2" %%p in ('tasklist /FI "IMAGENAME eq java.exe" /NH 2^>nul ^| fi
 )
 
 :: --- Start Spring Boot backend ---
-echo   [1/2] Starting Spring Boot (port 8080)...
+echo   [1/2] Starting Spring Boot (port 17380)...
 
 :: Write temp launcher to avoid nested-quote issues
 set "TMPBAT=%TEMP%\sonance-start-server.bat"
@@ -41,7 +41,7 @@ if !tries! geq 40 goto backend_timeout
 ping -n 4 127.0.0.1 >nul
 set /a tries+=1
 
-powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:8080/actuator/health' -UseBasicParsing -TimeoutSec 2; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
+powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:17380/actuator/health' -UseBasicParsing -TimeoutSec 2; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
 if !errorlevel! equ 0 goto backend_ready
 
 <nul set /p=.
@@ -56,7 +56,7 @@ exit /b 1
 echo  OK
 
 :: --- Start Vite frontend ---
-echo   [2/2] Starting Vite dev server (port 5173)...
+echo   [2/2] Starting Vite dev server (port 17381)...
 
 set "TMPBAT=%TEMP%\sonance-start-ui.bat"
 > "!TMPBAT!" echo @cd /d "!ROOT!\sonance-ui" ^&^& npm run dev ^> "!ROOT!\sonance-ui.log" 2^>^&1
@@ -70,7 +70,7 @@ if !tries! geq 10 goto frontend_timeout
 ping -n 4 127.0.0.1 >nul
 set /a tries+=1
 
-powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:5173' -UseBasicParsing -TimeoutSec 2; exit 0 } catch { exit 1 }" >nul 2>&1
+powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:17381' -UseBasicParsing -TimeoutSec 2; exit 0 } catch { exit 1 }" >nul 2>&1
 if !errorlevel! equ 0 goto frontend_ready
 
 <nul set /p=.
@@ -85,14 +85,14 @@ exit /b 1
 echo  OK
 
 :: --- Open browser ---
-start "" http://localhost:5173
+start "" http://localhost:17381
 
 echo.
 echo   Sonance is running!
 echo.
-echo     Frontend:  http://localhost:5173
-echo     Backend:   http://localhost:8080
-echo     Swagger:   http://localhost:8080/swagger-ui.html
+echo     Frontend:  http://localhost:17381
+echo     Backend:   http://localhost:17380
+echo     Swagger:   http://localhost:17380/swagger-ui.html
 echo.
 echo   Logs: sonance-server.log / sonance-ui.log
 echo   To stop: stop-sonance.bat

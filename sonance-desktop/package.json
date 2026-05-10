@@ -1,0 +1,57 @@
+{
+  "name": "sonance",
+  "version": "1.0.0",
+  "description": "Sonance — personal music streaming desktop app",
+  "main": "main.js",
+  "author": "David",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently --kill-others \"npm run dev:ui\" \"npm run dev:electron\"",
+    "dev:ui": "cd ../sonance-ui && npm run dev",
+    "dev:electron": "wait-on http://localhost:17381 && electron .",
+    "build:app": "bash scripts/build-app.sh",
+    "build": "electron-builder",
+    "dist": "npm run build:app && electron-builder --win",
+    "download-jre": "powershell -ExecutionPolicy Bypass -File scripts/download-jre.ps1"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.0",
+    "wait-on": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.sonance.app",
+    "productName": "Sonance",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "sidecar.js",
+      "loading.html"
+    ],
+    "forceCodeSigning": false,
+    "win": {
+      "target": ["nsis", "dir"],
+      "sign": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "extraResources": [
+      {
+        "from": "../sonance-server/target/sonance-server.jar",
+        "to": "server/sonance-server.jar"
+      },
+      {
+        "from": "jre/",
+        "to": "jre/"
+      }
+    ]
+  }
+}

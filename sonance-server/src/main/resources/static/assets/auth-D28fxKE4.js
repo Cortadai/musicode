@@ -1,0 +1,1 @@
+import{t as e}from"./client-DUUTen9c.js";async function t(t){let{data:n}=await e.post(`/auth/login`,t);return n}async function n(){let{data:t}=await e.post(`/auth/refresh`);return t}async function r(){await e.post(`/auth/logout`)}async function i(t){let{data:n}=await e.get(`/auth/me`,t);return n}export{n as i,t as n,r,i as t};

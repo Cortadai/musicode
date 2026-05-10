@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { usePlayer } from '../../hooks/usePlayer';
+import { useElectronMediaKeys } from '../../hooks/useElectronMediaKeys';
 import { useTheme } from '../../themes';
 import { QueuePanelProvider } from '../../context/QueuePanelContext';
 import { LyricsSidebarProvider } from '../../context/LyricsSidebarContext';
@@ -16,6 +17,7 @@ const shellByLayout = {
 export default function AppShell() {
   const { isPlaying, currentTrack, pause, resume, next, prev, setVolume, volume } = usePlayer();
   const { theme } = useTheme();
+  useElectronMediaKeys();
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {

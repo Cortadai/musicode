@@ -45,8 +45,8 @@ import java.util.List;
  *    JSON instead of Spring's default HTML error pages. The @ControllerAdvice handles
  *    exceptions thrown FROM controllers. Both are needed.
  *
- * 5. CORS WITH CREDENTIALS — Required because the frontend (localhost:5173 in dev)
- *    is a different origin from the backend (localhost:8080). allowCredentials=true
+ * 5. CORS WITH CREDENTIALS — Required because the frontend (localhost:17381 in dev)
+ *    is a different origin from the backend (localhost:17380). allowCredentials=true
  *    tells the browser it's OK to send cookies cross-origin. In production behind
  *    Caddy, everything is same-origin so CORS doesn't apply.
  */
@@ -122,13 +122,13 @@ public class SecurityConfig {
     }
 
     /**
-     * CORS configuration for dev mode (frontend on :5173, backend on :8080).
+     * CORS configuration for dev mode (frontend on :17381, backend on :17380).
      * In production behind Caddy, all traffic is same-origin — CORS is a no-op.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5175", "http://localhost:3000"));
+        config.setAllowedOrigins(List.of("http://localhost:17381", "http://localhost:5175", "http://localhost:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Content-Range", "Accept-Ranges", "Content-Length"));

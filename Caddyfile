@@ -1,7 +1,7 @@
 localhost {
     # Proxy API calls to Spring Boot (must be before file_server)
     handle /api/* {
-        reverse_proxy sonance-server:8080
+        reverse_proxy sonance-server:17380
     }
 
     # Swagger UI and OpenAPI spec are intentionally not proxied (defense in depth)

@@ -5,8 +5,8 @@
 <h1 align="center">Sonance</h1>
 
 <p align="center">
-  <strong>A self-hosted web music player for your personal audio library.</strong><br/>
-  Scan your FLAC, MP3, OGG, and M4A collection. Browse by album and artist. Play from any browser with gapless playback, crossfade, EQ, visualizers, scrobbling, and more.
+  <strong>A personal music streaming app for your audio library.</strong><br/>
+  Scan your FLAC, MP3, OGG, and M4A collection. Browse by album and artist. Desktop app with gapless playback, crossfade, EQ, visualizers, scrobbling, and more.
 </p>
 
 <p align="center">
@@ -86,21 +86,35 @@ graph LR
 
 | Layer | Technology |
 |---|---|
+| **Desktop** | Electron 33 (BrowserWindow + Spring Boot sidecar) |
 | **Frontend** | React 19 + Vite 8 + TypeScript + Tailwind CSS v4 |
 | **Backend** | Spring Boot 3.4 + Java 21 + Maven |
 | **Database** | H2 (embedded, zero config) + Flyway migrations |
 | **Audio Engine** | Web Audio API (dual HTMLAudioElement + AudioContext graph) |
 | **Metadata** | JAudioTagger 2.2.5 (FLAC, MP3, OGG, M4A) |
 | **Auth** | Spring Security + JWT in HttpOnly cookies |
-| **Proxy** | Caddy (automatic HTTPS + static file serving) |
-| **Containers** | Docker Compose (multi-stage builds) |
+| **Proxy** | Caddy (automatic HTTPS + static file serving, server mode) |
+| **Containers** | Docker Compose (multi-stage builds, server mode) |
 | **Tests** | JUnit 5 + WireMock + Vitest + Playwright |
 
 ---
 
 ## Quick Start
 
-### Docker Compose (production)
+### Desktop App (recommended)
+
+```bash
+cd sonance-desktop
+npm install
+npm run download-jre       # Downloads Adoptium JRE 21
+npm run dist               # Builds React + Spring Boot JAR + Electron installer
+```
+
+Run `dist/win-unpacked/Sonance.exe`. The app starts a local server, shows a loading screen, and opens the full UI once ready.
+
+**Required environment variable:** `SONANCE_TOKEN_ENCRYPTION_KEY` — generate with `openssl rand -hex 32`.
+
+### Docker Compose (server mode)
 
 ```bash
 cp .env.example .env
@@ -119,10 +133,15 @@ cd sonance-server
 mvn spring-boot:run
 # http://localhost:8080 | Swagger UI: http://localhost:8080/swagger-ui.html
 
-# Frontend
+# Frontend (separate terminal)
 cd sonance-ui
 npm install && npm run dev
 # http://localhost:5173 (proxies /api to :8080)
+
+# Desktop (Electron wrapper, optional)
+cd sonance-desktop
+npm run dev
+# Opens Electron window loading vite dev server + hot reload
 ```
 
 ---
@@ -319,6 +338,12 @@ sequenceDiagram
 
 ```
 sonance/
+├── sonance-desktop/         Electron desktop shell
+│   ├── main.js              Main process (window, sidecar, media keys, tray)
+│   ├── sidecar.js           Spring Boot JAR lifecycle manager
+│   ├── preload.js           Context bridge (IPC for media keys)
+│   ├── scripts/             Build & JRE download scripts
+│   └── package.json         electron-builder config
 ├── sonance-server/          Spring Boot backend (see server README)
 │   ├── src/main/java/        16 controllers, 17 services, 9 entities
 │   ├── src/test/java/        272 tests (unit + integration + WireMock)

@@ -16,8 +16,8 @@ for /f "tokens=2" %%p in ('tasklist /FI "IMAGENAME eq java.exe" /NH 2^>nul ^| fi
     set /a stopped+=1
 )
 
-:: --- Kill process on port 5173 (Vite) ---
-for /f "tokens=5" %%p in ('netstat -ano ^| findstr "LISTENING" ^| findstr ":5173 "') do (
+:: --- Kill process on port 17381 (Vite) ---
+for /f "tokens=5" %%p in ('netstat -ano ^| findstr "LISTENING" ^| findstr ":17381 "') do (
     if "%%p" neq "0" (
         echo   Stopping Vite PID %%p
         taskkill /PID %%p /F >nul 2>&1

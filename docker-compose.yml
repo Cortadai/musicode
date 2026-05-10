@@ -16,7 +16,7 @@ services:
   sonance-server:
     build: ./sonance-server
     expose:
-      - "8080"
+      - "17380"
     volumes:
       - ./sonance-server/data:/app/data
       - ${MUSIC_DIR:?MUSIC_DIR must be set in .env}:/music:ro
@@ -24,7 +24,7 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SONANCE_COVERS_DIR=/app/data/covers
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:17380/actuator/health"]
       interval: 30s
       timeout: 5s
       retries: 3

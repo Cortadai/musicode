@@ -22,7 +22,7 @@ if (-not (Test-Path $envFile)) { Write-Error ".env not found at $envFile"; exit 
 $apiKey = (Get-Content $envFile | Where-Object { $_ -match "^LASTFM_API_KEY=" } | Select-Object -First 1) -replace "^LASTFM_API_KEY=", ""
 if (-not $apiKey) { Write-Error "LASTFM_API_KEY not in .env"; exit 1 }
 
-$BaseUrl = "http://localhost:8080"
+$BaseUrl = "http://localhost:17380"
 $Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
 # 1. Admin login

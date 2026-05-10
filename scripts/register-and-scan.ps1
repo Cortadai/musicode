@@ -16,7 +16,7 @@ if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
     exit 1
 }
 
-$BaseUrl = "http://localhost:8080"
+$BaseUrl = "http://localhost:17380"
 $Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
 # Login admin
