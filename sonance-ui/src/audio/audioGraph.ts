@@ -31,6 +31,11 @@ import eqProcessor from './eqProcessor';
 
 // --- Singleton state ---
 
+// Minimal valid WAV (44-byte header, 0 samples) — used to reset elements without
+// triggering AudioContext errors. removeAttribute('src') + load() puts the element
+// in an error state; Chrome's renderer then logs an error every ~3ms processing quantum.
+const SILENCE = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAABCxAgACABAAZGF0YQAAAAA=';
+
 let audioContext: AudioContext | null = null;
 let insertChainOutput: AudioNode | null = null;
 let gainA: GainNode | null = null;
@@ -46,6 +51,9 @@ elementB.preload = 'metadata';
 // Volume is controlled exclusively via GainNode — keep elements at max
 elementA.volume = 1.0;
 elementB.volume = 1.0;
+// Pre-fill with silence so AudioContext renderer doesn't error on empty source
+elementA.src = SILENCE;
+elementB.src = SILENCE;
 
 let sourceA: MediaElementAudioSourceNode | null = null;
 let sourceB: MediaElementAudioSourceNode | null = null;
@@ -230,8 +238,8 @@ function cancelPrepare(): void {
   cancelCrossfade();
   if (nextPrepared) {
     const { element } = getNext();
-    element.removeAttribute('src');
-    element.load(); // Reset
+    element.pause();
+    element.src = SILENCE;
     nextPrepared = false;
     console.debug('[audioGraph] Pre-load cancelled');
   }
@@ -388,12 +396,10 @@ function stop(): void {
   cancelCrossfade();
 
   elementA.pause();
-  elementA.removeAttribute('src');
-  elementA.load();
+  elementA.src = SILENCE;
 
   elementB.pause();
-  elementB.removeAttribute('src');
-  elementB.load();
+  elementB.src = SILENCE;
 
   // Reset gains: A active (audible), B silent
   if (initialized && gainA && gainB) {

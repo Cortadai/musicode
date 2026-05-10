@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown, SlidersHorizontal, Plus, Minus, Save, Download, Upload, X } from 'lucide-react';
+import audioGraph from '../../audio/audioGraph';
 import eqProcessor, {
   EQ_PRESETS,
   GAIN_MIN,
@@ -217,9 +218,7 @@ export default function EqPopover() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const saveInputRef = useRef<HTMLInputElement>(null);
 
-  const sampleRate = typeof AudioContext !== 'undefined'
-    ? (new AudioContext().sampleRate)
-    : 44100;
+  const sampleRate = audioGraph.getAudioContext()?.sampleRate ?? 48000;
 
   // ResizeObserver for the curve container
   useEffect(() => {
