@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: musicode-server
+        working-directory: sonance-server
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: musicode-ui
+        working-directory: sonance-ui
     steps:
       - uses: actions/checkout@v4
 
@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: musicode-ui/package-lock.json
+          cache-dependency-path: sonance-ui/package-lock.json
 
       - run: npm ci
       - run: npx tsc --noEmit

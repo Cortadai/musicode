@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: sonance-server
+
+  config:
+    import: optional:file:../.env[.properties]
+
+  datasource:
+    url: jdbc:h2:file:./data/sonance-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8080
+  tomcat:
+    connection-timeout: 120000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+sonance:
+  admin:
+    default-password: changeme
+  jwt:
+    # Dev-only fallback. Docker profile requires SONANCE_JWT_SECRET env var (no fallback).
+    secret: sonance-dev-secret-key-must-be-at-least-32-bytes-long
+    access-token-expiration-ms: 900000      # 15 minutes
+    refresh-token-expiration-ms: 604800000  # 7 days
+  cookies:
+    secure: false  # true in docker/prod profile
+  lastfm:
+    api-key: ${LASTFM_API_KEY:}
+    api-secret: ${LASTFM_API_SECRET:}
+  security:
+    login-rate-limit:
+      max-attempts: 50        # Relaxed for dev/E2E — tighten in docker profile
+      window-seconds: 60
+  scrobble:
+    retry-delay-ms: 1000
+  encryption:
+    # AES-GCM key for scrobble tokens at rest. Generate with: openssl rand -hex 32
+    # Missing value fails fast at startup (TokenEncryptionService).
+    token-key: ${SONANCE_TOKEN_ENCRYPTION_KEY:}
+
+# Logging configured in logback-spring.xml (profile-aware)

@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:/app/data/sonance-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+
+  h2:
+    console:
+      enabled: false
+
+server:
+  port: 8080
+
+sonance:
+  admin:
+    default-password: ${SONANCE_ADMIN_PASSWORD:changeme}
+  jwt:
+    secret: ${SONANCE_JWT_SECRET}
+    access-token-expiration-ms: 900000
+    refresh-token-expiration-ms: 604800000
+  cookies:
+    secure: true
+  security:
+    login-rate-limit:
+      max-attempts: 5          # Strict in production
+      window-seconds: 60
+
+# Logging configured in logback-spring.xml (docker profile → JSON)

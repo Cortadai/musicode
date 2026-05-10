@@ -10,19 +10,19 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      musicode-server:
+      sonance-server:
         condition: service_healthy
 
-  musicode-server:
-    build: ./musicode-server
+  sonance-server:
+    build: ./sonance-server
     expose:
       - "8080"
     volumes:
-      - ./musicode-server/data:/app/data
+      - ./sonance-server/data:/app/data
       - ${MUSIC_DIR:?MUSIC_DIR must be set in .env}:/music:ro
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MUSICODE_COVERS_DIR=/app/data/covers
+      - SONANCE_COVERS_DIR=/app/data/covers
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s

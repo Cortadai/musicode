@@ -1,6 +1,6 @@
 # Scrobbling — Credenciales y Reproducibilidad
 
-Guía de qué secretos necesita Musicode, de dónde salen, dónde viven, y cómo reproducir
+Guía de qué secretos necesita Sonance, de dónde salen, dónde viven, y cómo reproducir
 el entorno (tests y app real) en otra máquina.
 
 ## TL;DR
@@ -19,9 +19,9 @@ el entorno (tests y app real) en otra máquina.
 | `LASTFM_API_KEY` + `LASTFM_API_SECRET` | Registro de app en <https://www.last.fm/api/account/create> | **Servidor** (una vez, por instalación) | `.env` → inyectado en `application.yml` |
 | Last.fm **session key** | Flujo `auth.getMobileSession` (usuario + password + firma HMAC-MD5) | **Por usuario final** | Tabla `User` en DB, **cifrado AES-256-GCM** (S03) |
 | ListenBrainz **user token** | El usuario lo copia de <https://listenbrainz.org/profile> | **Por usuario final** | Tabla `User` en DB, **cifrado AES-256-GCM** (S03) |
-| `MUSICODE_TOKEN_ENCRYPTION_KEY` | Generado local: `openssl rand -hex 32` | **Servidor** (mandatorio desde S03) | `.env` — sin esta var la app no arranca |
-| `MUSICODE_JWT_SECRET` | Generado local: `openssl rand -base64 48` | **Servidor** | `.env` (default dev peligroso en `application.yml`) |
-| `MUSICODE_ADMIN_PASSWORD` | Elegido por el admin | **Servidor** (solo seed inicial) | `.env` (default `changeme` en `application.yml`) |
+| `SONANCE_TOKEN_ENCRYPTION_KEY` | Generado local: `openssl rand -hex 32` | **Servidor** (mandatorio desde S03) | `.env` — sin esta var la app no arranca |
+| `SONANCE_JWT_SECRET` | Generado local: `openssl rand -base64 48` | **Servidor** | `.env` (default dev peligroso en `application.yml`) |
+| `SONANCE_ADMIN_PASSWORD` | Elegido por el admin | **Servidor** (solo seed inicial) | `.env` (default `changeme` en `application.yml`) |
 
 **Clave a entender:** las *API credentials* (key/secret) son del **servidor** — las obtiene el
 admin una vez y se comparten. Las *session keys / tokens* son **de cada usuario** — cada uno
@@ -38,7 +38,7 @@ inyectables:
 // LastfmService.java:34 — antes
 // private static final String API_URL = "https://ws.audioscrobbler.com/2.0/";
 
-@Value("${musicode.lastfm.api-url:https://ws.audioscrobbler.com/2.0/}")
+@Value("${sonance.lastfm.api-url:https://ws.audioscrobbler.com/2.0/}")
 private String apiUrl;
 ```
 
@@ -59,7 +59,7 @@ Last.fm pero habla con `localhost:PUERTO`.
 
 ```bash
 git clone <repo>
-cd musicode/musicode-server
+cd sonance/sonance-server
 mvn test
 ```
 
@@ -79,25 +79,25 @@ Editar mínimamente:
 
 ```bash
 MUSIC_DIR=D:/Musica                                      # tu biblioteca (se monta read-only)
-MUSICODE_ADMIN_PASSWORD=<elige-uno-seguro>               # evita 'changeme'
-MUSICODE_JWT_SECRET=$(openssl rand -base64 48)           # mínimo 32 chars
-MUSICODE_TOKEN_ENCRYPTION_KEY=$(openssl rand -hex 32)    # OBLIGATORIO — la app no arranca sin esta
+SONANCE_ADMIN_PASSWORD=<elige-uno-seguro>               # evita 'changeme'
+SONANCE_JWT_SECRET=$(openssl rand -base64 48)           # mínimo 32 chars
+SONANCE_TOKEN_ENCRYPTION_KEY=$(openssl rand -hex 32)    # OBLIGATORIO — la app no arranca sin esta
 
 # Opcionales — solo si vas a permitir scrobbling a Last.fm:
 LASTFM_API_KEY=<de last.fm/api/account/create>
 LASTFM_API_SECRET=<idem>
 ```
 
-> **Rotación de `MUSICODE_TOKEN_ENCRYPTION_KEY`:** cambiar la clave invalida todos los tokens
+> **Rotación de `SONANCE_TOKEN_ENCRYPTION_KEY`:** cambiar la clave invalida todos los tokens
 > cifrados en DB (session keys de Last.fm y tokens de ListenBrainz). Los usuarios tendrán que
 > volver a introducirlos desde Ajustes. No hay mecanismo de re-cifrado automático: sería un
 > futuro BSM (Bring Your Own Secret Manager) — no está previsto por ahora.
 
 > **Nota sobre el `.env` actual de este repo:** solo contiene `MUSIC_DIR`,
-> `LASTFM_API_KEY` y `LASTFM_API_SECRET`. Los otros dos (`MUSICODE_ADMIN_PASSWORD`,
-> `MUSICODE_JWT_SECRET`) **no están** y caen sobre los defaults de `application.yml`:
+> `LASTFM_API_KEY` y `LASTFM_API_SECRET`. Los otros dos (`SONANCE_ADMIN_PASSWORD`,
+> `SONANCE_JWT_SECRET`) **no están** y caen sobre los defaults de `application.yml`:
 > - admin password → `changeme` (emite warning al arranque)
-> - JWT secret → `musicode-dev-secret-key-must-be-at-least-32-bytes-long`
+> - JWT secret → `sonance-dev-secret-key-must-be-at-least-32-bytes-long`
 >
 > Para un entorno local de desarrollo da igual. **Para producción hay que ponerlos**,
 > o cualquiera puede firmar tokens JWT válidos contra tu servidor.
@@ -109,7 +109,7 @@ docker compose up -d
 ```
 
 Primer arranque:
-1. `AdminSeeder` crea el usuario `admin` con `MUSICODE_ADMIN_PASSWORD`.
+1. `AdminSeeder` crea el usuario `admin` con `SONANCE_ADMIN_PASSWORD`.
 2. `LibraryScanService` escanea `/music` (mapeado a `MUSIC_DIR`).
 3. La app queda en `http://localhost:8080`.
 
@@ -154,7 +154,7 @@ JUnit tag `@Tag("live")` que solo corra con `-Dgroups=live` y `LASTFM_API_KEY` p
 
 | Aspecto | Estado | Detalle |
 |---|---|---|
-| Cifrado de tokens | Hecho (M008/S03) | AES-256-GCM con `MUSICODE_TOKEN_ENCRYPTION_KEY`. `TokenMigrationRunner` re-cifra filas legacy al arranque. |
+| Cifrado de tokens | Hecho (M008/S03) | AES-256-GCM con `SONANCE_TOKEN_ENCRYPTION_KEY`. `TokenMigrationRunner` re-cifra filas legacy al arranque. |
 | Flyway migrations | Hecho (M008/S03) | Única fuente de verdad de schema (`V1__baseline.sql`, `V2__add_lyrics_columns.sql`). |
 | Rate limiting | Hecho | `LoginRateLimitFilter` protege `/api/auth/login`. |
 | Request tracing | Hecho | MDC `requestId` en todas las peticiones vía `RequestIdFilter`. |
@@ -163,9 +163,9 @@ JUnit tag `@Tag("live")` que solo corra con `-Dgroups=live` y `LASTFM_API_KEY` p
 
 ## 6. Checklist rápido — "¿puedo clonar y correr?"
 
-- [ ] `git clone && cd musicode-server && mvn test` → 272 verdes, **sin** configurar nada.
+- [ ] `git clone && cd sonance-server && mvn test` → 272 verdes, **sin** configurar nada.
 - [ ] Para arrancar la app en local: `cp .env.example .env`, editar `MUSIC_DIR` y
-      (recomendado) `MUSICODE_ADMIN_PASSWORD` + `MUSICODE_JWT_SECRET`. `docker compose up -d`.
+      (recomendado) `SONANCE_ADMIN_PASSWORD` + `SONANCE_JWT_SECRET`. `docker compose up -d`.
 - [ ] Para scrobbling Last.fm servidor: registrar app en last.fm/api y añadir `LASTFM_API_KEY`
       + `LASTFM_API_SECRET` al `.env`.
 - [ ] Para scrobbling Last.fm / ListenBrainz por usuario: cada usuario lo configura

@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/assets/musicode-logo.png" alt="Musicode" width="120" />
+  <img src="docs/assets/sonance-logo.png" alt="Sonance" width="120" />
 </p>
 
-<h1 align="center">Musicode</h1>
+<h1 align="center">Sonance</h1>
 
 <p align="center">
   <strong>A self-hosted web music player for your personal audio library.</strong><br/>
@@ -22,7 +22,7 @@
 ---
 
 <p align="center">
-  <img src="docs/assets/musicode-hero.jpg" alt="Musicode — Album grid with player bar and activity feed" width="800" />
+  <img src="docs/assets/sonance-hero.jpg" alt="Sonance — Album grid with player bar and activity feed" width="800" />
 </p>
 <p align="center"><em>Browse your library by album, artist, or track — with real-time activity feed and persistent player bar.</em></p>
 
@@ -115,12 +115,12 @@ Open `https://localhost`. Default credentials: `admin` / `changeme`.
 
 ```bash
 # Backend
-cd musicode-server
+cd sonance-server
 mvn spring-boot:run
 # http://localhost:8080 | Swagger UI: http://localhost:8080/swagger-ui.html
 
 # Frontend
-cd musicode-ui
+cd sonance-ui
 npm install && npm run dev
 # http://localhost:5173 (proxies /api to :8080)
 ```
@@ -158,7 +158,7 @@ graph LR
 ### Visualizer Modes
 
 <p align="center">
-  <img src="docs/assets/musicode-now-playing.jpg" alt="Now Playing — Vinyl visualizer with dynamic colors" width="700" />
+  <img src="docs/assets/sonance-now-playing.jpg" alt="Now Playing — Vinyl visualizer with dynamic colors" width="700" />
 </p>
 <p align="center"><em>Vinyl visualizer with album-extracted dynamic colors.</em></p>
 
@@ -174,7 +174,7 @@ All canvas-based modes run at 60fps via `requestAnimationFrame`, pause on page v
 ### Cassette Deck (Retro Mode)
 
 <p align="center">
-  <img src="docs/assets/musicode-cassette.png" alt="Cassette Deck — Classic theme with VU meters and animated reels" width="700" />
+  <img src="docs/assets/sonance-cassette.png" alt="Cassette Deck — Classic theme with VU meters and animated reels" width="700" />
 </p>
 
 Full-screen retro cassette experience:
@@ -203,7 +203,7 @@ Colors extracted from album artwork adapt the entire player UI — progress bar,
 ### Synced Lyrics
 
 <p align="center">
-  <img src="docs/assets/musicode-lyrics.jpg" alt="Now Playing with synced lyrics, waveform seekbar, and vinyl visualizer" width="700" />
+  <img src="docs/assets/sonance-lyrics.jpg" alt="Now Playing with synced lyrics, waveform seekbar, and vinyl visualizer" width="700" />
 </p>
 <p align="center"><em>Synced lyrics with waveform seek bar and vinyl visualizer.</em></p>
 
@@ -318,12 +318,12 @@ sequenceDiagram
 ## Project Structure
 
 ```
-musicode/
-├── musicode-server/          Spring Boot backend (see server README)
+sonance/
+├── sonance-server/          Spring Boot backend (see server README)
 │   ├── src/main/java/        16 controllers, 17 services, 9 entities
 │   ├── src/test/java/        272 tests (unit + integration + WireMock)
 │   └── pom.xml               Maven build with JaCoCo ≥80%
-├── musicode-ui/              React frontend (see UI README)
+├── sonance-ui/              React frontend (see UI README)
 │   ├── src/                  Components, hooks, audio pipeline, pages
 │   ├── e2e/                  21 Playwright E2E tests
 │   └── package.json          Vite 8, Vitest, Tailwind v4
@@ -343,9 +343,9 @@ musicode/
 | Variable | Default | Description |
 |---|---|---|
 | `MUSIC_DIR` | _(required)_ | Host path to music library (mounted read-only) |
-| `MUSICODE_ADMIN_PASSWORD` | `changeme` | Initial admin password |
-| `MUSICODE_JWT_SECRET` | _(required)_ | JWT signing key (≥32 chars) |
-| `MUSICODE_TOKEN_ENCRYPTION_KEY` | _(required)_ | AES-256-GCM key for encrypting scrobble tokens at rest |
+| `SONANCE_ADMIN_PASSWORD` | `changeme` | Initial admin password |
+| `SONANCE_JWT_SECRET` | _(required)_ | JWT signing key (≥32 chars) |
+| `SONANCE_TOKEN_ENCRYPTION_KEY` | _(required)_ | AES-256-GCM key for encrypting scrobble tokens at rest |
 | `LASTFM_API_KEY` | _(optional)_ | Last.fm API key for scrobbling |
 | `LASTFM_API_SECRET` | _(optional)_ | Last.fm API secret for scrobbling |
 
@@ -357,13 +357,13 @@ See `.env.example` for full documentation. See `SCROBBLING.md` for Last.fm/Liste
 
 ```bash
 # Backend — 272 tests (unit + integration + WireMock contract)
-cd musicode-server && mvn clean verify     # JaCoCo ≥80% enforced
+cd sonance-server && mvn clean verify     # JaCoCo ≥80% enforced
 
 # Frontend — 117 unit tests
-cd musicode-ui && npm run test:coverage    # Vitest v8 coverage thresholds
+cd sonance-ui && npm run test:coverage    # Vitest v8 coverage thresholds
 
 # E2E — 21 Playwright tests (requires backend on :8080)
-cd musicode-ui && npm run test:e2e
+cd sonance-ui && npm run test:e2e
 ```
 
 | Suite | Count | What it covers |
@@ -379,16 +379,16 @@ cd musicode-ui && npm run test:e2e
 ## More Screenshots
 
 <p align="center">
-  <img src="docs/assets/musicode-health.png" alt="Library Health dashboard" width="700" />
+  <img src="docs/assets/sonance-health.png" alt="Library Health dashboard" width="700" />
 </p>
 <p align="center"><em>Library Health dashboard — detect metadata issues, missing covers, and orphan files.</em></p>
 
 ### Responsive Layout
 
 <p align="center">
-  <img src="docs/assets/musicode-mobile-library.jpg" alt="Mobile — Album grid with compact sidebar" width="300" />
+  <img src="docs/assets/sonance-mobile-library.jpg" alt="Mobile — Album grid with compact sidebar" width="300" />
   &nbsp;&nbsp;&nbsp;
-  <img src="docs/assets/musicode-mobile-player.png" alt="Mobile — Now Playing with vinyl visualizer" width="300" />
+  <img src="docs/assets/sonance-mobile-player.png" alt="Mobile — Now Playing with vinyl visualizer" width="300" />
 </p>
 <p align="center"><em>Fully responsive — collapsible icon sidebar, adaptive player bar, and full Now Playing on mobile.</em></p>
 
