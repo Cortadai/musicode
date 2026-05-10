@@ -419,3 +419,4 @@
 {"v":2,"cmd":"complete-task","params":{"milestoneId":"M024","sliceId":"S05","taskId":"T02"},"ts":"2026-05-10T08:36:27.187Z","actor":"agent","hash":"14d11120b1528c2d","session_id":"acecf87d-49a8-4316-b677-455d6ae1ce67"}
 {"v":2,"cmd":"complete-task","params":{"milestoneId":"M024","sliceId":"S05","taskId":"T03"},"ts":"2026-05-10T08:36:32.077Z","actor":"agent","hash":"34bcff2126c15192","session_id":"acecf87d-49a8-4316-b677-455d6ae1ce67"}
 {"v":2,"cmd":"complete-slice","params":{"milestoneId":"M024","sliceId":"S05"},"ts":"2026-05-10T08:36:51.486Z","actor":"agent","hash":"bbd9c092abd353a6","session_id":"acecf87d-49a8-4316-b677-455d6ae1ce67"}
+{"v":2,"cmd":"plan-milestone","params":{"milestoneId":"M025"},"ts":"2026-05-10T09:03:18.107Z","actor":"agent","hash":"9df5de3404621d6a","session_id":"9baffe63-6911-483a-9eab-01a6183ff91c"}

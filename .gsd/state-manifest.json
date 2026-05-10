@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-05-10T08:36:51.463Z",
+  "exported_at": "2026-05-10T09:03:18.079Z",
   "milestones": [
     {
       "id": "M001",
@@ -1116,6 +1116,58 @@
       ],
       "requirement_coverage": "Not provided.",
       "boundary_map_markdown": "Not provided."
+    },
+    {
+      "id": "M025",
+      "title": "Playlists",
+      "status": "planned",
+      "depends_on": [],
+      "created_at": "2026-05-10T09:02:32.990Z",
+      "completed_at": null,
+      "vision": "Users can create, manage, and play playlists. Favorites appear as a pseudo-playlist. Tracks can be added to playlists from any track list. Playlist order is user-controlled.",
+      "success_criteria": [
+        "User can create a playlist, add tracks, and play it end-to-end",
+        "User can reorder tracks within a playlist and the order persists",
+        "Favorites appear as the first entry in the playlist list without duplicating data",
+        "Add to playlist is accessible from any track context menu across all shells",
+        "Playlist sidebar section is visible and functional in all 3 shells (Nova, Minimal, Classic)"
+      ],
+      "key_risks": [
+        {
+          "risk": "Drag-and-drop reorder complexity across shells",
+          "whyItMatters": "Three different shell layouts means DnD behavior must work in different DOM structures — could be brittle"
+        },
+        {
+          "risk": "Favorites pseudo-playlist integration",
+          "whyItMatters": "Favorites use a different data model (Favorite entity vs PlaylistTrack). Merging them into a unified playlist view without duplicating data requires careful abstraction"
+        }
+      ],
+      "proof_strategy": [
+        {
+          "riskOrUnknown": "Drag-and-drop reorder",
+          "retireIn": "S04",
+          "whatWillBeProven": "Reorder works in all 3 shells by exercising it in the browser"
+        },
+        {
+          "riskOrUnknown": "Favorites pseudo-playlist",
+          "retireIn": "S03",
+          "whatWillBeProven": "Favorites render as first playlist entry using existing Favorite data, no duplication"
+        }
+      ],
+      "verification_contract": "Backend: JUnit tests for PlaylistController (CRUD, add/remove tracks, reorder). Frontend: vitest for playlist store/hooks.",
+      "verification_integration": "Full flow: create playlist → add tracks → play → verify audio streams from playlist context",
+      "verification_operational": "N/A — no new services or lifecycle changes",
+      "verification_uat": "Manual: create playlist, add tracks from different views, reorder, play, verify favorites pseudo-playlist",
+      "definition_of_done": [
+        "All 4 slices complete with passing tests",
+        "Playlist CRUD works end-to-end (create, rename, delete, add tracks, remove tracks)",
+        "Reorder persists across page reloads",
+        "Favorites appear as pseudo-playlist without data duplication",
+        "Add-to-playlist accessible from track lists in all shells",
+        "Sidebar playlist section renders correctly in Nova, Minimal, and Classic shells"
+      ],
+      "requirement_coverage": "Covers: new playlist functionality. Leaves for later: playlist import (M3U, CSV, XSPF), playlist sharing, collaborative playlists.",
+      "boundary_map_markdown": "### S01 → S02\n\nProduces:\n- `GET/POST /api/playlists` — list and create playlists\n- `GET/PUT/DELETE /api/playlists/{id}` — detail, rename, delete\n- `GET/POST/DELETE /api/playlists/{id}/tracks` — track management\n- `PUT /api/playlists/{id}/tracks/reorder` — reorder tracks\n- `Playlist` and `PlaylistTrack` entities with `V4__playlists.sql` migration\n\nConsumes:\n- nothing (first slice)\n\n### S02 → S03\n\nProduces:\n- `PlaylistBrowser` grid component\n- `PlaylistDetail` track list component\n- `usePlaylist` / `usePlaylistStore` hooks\n- Playlist API client functions\n\nConsumes:\n- S01 REST API endpoints\n\n### S02 → S04\n\nProduces:\n- `PlaylistDetail` component with track list (reorder target)\n\nConsumes:\n- S01 REST API endpoints"
     }
   ],
   "slices": [
@@ -3067,6 +3119,93 @@
       "integration_closure": "Merge a main sin conflictos, post-merge CI verde",
       "observability_impact": "Clean build logs sin warnings",
       "sequence": 6,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M025",
+      "id": "S01",
+      "title": "Backend — model, migration, API, tests",
+      "status": "pending",
+      "risk": "low",
+      "depends": [],
+      "demo": "Playlist CRUD endpoints respond correctly via Swagger/curl — create, list, detail, rename, delete, add/remove tracks, reorder",
+      "created_at": "2026-05-10T09:03:18.023Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Full REST API for playlist management with persistence and tests",
+      "success_criteria": "All PlaylistController endpoints return correct responses. JUnit tests cover CRUD, track management, reorder, and error cases.",
+      "proof_level": "Contract tests (JUnit + MockMvc)",
+      "integration_closure": "Produces REST API consumed by S02 frontend",
+      "observability_impact": "Standard Spring Boot logging, no new observability surfaces",
+      "sequence": 1,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M025",
+      "id": "S02",
+      "title": "Frontend — playlist browser, detail view, API client",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01"
+      ],
+      "demo": "User can navigate to playlists view, see list of playlists as cards, click into a playlist, see its tracks, and play from the playlist",
+      "created_at": "2026-05-10T09:03:18.023Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Playlist UI with browser grid and detail view integrated with existing player",
+      "success_criteria": "Playlist browser shows all playlists. Detail view shows tracks with sorting. Playing a track from playlist works with queue integration.",
+      "proof_level": "Manual browser verification + vitest for API client/store",
+      "integration_closure": "Consumes S01 API. Produces playlist UI components used by S03 for sidebar and context menu.",
+      "observability_impact": "None",
+      "sequence": 2,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M025",
+      "id": "S03",
+      "title": "Integration — context menu, sidebar, favorites pseudo-playlist",
+      "status": "pending",
+      "risk": "medium",
+      "depends": [
+        "S01",
+        "S02"
+      ],
+      "demo": "User can right-click any track and add to playlist. Sidebar shows playlist section in all shells. Favorites appear as first playlist entry.",
+      "created_at": "2026-05-10T09:03:18.023Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Wire playlists into the existing app shell and track interaction patterns",
+      "success_criteria": "Add-to-playlist in context menu across all track lists. Sidebar playlist section in all 3 shells. Favorites pseudo-playlist renders using existing Favorite data.",
+      "proof_level": "Manual browser verification across all 3 shells",
+      "integration_closure": "Consumes S01 API + S02 components. Wires into existing shell sidebars and track context menus.",
+      "observability_impact": "None",
+      "sequence": 3,
+      "replan_triggered_at": null
+    },
+    {
+      "milestone_id": "M025",
+      "id": "S04",
+      "title": "Reorder and polish — drag/arrows, empty states, confirmations",
+      "status": "pending",
+      "risk": "low",
+      "depends": [
+        "S02"
+      ],
+      "demo": "User can reorder tracks in a playlist via drag or arrow buttons. Empty playlist shows helpful state. Delete playlist asks for confirmation.",
+      "created_at": "2026-05-10T09:03:18.023Z",
+      "completed_at": null,
+      "full_summary_md": "",
+      "full_uat_md": "",
+      "goal": "Polish the playlist UX with reordering, empty states, and safety confirmations",
+      "success_criteria": "Track reorder persists after page reload. Empty playlist shows call-to-action. Delete requires confirmation.",
+      "proof_level": "Manual browser verification",
+      "integration_closure": "Final polish layer on top of S02 detail view",
+      "observability_impact": "None",
+      "sequence": 4,
       "replan_triggered_at": null
     }
   ],

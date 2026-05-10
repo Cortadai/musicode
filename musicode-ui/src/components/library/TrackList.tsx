@@ -6,6 +6,7 @@ import { Play, Disc3 } from 'lucide-react';
 import { getCoverUrl } from '../../api/albums';
 import HeartButton from '../common/HeartButton';
 import { useFavorites } from '../../hooks/useFavorites';
+import TrackContextMenu from '../common/TrackContextMenu';
 
 const CODEC_MAP: Record<string, string> = {
   flac: 'FLAC', mp3: 'MP3', ogg: 'OGG', m4a: 'AAC', wav: 'WAV',
@@ -51,12 +52,13 @@ interface TrackRowProps {
   onPlay?: (track: Track, index: number) => void;
   isFavorite?: boolean;
   onToggleFavorite?: (trackId: number) => void;
+  onContextMenu?: (track: Track, e: React.MouseEvent) => void;
 }
 
 const TrackRow = memo(function TrackRow({
   track, index, showAlbum, isCurrent, isPlaying,
   isScrollTarget, scrollTargetRef, onPlay,
-  isFavorite: favorited, onToggleFavorite,
+  isFavorite: favorited, onToggleFavorite, onContextMenu: onCtx,
 }: TrackRowProps) {
   const handleClick = useCallback(
     () => onPlay?.(track, index),
@@ -73,6 +75,11 @@ const TrackRow = memo(function TrackRow({
     [onPlay, track, index]
   );
 
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => { onCtx?.(track, e); },
+    [onCtx, track]
+  );
+
   const artistName = track.artist?.name ?? 'Unknown';
 
   return (
@@ -82,6 +89,7 @@ const TrackRow = memo(function TrackRow({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onContextMenu={handleContextMenu}
       aria-label={`Play ${track.title} by ${artistName}`}
       aria-current={isCurrent ? 'true' : undefined}
       className={`flex items-center gap-4 px-4 py-2.5 rounded-lg cursor-pointer transition-colors group
@@ -167,13 +175,19 @@ export default function TrackList({ tracks, showAlbum = false, showFavorites = f
   const { isFavorite, toggle: toggleFavorite } = useFavorites();
   const scrollTargetRef = useRef<HTMLDivElement>(null);
   const hasScrolled = useRef(false);
+  const [ctxMenu, setCtxMenu] = useState<{ track: Track; x: number; y: number } | null>(null);
 
-  // Reset scroll flag when the target track changes
+  const handleTrackContextMenu = useCallback((track: Track, e: React.MouseEvent) => {
+    e.preventDefault();
+    setCtxMenu({ track, x: e.clientX, y: e.clientY });
+  }, []);
+
+  const closeCtxMenu = useCallback(() => setCtxMenu(null), []);
+
   useEffect(() => {
     hasScrolled.current = false;
   }, [scrollToTrackId]);
 
-  // Scroll to the target track once after mount/change
   useEffect(() => {
     if (scrollToTrackId && scrollTargetRef.current && !hasScrolled.current) {
       hasScrolled.current = true;
@@ -211,8 +225,17 @@ export default function TrackList({ tracks, showAlbum = false, showFavorites = f
           onPlay={onPlay}
           isFavorite={showFavorites ? isFavorite(track.id) : undefined}
           onToggleFavorite={showFavorites ? toggleFavorite : undefined}
+          onContextMenu={handleTrackContextMenu}
         />
       ))}
+      {ctxMenu && (
+        <TrackContextMenu
+          track={ctxMenu.track}
+          x={ctxMenu.x}
+          y={ctxMenu.y}
+          onClose={closeCtxMenu}
+        />
+      )}
     </div>
   );
 }

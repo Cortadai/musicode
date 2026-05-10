@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router';
 import { Outlet } from 'react-router';
-import { Home, Library, Music, Search, Settings, LogOut, TrendingUp, HeartPulse } from 'lucide-react';
+import { Home, Library, ListMusic, Music, Search, Settings, LogOut, TrendingUp, HeartPulse } from 'lucide-react';
 import GitHubIcon from '../../icons/GitHubIcon';
 import { useAuth } from '../../../context/AuthContext';
 import { useState, useRef, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
@@ -26,6 +26,7 @@ export default function NovaShell() {
   const navItems = [
     { to: '/', icon: Home, label: 'Home', end: true },
     { to: '/library', icon: Library, label: 'Library' },
+    { to: '/playlists', icon: ListMusic, label: 'Playlists' },
     { to: '/stats', icon: TrendingUp, label: 'Stats' },
     { to: '/settings/health', icon: HeartPulse, label: 'Health' },
     { to: '/settings', icon: Settings, label: 'Settings', end: true },

@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router';
-import { Home, Library, Settings, LogOut, TrendingUp, HeartPulse, Music } from 'lucide-react';
+import { Home, Library, ListMusic, Settings, LogOut, TrendingUp, HeartPulse, Music } from 'lucide-react';
 import GitHubIcon from '../icons/GitHubIcon';
 import { useAuth } from '../../context/AuthContext';
 import audioGraph from '../../audio/audioGraph';
@@ -12,6 +12,7 @@ export default function Sidebar() {
   const navItems = [
     { to: '/', label: 'Home', icon: Home, end: true },
     { to: '/library', label: 'Library', icon: Library },
+    { to: '/playlists', label: 'Playlists', icon: ListMusic },
     { to: '/stats', label: 'Stats', icon: TrendingUp },
     { to: '/settings/health', label: 'Library Health', icon: HeartPulse },
     { to: '/settings', label: 'Settings', icon: Settings, end: true },

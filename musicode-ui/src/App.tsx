@@ -19,6 +19,8 @@ const ArtistDetailPage = lazy(() => import('./pages/ArtistDetailPage'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const StatsPage = lazy(() => import('./pages/StatsPage'));
+const PlaylistsPage = lazy(() => import('./pages/PlaylistsPage'));
+const PlaylistDetailPage = lazy(() => import('./pages/PlaylistDetailPage'));
 const LibraryHealthPage = lazy(() => import('./pages/LibraryHealthPage'));
 
 const queryClient = new QueryClient({
@@ -52,6 +54,8 @@ export default function App() {
                   <Route path="/artists/:id" element={<Suspense fallback={<Spinner />}><ArtistDetailPage /></Suspense>} />
                   <Route path="/search" element={<Suspense fallback={<Spinner />}><SearchPage /></Suspense>} />
                   <Route path="/stats" element={<Suspense fallback={<Spinner />}><StatsPage /></Suspense>} />
+                  <Route path="/playlists" element={<Suspense fallback={<Spinner />}><PlaylistsPage /></Suspense>} />
+                  <Route path="/playlists/:id" element={<Suspense fallback={<Spinner />}><PlaylistDetailPage /></Suspense>} />
                   <Route path="/settings" element={<Suspense fallback={<Spinner />}><SettingsPage /></Suspense>} />
                   {/* Redirects from old routes */}
                   <Route path="/albums" element={<Navigate to="/library?tab=albums" replace />} />
