@@ -52,7 +52,7 @@ export default function MinimalShell() {
       <header
         className="h-12 flex items-center px-5 gap-6 shrink-0 relative z-[1] electron-drag"
         style={{
-          background: 'linear-gradient(to right, var(--mc-sidebar-background), var(--mc-glass-background))',
+          backgroundColor: 'var(--mc-bg-base)',
           borderBottom: '1px solid var(--mc-glass-border)',
           backdropFilter: 'blur(var(--mc-glass-blur))',
           WebkitBackdropFilter: 'blur(var(--mc-glass-blur))',

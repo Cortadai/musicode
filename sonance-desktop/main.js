@@ -106,6 +106,7 @@ async function createWindow() {
 }
 
 ipcMain.on('set-titlebar-colors', (_event, bgColor, symbolColor) => {
+  console.log('[main] setTitleBarOverlay called with bg:', bgColor, 'symbol:', symbolColor);
   if (mainWindow && !mainWindow.isDestroyed()) {
     try {
       mainWindow.setTitleBarOverlay({
