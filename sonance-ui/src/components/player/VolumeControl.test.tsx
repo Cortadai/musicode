@@ -8,23 +8,16 @@ describe('VolumeControl', () => {
     onVolumeChange.mockClear();
   });
 
-  it('renders mute button and volume slider', () => {
+  it('renders mute button', () => {
     render(<VolumeControl volume={0.8} onVolumeChange={onVolumeChange} />);
     expect(screen.getByRole('button', { name: /mute/i })).toBeInTheDocument();
-    expect(screen.getByRole('slider', { name: /volume/i })).toBeInTheDocument();
   });
 
-  it('shows volume as percentage value on slider', () => {
-    render(<VolumeControl volume={0.6} onVolumeChange={onVolumeChange} />);
-    const slider = screen.getByRole('slider', { name: /volume/i });
-    expect(slider).toHaveValue('60');
-  });
-
-  it('calls onVolumeChange with 0-1 value when slider changes', () => {
+  it('shows volume slider on hover', () => {
     render(<VolumeControl volume={0.8} onVolumeChange={onVolumeChange} />);
-    const slider = screen.getByRole('slider', { name: /volume/i });
-    fireEvent.change(slider, { target: { value: '45' } });
-    expect(onVolumeChange).toHaveBeenCalledWith(0.45);
+    expect(screen.queryByRole('slider', { name: /volume/i })).not.toBeInTheDocument();
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /mute/i }).parentElement!);
+    expect(screen.getByRole('slider', { name: /volume/i })).toBeInTheDocument();
   });
 
   it('mutes to 0 when clicking mute button', () => {
@@ -44,8 +37,9 @@ describe('VolumeControl', () => {
     expect(screen.getByRole('button', { name: /unmute/i })).toBeInTheDocument();
   });
 
-  it('has accessible valuetext with percentage', () => {
+  it('slider has accessible valuetext with percentage on hover', () => {
     render(<VolumeControl volume={0.75} onVolumeChange={onVolumeChange} />);
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /mute/i }).parentElement!);
     const slider = screen.getByRole('slider', { name: /volume/i });
     expect(slider).toHaveAttribute('aria-valuetext', '75%');
   });

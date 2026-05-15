@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronDown, SlidersHorizontal, Plus, Minus, Save, Download, Upload, X } from 'lucide-react';
+import { ChevronDown, Plus, Minus, Save, Download, Upload, X } from 'lucide-react';
 import audioGraph from '../../audio/audioGraph';
 import eqProcessor, {
   EQ_PRESETS,
@@ -9,7 +9,6 @@ import eqProcessor, {
   MAX_BANDS,
   freqLabel,
 } from '../../audio/eqProcessor';
-import EqMiniCurve from './EqMiniCurve';
 import type { EqBand, EqFilterType } from '../../audio/eqProcessor';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import {
@@ -199,8 +198,12 @@ function FilterTypeSelector({
   );
 }
 
-export default function EqPopover() {
-  const [open, setOpen] = useState(false);
+interface EqPopoverProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export default function EqPopover({ open, onOpenChange }: EqPopoverProps) {
   const [enabled, setEnabled] = useState(() => loadPreferences().eqEnabled);
   const [bands, setBands] = useState<EqBand[]>(() => loadPreferences().eqBands);
   const [preset, setPreset] = useState(() => loadPreferences().eqPreset);
@@ -211,8 +214,6 @@ export default function EqPopover() {
   const [saving, setSaving] = useState(false);
   const [saveName, setSaveName] = useState('');
 
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const curveContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -397,13 +398,13 @@ export default function EqPopover() {
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setOpen(false);
+      if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
+        onOpenChange(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  }, [open, onOpenChange]);
 
   // Escape key closes, focus management
   useEffect(() => {
@@ -414,32 +415,16 @@ export default function EqPopover() {
     firstFocusable?.focus();
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setOpen(false);
-        triggerRef.current?.focus();
+        onOpenChange(false);
       }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [open]);
+  }, [open, onOpenChange]);
+
+  if (!open) return null;
 
   return (
-    <div className="relative flex flex-col items-center" ref={popoverRef}>
-      <button
-        ref={triggerRef}
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-label={enabled ? `Equalizer: ${preset}` : 'Equalizer: Off'}
-        className={`flex items-center justify-center transition-colors ${enabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
-      >
-        <SlidersHorizontal className="w-4 h-4" />
-      </button>
-      {!open && enabled && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 pointer-events-none">
-          <EqMiniCurve bands={bands} enabled={enabled} />
-        </div>
-      )}
-      {open && (
         <div
           ref={dialogRef}
           role="dialog"
@@ -757,7 +742,5 @@ export default function EqPopover() {
             )}
           </div>
         </div>
-      )}
-    </div>
   );
 }

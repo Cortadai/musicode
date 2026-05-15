@@ -78,62 +78,50 @@ import eqProcessor from '../../audio/eqProcessor';
 import { savePreferences } from '../../audio/audioPreferences';
 
 describe('EqPopover', () => {
+  const onOpenChange = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders trigger button with EQ label', () => {
-    render(<EqPopover />);
-    expect(screen.getByRole('button', { name: /equalizer: off/i })).toBeInTheDocument();
+  it('renders nothing when closed', () => {
+    const { container } = render(<EqPopover open={false} onOpenChange={onOpenChange} />);
+    expect(container.innerHTML).toBe('');
   });
 
-  it('opens dialog on click', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
+  it('renders dialog when open', () => {
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByRole('dialog', { name: /equalizer settings/i })).toBeInTheDocument();
   });
 
-  it('sets aria-expanded on trigger', () => {
-    render(<EqPopover />);
-    const trigger = screen.getByRole('button', { name: /equalizer/i });
-    expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    fireEvent.click(trigger);
-    expect(trigger).toHaveAttribute('aria-expanded', 'true');
-  });
-
   it('renders EQ toggle switch', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     const toggle = screen.getByRole('switch');
     expect(toggle).toHaveAttribute('aria-checked', 'false');
   });
 
   it('toggles EQ on and calls eqProcessor.setEnabled', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     fireEvent.click(screen.getByRole('switch'));
     expect(eqProcessor.setEnabled).toHaveBeenCalledWith(true);
     expect(savePreferences).toHaveBeenCalledWith({ eqEnabled: true });
   });
 
   it('renders 5 band sliders + preamp = 6 sliders total', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     const sliders = screen.getAllByRole('slider');
     expect(sliders).toHaveLength(6); // 5 bands + 1 preamp
   });
 
   it('band sliders have labels with frequency', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByRole('slider', { name: /60 band gain/i })).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: /4k band gain/i })).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: /12k band gain/i })).toBeInTheDocument();
   });
 
   it('changes band gain and calls eqProcessor.updateBand + savePreferences', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     const slider60 = screen.getByRole('slider', { name: /60 band gain/i });
     fireEvent.change(slider60, { target: { value: '6' } });
     expect(eqProcessor.updateBand).toHaveBeenCalledWith(0, { gain: 6 });
@@ -141,14 +129,12 @@ describe('EqPopover', () => {
   });
 
   it('renders preset selector', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByRole('button', { name: /eq preset/i })).toBeInTheDocument();
   });
 
   it('changes preset and calls eqProcessor.applyPreset', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     const presetBtn = screen.getByRole('button', { name: /eq preset/i });
     fireEvent.click(presetBtn);
     const rockOption = screen.getByRole('option', { name: /rock/i });
@@ -157,30 +143,20 @@ describe('EqPopover', () => {
     expect(savePreferences).toHaveBeenCalled();
   });
 
-  it('closes on Escape key', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  it('calls onOpenChange(false) on Escape key', () => {
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     fireEvent.keyDown(document, { key: 'Escape' });
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it('closes on click outside', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  it('calls onOpenChange(false) on click outside', () => {
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     fireEvent.mouseDown(document.body);
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
-
-  it('has aria-haspopup on trigger', () => {
-    render(<EqPopover />);
-    expect(screen.getByRole('button', { name: /equalizer/i })).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('renders preamp slider', () => {
-    render(<EqPopover />);
-    fireEvent.click(screen.getByRole('button', { name: /equalizer/i }));
+    render(<EqPopover open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByRole('slider', { name: /preamp/i })).toBeInTheDocument();
   });
 });

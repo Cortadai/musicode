@@ -134,6 +134,11 @@ summary, .cursor-pointer {
   color: var(--mc-text-error);
 }
 
+/* Hover surface for menu items */
+.mc-hover-surface:hover {
+  background-color: var(--mc-waveform-buffered);
+}
+
 /* Primary button */
 .mc-btn-primary {
   background-color: var(--mc-accent-primary-hover);

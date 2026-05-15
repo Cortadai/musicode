@@ -1,13 +1,13 @@
 import { usePlayer } from '../../hooks/usePlayer';
 import audioGraph from '../../audio/audioGraph';
 import { useCallback, useEffect, useState } from 'react';
-import { BarChart3, Activity, CassetteTape, ListMusic, Mic2 } from 'lucide-react';
+import { ListMusic } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import TrackInfo from './TrackInfo';
 import TransportControls from './TransportControls';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
-import CrossfadePopover from './CrossfadePopover';
+import MoreControlsPopover from './MoreControlsPopover';
 import EqPopover from './EqPopover';
 import NowPlayingOverlay from './NowPlayingOverlay';
 import RetroMode from './RetroMode';
@@ -34,6 +34,7 @@ export default function PlayerBar() {
 
   const [showNowPlaying, setShowNowPlaying] = useState(false);
   const [showRetroMode, setShowRetroMode] = useState(false);
+  const [eqOpen, setEqOpen] = useState(false);
   const [waveformEnabled, setWaveformEnabled] = useState(() => loadPreferences().waveformEnabled);
 
   const handleToggleWaveform = useCallback(() => {
@@ -117,42 +118,9 @@ export default function PlayerBar() {
           </div>
         </div>
 
-        {/* Right: Buttons + Volume */}
+        {/* Right: Queue + More + Volume */}
         <div className="flex items-center gap-3 shrink-0">
           <ScrobbleIndicator status={scrobbleStatus} />
-          <button
-            onClick={handleToggleWaveform}
-            aria-label={waveformEnabled ? 'Switch to flat progress bar' : 'Switch to waveform'}
-            aria-pressed={waveformEnabled}
-            className={`flex items-center justify-center transition-colors ${waveformEnabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
-          >
-            <Activity className="w-[18px] h-[18px]" />
-          </button>
-          <CrossfadePopover getCrossfadeDuration={getCrossfadeDuration} setCrossfadeDuration={setCrossfadeDuration} />
-          <EqPopover />
-          <button
-            onClick={handleToggleDeck}
-            aria-label={deckVisible ? 'Hide analyzer deck' : 'Show analyzer deck'}
-            aria-pressed={deckVisible}
-            className={`flex items-center justify-center transition-colors ${deckVisible ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
-          >
-            <BarChart3 className="w-[18px] h-[18px]" />
-          </button>
-          <button
-            onClick={() => setShowRetroMode(true)}
-            aria-label="Retro cassette mode"
-            className="flex items-center justify-center transition-colors mc-interactive-warning"
-          >
-            <CassetteTape className="w-[18px] h-[18px]" />
-          </button>
-          <button
-            onClick={handleToggleLyrics}
-            aria-label={isLyricsOpen ? 'Hide lyrics' : 'Show lyrics'}
-            aria-pressed={isLyricsOpen}
-            className={`flex items-center justify-center transition-colors ${isLyricsOpen ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
-          >
-            <Mic2 className="w-[18px] h-[18px]" />
-          </button>
           <button
             onClick={handleToggleQueue}
             aria-label={isQueueOpen ? 'Hide queue' : 'Show queue'}
@@ -161,6 +129,21 @@ export default function PlayerBar() {
           >
             <ListMusic className="w-[18px] h-[18px]" />
           </button>
+          <div className="relative">
+            <MoreControlsPopover
+              waveformEnabled={waveformEnabled}
+              onToggleWaveform={handleToggleWaveform}
+              getCrossfadeDuration={getCrossfadeDuration}
+              setCrossfadeDuration={setCrossfadeDuration}
+              deckVisible={deckVisible}
+              onToggleDeck={handleToggleDeck}
+              onOpenCassette={() => setShowRetroMode(true)}
+              isLyricsOpen={isLyricsOpen}
+              onToggleLyrics={handleToggleLyrics}
+              onOpenEq={() => setEqOpen(true)}
+            />
+            <EqPopover open={eqOpen} onOpenChange={setEqOpen} />
+          </div>
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
         </div>
       </div>
