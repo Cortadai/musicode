@@ -3,6 +3,10 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 
+if ((window as any).electronAPI) {
+  document.documentElement.classList.add('electron');
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

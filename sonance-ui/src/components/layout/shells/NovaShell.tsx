@@ -145,6 +145,7 @@ export default function NovaShell() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 relative z-[1]">
+        <div className="electron-drag-strip" />
         <AnalyzerDeck scopeMap={scopeMap} />
         <div className="flex-1 flex min-h-0">
           <main id="main-content" className="flex-1 overflow-y-auto p-6">

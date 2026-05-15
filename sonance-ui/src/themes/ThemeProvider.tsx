@@ -99,6 +99,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.setAttribute('data-theme', prefs.shell);
     document.documentElement.setAttribute('data-palette', prefs.palette);
     window.dispatchEvent(new Event('sonance-theme-changed'));
+
+    const api = (window as any).electronAPI;
+    if (api?.setTitleBarColors) {
+      api.setTitleBarColors(theme.tokens.bgBase, theme.tokens.textPrimary);
+    }
   }, [theme, prefs.shell, prefs.palette]);
 
   const value = useMemo<ThemeContextValue>(

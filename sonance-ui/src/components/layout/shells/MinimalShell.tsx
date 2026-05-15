@@ -50,7 +50,7 @@ export default function MinimalShell() {
       </a>
       {particles && <Suspense><ParticlesBackground /></Suspense>}
       <header
-        className="h-12 flex items-center px-5 gap-6 shrink-0 relative z-[1]"
+        className="h-12 flex items-center px-5 gap-6 shrink-0 relative z-[1] electron-drag"
         style={{
           background: 'linear-gradient(to right, var(--mc-sidebar-background), var(--mc-glass-background))',
           borderBottom: '1px solid var(--mc-glass-border)',

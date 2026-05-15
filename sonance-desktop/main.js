@@ -1,4 +1,4 @@
-const { app, BrowserWindow, globalShortcut, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, globalShortcut, Tray, Menu, nativeImage, ipcMain } = require('electron');
 const path = require('path');
 const sidecar = require('./sidecar');
 
@@ -63,6 +63,12 @@ async function createWindow() {
     minHeight: 600,
     autoHideMenuBar: true,
     backgroundColor: '#0a0a0f',
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#0a0a0f',
+      symbolColor: '#e2e2e2',
+      height: 32,
+    },
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -98,6 +104,20 @@ async function createWindow() {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 }
+
+ipcMain.on('set-titlebar-colors', (_event, bgColor, symbolColor) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      mainWindow.setTitleBarOverlay({
+        color: bgColor,
+        symbolColor: symbolColor,
+        height: 32,
+      });
+    } catch (err) {
+      console.error('[main] setTitleBarOverlay failed:', err.message);
+    }
+  }
+});
 
 app.whenReady().then(async () => {
   await createWindow();

@@ -14,7 +14,7 @@ export default function TopBar() {
   }
 
   return (
-    <header className="h-14 flex items-center px-6 gap-4" style={{ backgroundColor: 'var(--mc-bg-base)', borderBottom: '1px solid var(--mc-border-default)' }}>
+    <header className="h-14 flex items-center px-6 gap-4 electron-drag" style={{ backgroundColor: 'var(--mc-bg-base)', borderBottom: '1px solid var(--mc-border-default)' }}>
       <form onSubmit={handleSubmit} className="flex-1 max-w-md">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />

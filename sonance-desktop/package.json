@@ -33,7 +33,8 @@
       "main.js",
       "preload.js",
       "sidecar.js",
-      "loading.html"
+      "loading.html",
+      "resources/**"
     ],
     "afterPack": "./afterPack.js",
     "forceCodeSigning": false,

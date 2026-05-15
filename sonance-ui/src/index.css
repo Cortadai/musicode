@@ -48,6 +48,35 @@ summary, .cursor-pointer {
   color: white;
 }
 
+/* === Electron titlebar overlay === */
+.electron-drag {
+  -webkit-app-region: drag;
+}
+
+.electron-drag a,
+.electron-drag button,
+.electron-drag input,
+.electron-drag select,
+.electron-drag [role="button"],
+.electron-drag form {
+  -webkit-app-region: no-drag;
+}
+
+.electron .electron-drag {
+  padding-right: 140px;
+}
+
+.electron-drag-strip {
+  display: none;
+}
+
+.electron .electron-drag-strip {
+  display: block;
+  height: 32px;
+  flex-shrink: 0;
+  -webkit-app-region: drag;
+}
+
 /* === Theme-aware interactive utilities === */
 
 /* Nav items — muted text, brighter on hover */
