@@ -35,9 +35,11 @@
       "sidecar.js",
       "loading.html"
     ],
+    "afterPack": "./afterPack.js",
     "forceCodeSigning": false,
     "win": {
       "target": ["nsis", "dir"],
+      "icon": "icon.ico",
       "sign": false
     },
     "nsis": {
@@ -51,7 +53,8 @@
       },
       {
         "from": "jre/",
-        "to": "jre/"
+        "to": "jre/",
+        "filter": ["**/*"]
       }
     ]
   }

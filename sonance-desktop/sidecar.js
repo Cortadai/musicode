@@ -1,16 +1,19 @@
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const net = require('net');
 const crypto = require('crypto');
 const { app } = require('electron');
 const http = require('http');
 
-const HEALTH_URL = 'http://localhost:17380/actuator/health';
+const PORT = 17380;
+const HEALTH_URL = `http://localhost:${PORT}/actuator/health`;
 const HEALTH_POLL_INTERVAL = 1000;
 const HEALTH_TIMEOUT = 45000;
 
 let javaProcess = null;
 let killed = false;
+let adoptedExisting = false;
 
 function getAppDataDir() {
   return path.join(app.getPath('appData'), 'Sonance');
@@ -97,8 +100,83 @@ function waitForHealth() {
   });
 }
 
-function start() {
+function isPortInUse() {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once('error', (err) => {
+      resolve(err.code === 'EADDRINUSE');
+    });
+    server.once('listening', () => {
+      server.close(() => resolve(false));
+    });
+    server.listen(PORT, '127.0.0.1');
+  });
+}
+
+function findPidOnPort() {
+  try {
+    const output = execSync(`netstat -ano | findstr ":${PORT}" | findstr "LISTENING"`, {
+      encoding: 'utf8',
+      windowsHide: true,
+      timeout: 5000,
+    });
+    const match = output.trim().split('\n')[0];
+    if (match) {
+      const pid = match.trim().split(/\s+/).pop();
+      return parseInt(pid, 10) || null;
+    }
+  } catch {
+    // no process found
+  }
+  return null;
+}
+
+function killPid(pid) {
+  try {
+    execSync(`taskkill /F /PID ${pid}`, { windowsHide: true, timeout: 5000 });
+    console.log(`[sidecar] Killed zombie process PID ${pid} on port ${PORT}`);
+    return true;
+  } catch (err) {
+    console.warn(`[sidecar] Failed to kill PID ${pid}: ${err.message}`);
+    return false;
+  }
+}
+
+async function clearPort() {
+  const portBusy = await isPortInUse();
+  if (!portBusy) return;
+
+  console.log(`[sidecar] Port ${PORT} is already in use — checking for zombie`);
+
+  const healthy = await checkHealth();
+  if (healthy) {
+    console.log(`[sidecar] Existing server on port ${PORT} is healthy — adopting it`);
+    adoptedExisting = true;
+    return;
+  }
+
+  const pid = findPidOnPort();
+  if (pid) {
+    console.log(`[sidecar] Found zombie PID ${pid} — killing it`);
+    killPid(pid);
+    await new Promise((r) => setTimeout(r, 1000));
+
+    const stillBusy = await isPortInUse();
+    if (stillBusy) {
+      throw new Error(`Port ${PORT} still in use after killing PID ${pid}. Close the process manually.`);
+    }
+  } else {
+    throw new Error(`Port ${PORT} is in use but couldn't identify the process. Close it manually.`);
+  }
+}
+
+async function start() {
   killed = false;
+  adoptedExisting = false;
+
+  await clearPort();
+  if (adoptedExisting) return;
+
   const jarPath = getJarPath();
   const javaPath = getJavaPath();
   const encryptionKey = getEncryptionKey();
@@ -146,12 +224,22 @@ function start() {
 
 function stop() {
   return new Promise((resolve) => {
+    killed = true;
+
+    if (adoptedExisting) {
+      console.log('[sidecar] Adopted server — killing by port');
+      const pid = findPidOnPort();
+      if (pid) killPid(pid);
+      adoptedExisting = false;
+      resolve();
+      return;
+    }
+
     if (!javaProcess) {
       resolve();
       return;
     }
 
-    killed = true;
     const proc = javaProcess;
 
     const forceKillTimer = setTimeout(() => {
@@ -173,7 +261,7 @@ function stop() {
 }
 
 function isRunning() {
-  return javaProcess !== null && !javaProcess.killed;
+  return adoptedExisting || (javaProcess !== null && !javaProcess.killed);
 }
 
 module.exports = { start, stop, isRunning };
