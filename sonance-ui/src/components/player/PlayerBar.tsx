@@ -83,10 +83,10 @@ export default function PlayerBar() {
   const hasPrev = queueIndex > 0 || currentTime > 3 || repeatMode === 'all';
 
   return (
-    <div role="region" aria-label="Music player" className="shrink-0 animate-slide-up" style={{ background: 'linear-gradient(to top, var(--mc-player-background), var(--mc-glass-background))', borderTop: '1px solid var(--mc-glass-border)', backdropFilter: 'blur(var(--mc-glass-blur))', WebkitBackdropFilter: 'blur(var(--mc-glass-blur))' }}>
+    <div role="region" aria-label="Music player" className="@container shrink-0 animate-slide-up" style={{ background: 'linear-gradient(to top, var(--mc-player-background), var(--mc-glass-background))', borderTop: '1px solid var(--mc-glass-border)', backdropFilter: 'blur(var(--mc-glass-blur))', WebkitBackdropFilter: 'blur(var(--mc-glass-blur))' }}>
       <div className={`flex items-center px-4 gap-4 transition-[height] duration-200 ${waveformEnabled ? 'h-32' : 'h-28'}`}>
         {/* Left: Track info + Heart */}
-        <div className="flex items-center gap-4 shrink-0 w-[260px]">
+        <div className="flex items-center gap-4 shrink-0 w-[120px] @[750px]:w-[200px] @[850px]:w-[260px]">
           <TrackInfo
             title={currentTrack.title}
             artistName={currentTrack.artist?.name ?? 'Unknown'}
@@ -128,8 +128,8 @@ export default function PlayerBar() {
         <div className="flex items-center gap-3 shrink-0 relative">
           <ScrobbleIndicator status={scrobbleStatus} />
 
-          {/* Inline controls — visible at >= 900px */}
-          <div className="hidden min-[900px]:flex items-center gap-3">
+          {/* Inline controls — visible when container >= 750px */}
+          <div className="hidden @[850px]:flex items-center gap-3">
             <button
               onClick={handleToggleWaveform}
               aria-label={waveformEnabled ? 'Switch to flat progress bar' : 'Switch to waveform'}
@@ -180,8 +180,8 @@ export default function PlayerBar() {
             </button>
           </div>
 
-          {/* Collapsed popover — visible at < 900px */}
-          <div className="min-[900px]:hidden">
+          {/* Collapsed popover — visible when container < 750px */}
+          <div className="@[850px]:hidden">
             <MoreControlsPopover
               waveformEnabled={waveformEnabled}
               onToggleWaveform={handleToggleWaveform}

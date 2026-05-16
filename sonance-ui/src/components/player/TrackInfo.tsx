@@ -21,7 +21,7 @@ interface Props {
 function TrackInfo({ title, artistName, albumId, hasCover, isPlaying, onArtworkClick, filePath, bitRate, sampleRate, bitsPerSample }: Props) {
   return (
     <div className="flex items-center gap-3 min-w-0 flex-1">
-      <div className="relative shrink-0" style={{ width: 84, height: 56 }}>
+      <div className="relative shrink-0 hidden @[750px]:block" style={{ width: 84, height: 56 }}>
         {/* Vinyl disc — behind the sleeve */}
         <div
           aria-hidden="true"
@@ -103,12 +103,14 @@ function TrackInfo({ title, artistName, albumId, hasCover, isPlaying, onArtworkC
         </MarqueeText>
         <p className="text-xs truncate" style={{ color: 'var(--mc-text-muted)' }}>{artistName}</p>
         {filePath && (
-          <TechBadges
-            filePath={filePath}
-            bitRate={bitRate ?? null}
-            sampleRate={sampleRate ?? null}
-            bitsPerSample={bitsPerSample ?? null}
-          />
+          <div className="hidden @[850px]:block">
+            <TechBadges
+              filePath={filePath}
+              bitRate={bitRate ?? null}
+              sampleRate={sampleRate ?? null}
+              bitsPerSample={bitsPerSample ?? null}
+            />
+          </div>
         )}
       </div>
     </div>
