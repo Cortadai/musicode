@@ -45,7 +45,9 @@ jobs:
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: sonance-desktop/package-lock.json
+          cache-dependency-path: |
+            sonance-desktop/package-lock.json
+            sonance-ui/package-lock.json
 
       - uses: actions/setup-java@v4
         with:
@@ -56,6 +58,20 @@ jobs:
         with:
           name: server-jar
           path: sonance-server/target
+
+      - name: Rename server JAR
+        shell: bash
+        working-directory: .
+        run: |
+          JAR=$(ls sonance-server/target/sonance-server-*.jar | head -1)
+          cp "$JAR" sonance-server/target/sonance-server.jar
+
+      - name: Download JRE
+        run: powershell -ExecutionPolicy Bypass -File scripts/download-jre.ps1
+
+      - name: Install UI dependencies
+        working-directory: sonance-ui
+        run: npm ci
 
       - run: npm ci
       - run: npm run dist

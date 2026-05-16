@@ -17,10 +17,14 @@ rm -rf "$STATIC_DIR"
 mkdir -p "$STATIC_DIR"
 cp -r "$UI_DIR/dist/"* "$STATIC_DIR/"
 
-echo "=== Building Spring Boot JAR ==="
-cd "$SERVER_DIR"
-mvn package -DskipTests -q
+if [ -f "$SERVER_DIR/target/sonance-server.jar" ]; then
+  echo "=== Server JAR already exists, skipping Maven build ==="
+else
+  echo "=== Building Spring Boot JAR ==="
+  cd "$SERVER_DIR"
+  mvn package -DskipTests -q
 
-JAR=$(ls "$SERVER_DIR/target"/sonance-server*.jar | grep -v original | head -1)
-cp "$JAR" "$SERVER_DIR/target/sonance-server.jar"
+  JAR=$(ls "$SERVER_DIR/target"/sonance-server*.jar | grep -v original | head -1)
+  cp "$JAR" "$SERVER_DIR/target/sonance-server.jar"
+fi
 echo "=== Build complete: $SERVER_DIR/target/sonance-server.jar ==="
