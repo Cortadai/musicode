@@ -39,6 +39,7 @@ export default function EqFrequencyResponse({
   showSpectrum = false,
 }: EqFrequencyResponseProps) {
   const draggingRef = useRef<number | null>(null);
+  const dragOffsetRef = useRef<number>(0);
   const svgRef = useRef<SVGSVGElement>(null);
   const spectrumPathRef = useRef<SVGPathElement>(null);
   const spectrumFillRef = useRef<SVGPathElement>(null);
@@ -91,8 +92,16 @@ export default function EqFrequencyResponse({
       (e.currentTarget as SVGElement).setPointerCapture(e.pointerId);
       draggingRef.current = index;
       onBandSelect(index);
+
+      const band = bands[index];
+      if (band && !isPassFilter(band.type)) {
+        const { y } = getSVGCoords(e);
+        dragOffsetRef.current = band.gain - yToDb(y, height);
+      } else {
+        dragOffsetRef.current = 0;
+      }
     },
-    [onBandSelect],
+    [bands, getSVGCoords, onBandSelect, height],
   );
 
   const handlePointerMove = useCallback(
@@ -108,7 +117,7 @@ export default function EqFrequencyResponse({
         return;
       }
 
-      const gain = Math.round(Math.max(GAIN_MIN, Math.min(GAIN_MAX, yToDb(y, height))) * 10) / 10;
+      const gain = Math.round(Math.max(GAIN_MIN, Math.min(GAIN_MAX, yToDb(y, height) + dragOffsetRef.current)) * 10) / 10;
       onBandDrag(draggingRef.current, { frequency: freq, gain });
     },
     [bands, getSVGCoords, onBandDrag, width, height],
@@ -116,6 +125,7 @@ export default function EqFrequencyResponse({
 
   const handlePointerUp = useCallback(() => {
     draggingRef.current = null;
+    dragOffsetRef.current = 0;
   }, []);
 
   if (width <= 0 || height <= 0) return null;
@@ -202,9 +212,7 @@ export default function EqFrequencyResponse({
         bands.map((band, i) => {
           const pass = isPassFilter(band.type);
           const cx = freqToX(band.frequency, width);
-          const pointDb = pass
-            ? computeCombinedMagnitude(bands, band.frequency, sampleRate)
-            : band.gain;
+          const pointDb = computeCombinedMagnitude(bands, band.frequency, sampleRate);
           const cy = dbToY(Math.max(GAIN_MIN - 2, Math.min(GAIN_MAX + 2, pointDb)), height);
           const selected = selectedBandIndex === i;
 

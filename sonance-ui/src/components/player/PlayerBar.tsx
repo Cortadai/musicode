@@ -1,14 +1,17 @@
 import { usePlayer } from '../../hooks/usePlayer';
 import audioGraph from '../../audio/audioGraph';
-import { useCallback, useEffect, useState } from 'react';
-import { ListMusic } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { EqBand } from '../../audio/eqProcessor';
+import { ListMusic, Activity, BarChart3, CassetteTape, Mic2, SlidersHorizontal } from 'lucide-react';
 import { loadPreferences, savePreferences } from '../../audio/audioPreferences';
 import TrackInfo from './TrackInfo';
 import TransportControls from './TransportControls';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
+import CrossfadePopover from './CrossfadePopover';
 import MoreControlsPopover from './MoreControlsPopover';
 import EqPopover from './EqPopover';
+import EqMiniCurve from './EqMiniCurve';
 import NowPlayingOverlay from './NowPlayingOverlay';
 import RetroMode from './RetroMode';
 import ScrobbleIndicator from './ScrobbleIndicator';
@@ -35,6 +38,9 @@ export default function PlayerBar() {
   const [showNowPlaying, setShowNowPlaying] = useState(false);
   const [showRetroMode, setShowRetroMode] = useState(false);
   const [eqOpen, setEqOpen] = useState(false);
+  const [eqEnabled, setEqEnabled] = useState(() => loadPreferences().eqEnabled);
+  const [eqBands, setEqBands] = useState<EqBand[]>(() => loadPreferences().eqBands);
+  const eqButtonRef = useRef<HTMLButtonElement>(null);
   const [waveformEnabled, setWaveformEnabled] = useState(() => loadPreferences().waveformEnabled);
 
   const handleToggleWaveform = useCallback(() => {
@@ -118,18 +124,64 @@ export default function PlayerBar() {
           </div>
         </div>
 
-        {/* Right: Queue + More + Volume */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Right: Controls + Volume */}
+        <div className="flex items-center gap-3 shrink-0 relative">
           <ScrobbleIndicator status={scrobbleStatus} />
-          <button
-            onClick={handleToggleQueue}
-            aria-label={isQueueOpen ? 'Hide queue' : 'Show queue'}
-            aria-pressed={isQueueOpen}
-            className={`flex items-center justify-center transition-colors ${isQueueOpen ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
-          >
-            <ListMusic className="w-[18px] h-[18px]" />
-          </button>
-          <div className="relative">
+
+          {/* Inline controls — visible at >= 900px */}
+          <div className="hidden min-[900px]:flex items-center gap-3">
+            <button
+              onClick={handleToggleWaveform}
+              aria-label={waveformEnabled ? 'Switch to flat progress bar' : 'Switch to waveform'}
+              aria-pressed={waveformEnabled}
+              className={`flex items-center justify-center transition-colors ${waveformEnabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+            >
+              <Activity className="w-[18px] h-[18px]" />
+            </button>
+            <CrossfadePopover getCrossfadeDuration={getCrossfadeDuration} setCrossfadeDuration={setCrossfadeDuration} />
+            <div className="relative flex flex-col items-center">
+              <button
+                ref={eqButtonRef}
+                onClick={() => setEqOpen(v => !v)}
+                aria-label="Equalizer settings"
+                aria-pressed={eqEnabled}
+                className={`flex items-center justify-center transition-colors ${eqEnabled ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+              >
+                <SlidersHorizontal className="w-[18px] h-[18px]" />
+              </button>
+              {!eqOpen && eqEnabled && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pointer-events-none">
+                  <EqMiniCurve bands={eqBands} enabled={eqEnabled} />
+                </div>
+              )}
+            </div>
+            <button
+              onClick={handleToggleDeck}
+              aria-label={deckVisible ? 'Hide analyzer deck' : 'Show analyzer deck'}
+              aria-pressed={deckVisible}
+              className={`flex items-center justify-center transition-colors ${deckVisible ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+            >
+              <BarChart3 className="w-[18px] h-[18px]" />
+            </button>
+            <button
+              onClick={() => setShowRetroMode(true)}
+              aria-label="Retro cassette mode"
+              className="flex items-center justify-center transition-colors mc-interactive-warning"
+            >
+              <CassetteTape className="w-[18px] h-[18px]" />
+            </button>
+            <button
+              onClick={handleToggleLyrics}
+              aria-label={isLyricsOpen ? 'Hide lyrics' : 'Show lyrics'}
+              aria-pressed={isLyricsOpen}
+              className={`flex items-center justify-center transition-colors ${isLyricsOpen ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+            >
+              <Mic2 className="w-[18px] h-[18px]" />
+            </button>
+          </div>
+
+          {/* Collapsed popover — visible at < 900px */}
+          <div className="min-[900px]:hidden">
             <MoreControlsPopover
               waveformEnabled={waveformEnabled}
               onToggleWaveform={handleToggleWaveform}
@@ -142,8 +194,18 @@ export default function PlayerBar() {
               onToggleLyrics={handleToggleLyrics}
               onOpenEq={() => setEqOpen(true)}
             />
-            <EqPopover open={eqOpen} onOpenChange={setEqOpen} />
           </div>
+
+          <EqPopover open={eqOpen} onOpenChange={setEqOpen} anchorRef={eqButtonRef} onEqEnabledChange={setEqEnabled} onBandsChange={setEqBands} />
+
+          <button
+            onClick={handleToggleQueue}
+            aria-label={isQueueOpen ? 'Hide queue' : 'Show queue'}
+            aria-pressed={isQueueOpen}
+            className={`flex items-center justify-center transition-colors ${isQueueOpen ? 'mc-toggle-accent' : 'mc-interactive-muted'}`}
+          >
+            <ListMusic className="w-[18px] h-[18px]" />
+          </button>
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
         </div>
       </div>

@@ -201,9 +201,12 @@ function FilterTypeSelector({
 interface EqPopoverProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  anchorRef?: React.RefObject<HTMLElement | null>;
+  onEqEnabledChange?: (enabled: boolean) => void;
+  onBandsChange?: (bands: EqBand[]) => void;
 }
 
-export default function EqPopover({ open, onOpenChange }: EqPopoverProps) {
+export default function EqPopover({ open, onOpenChange, anchorRef, onEqEnabledChange, onBandsChange }: EqPopoverProps) {
   const [enabled, setEnabled] = useState(() => loadPreferences().eqEnabled);
   const [bands, setBands] = useState<EqBand[]>(() => loadPreferences().eqBands);
   const [preset, setPreset] = useState(() => loadPreferences().eqPreset);
@@ -255,18 +258,20 @@ export default function EqPopover({ open, onOpenChange }: EqPopoverProps) {
     setEnabled(next);
     eqProcessor.setEnabled(next);
     persist({ eqEnabled: next });
-  }, [enabled, persist]);
+    onEqEnabledChange?.(next);
+  }, [enabled, persist, onEqEnabledChange]);
 
   const handleBandGainChange = useCallback(
     (bandIndex: number, value: number) => {
       eqProcessor.updateBand(bandIndex, { gain: value });
       const updated = eqProcessor.getBands();
       setBands(updated);
+      onBandsChange?.(updated);
       const p = eqProcessor.getPreset();
       setPreset(p);
       persist({ eqBands: updated, eqPreset: p });
     },
-    [persist],
+    [persist, onBandsChange],
   );
 
   const handleBandDrag = useCallback(
@@ -274,11 +279,12 @@ export default function EqPopover({ open, onOpenChange }: EqPopoverProps) {
       eqProcessor.updateBand(index, updates);
       const updated = eqProcessor.getBands();
       setBands(updated);
+      onBandsChange?.(updated);
       const p = eqProcessor.getPreset();
       setPreset(p);
       persist({ eqBands: updated, eqPreset: p });
     },
-    [persist],
+    [persist, onBandsChange],
   );
 
   const handleBandTypeChange = useCallback(
@@ -286,11 +292,12 @@ export default function EqPopover({ open, onOpenChange }: EqPopoverProps) {
       eqProcessor.updateBand(index, { type });
       const updated = eqProcessor.getBands();
       setBands(updated);
+      onBandsChange?.(updated);
       const p = eqProcessor.getPreset();
       setPreset(p);
       persist({ eqBands: updated, eqPreset: p });
     },
-    [persist],
+    [persist, onBandsChange],
   );
 
   const handlePreampChange = useCallback((value: number) => {
@@ -306,21 +313,25 @@ export default function EqPopover({ open, onOpenChange }: EqPopoverProps) {
     if (!p) return;
     eqProcessor.applyPreset(presetName);
     setPreset(presetName);
-    setBands(eqProcessor.getBands());
+    const updated = eqProcessor.getBands();
+    setBands(updated);
+    onBandsChange?.(updated);
     setPreampState(p.preamp);
     setSelectedBand(null);
-    persist({ eqBands: eqProcessor.getBands(), eqPreamp: p.preamp, eqPreset: presetName });
-  }, [persist]);
+    persist({ eqBands: updated, eqPreamp: p.preamp, eqPreset: presetName });
+  }, [persist, onBandsChange]);
 
   const handleSelectCustomPreset = useCallback((cp: CustomPreset) => {
     eqProcessor.setBands(cp.bands.map((b) => ({ ...b })));
     eqProcessor.setPreamp(cp.preamp);
-    setBands(eqProcessor.getBands());
+    const updated = eqProcessor.getBands();
+    setBands(updated);
+    onBandsChange?.(updated);
     setPreampState(cp.preamp);
     setPreset(cp.name);
     setSelectedBand(null);
-    persist({ eqBands: eqProcessor.getBands(), eqPreamp: cp.preamp, eqPreset: cp.name });
-  }, [persist]);
+    persist({ eqBands: updated, eqPreamp: cp.preamp, eqPreset: cp.name });
+  }, [persist, onBandsChange]);
 
   const handleSavePreset = useCallback(() => {
     const trimmed = saveName.trim();
@@ -379,32 +390,36 @@ export default function EqPopover({ open, onOpenChange }: EqPopoverProps) {
     if (!newBand) return;
     const updated = eqProcessor.getBands();
     setBands(updated);
+    onBandsChange?.(updated);
     setPreset('custom');
     setSelectedBand(updated.findIndex((b) => b.id === newBand.id));
     persist({ eqBands: updated, eqPreset: 'custom' });
-  }, [persist]);
+  }, [persist, onBandsChange]);
 
   const handleRemoveBand = useCallback((index: number) => {
     if (!eqProcessor.removeBand(index)) return;
     const updated = eqProcessor.getBands();
     setBands(updated);
+    onBandsChange?.(updated);
     const p = eqProcessor.getPreset();
     setPreset(p);
     setSelectedBand(null);
     persist({ eqBands: updated, eqPreset: p });
-  }, [persist]);
+  }, [persist, onBandsChange]);
 
   // Close on click outside
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (dialogRef.current && !dialogRef.current.contains(target)) {
+        if (anchorRef?.current && anchorRef.current.contains(target)) return;
         onOpenChange(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [open, onOpenChange]);
+  }, [open, onOpenChange, anchorRef]);
 
   // Escape key closes, focus management
   useEffect(() => {
