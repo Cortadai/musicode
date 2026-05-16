@@ -20,12 +20,16 @@
   <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License" />
 </p>
 
+> **Learning project** — Sonance is a personal project built to learn about audio streaming,
+> full-stack architecture, and AI-assisted development workflows (GSD).
+> No commercial goals, just curiosity and craft.
+
 ---
 
 <p align="center">
-  <img src="docs/assets/sonance-hero.jpg" alt="Sonance — Album grid with player bar and activity feed" width="800" />
+  <img src="docs/sonance-home.jpg" alt="Sonance — Home dashboard with player bar and activity feed" width="800" />
 </p>
-<p align="center"><em>Browse your library by album, artist, or track — with real-time activity feed and persistent player bar.</em></p>
+<p align="center"><em>Home dashboard — recently played, top artists, quick stats, and persistent player bar.</em></p>
 
 ## Highlights
 
@@ -188,6 +192,11 @@ graph LR
 
 ### Parametric EQ
 
+<p align="center">
+  <img src="docs/sonance-eq.png" alt="Parametric EQ with custom curve and frequency nodes" width="700" />
+</p>
+<p align="center"><em>Parametric EQ — custom curve with draggable frequency/gain nodes.</em></p>
+
 The equalizer supports **1 to 10 bands** with per-band frequency, gain (-12 to +12 dB), Q factor, and filter type (lowshelf, peaking, highshelf). Six built-in presets (Flat, Bass Boost, Treble Boost, Vocal, Rock, Loudness) plus a full custom preset system:
 
 - **Save** custom presets with a name
@@ -198,7 +207,7 @@ The equalizer supports **1 to 10 bands** with per-band frequency, gain (-12 to +
 ### Visualizer Modes
 
 <p align="center">
-  <img src="docs/assets/sonance-now-playing.jpg" alt="Now Playing — Vinyl visualizer with dynamic colors" width="700" />
+  <img src="docs/sonance-vinyl.jpg" alt="Now Playing — Vinyl visualizer with dynamic colors" width="700" />
 </p>
 <p align="center"><em>Vinyl visualizer with album-extracted dynamic colors.</em></p>
 
@@ -212,6 +221,11 @@ The equalizer supports **1 to 10 bands** with per-band frequency, gain (-12 to +
 All canvas-based modes run at 60fps via `requestAnimationFrame`, pause on page visibility change, and fade out gracefully when playback stops.
 
 ### Analyzer Deck
+
+<p align="center">
+  <img src="docs/sonance-analyzer-deck.png" alt="Analyzer Deck with multiple audio scopes active" width="700" />
+</p>
+<p align="center"><em>Analyzer Deck — spectrum, vectorscope, spectrogram, and oscilloscope running simultaneously.</em></p>
 
 Eight professional audio analysis scopes in a resizable, collapsible panel:
 
@@ -233,7 +247,7 @@ Eight professional audio analysis scopes in a resizable, collapsible panel:
 ### Cassette Deck (Retro Mode)
 
 <p align="center">
-  <img src="docs/assets/sonance-cassette.png" alt="Cassette Deck — Classic theme with VU meters and animated reels" width="700" />
+  <img src="docs/sonance-cassette.png" alt="Cassette Deck — Classic theme with VU meters and animated reels" width="700" />
 </p>
 
 Full-screen retro cassette experience:
@@ -257,6 +271,15 @@ Three distinct layout shells, each with a different navigation paradigm:
 
 Nine color palettes — **Indigo** (default), Zinc, Crimson, Emerald, Amber, Cyan, Daylight, Sunrise, Frost — applied globally via CSS custom properties through `ThemeProvider`.
 
+<p align="center">
+  <img src="docs/sonance-shells-evolved.jpg" alt="Evolved shell — full sidebar" width="260" />
+  &nbsp;
+  <img src="docs/sonance-shells-nova.jpg" alt="Nova shell — icon sidebar" width="260" />
+  &nbsp;
+  <img src="docs/sonance-shells-minimal.jpg" alt="Minimal shell — top navigation" width="260" />
+</p>
+<p align="center"><em>Left to right: Evolved, Nova, and Minimal shells.</em></p>
+
 **Dynamic colors** extracted from album artwork override the palette while playing, adapting the player bar, visualizers, and overlay background.
 
 ### Dynamic Color Extraction
@@ -274,7 +297,7 @@ graph LR
 ### Synced Lyrics
 
 <p align="center">
-  <img src="docs/assets/sonance-lyrics.jpg" alt="Now Playing with synced lyrics, waveform seekbar, and vinyl visualizer" width="700" />
+  <img src="docs/sonance-lyrics-sync.jpg" alt="Now Playing with synced lyrics, waveform seekbar, and vinyl visualizer" width="700" />
 </p>
 <p align="center"><em>Synced lyrics with waveform seek bar and vinyl visualizer.</em></p>
 
@@ -286,25 +309,40 @@ graph LR
 
 ### Favorites & Playlists
 
-<!-- SCREENSHOT: Playlist detail page with drag-and-drop reorder + sidebar playlist list -->
+<p align="center">
+  <img src="docs/sonance-playlists.png" alt="Playlist detail with drag-and-drop reorder" width="700" />
+</p>
+<p align="center"><em>Playlist detail — drag-and-drop reorder with sidebar playlist list.</em></p>
 
 **Favorites** — heart any track from anywhere in the UI; favorites are per-user and persisted on the server. **Playlists** — create, rename, delete playlists with drag-and-drop track reorder and context menu integration from album/track views.
 
 ### Queue Panel
 
-<!-- SCREENSHOT: Queue panel slide-out from the player bar -->
+<p align="center">
+  <img src="docs/sonance-queue.png" alt="Queue panel with track list" width="700" />
+</p>
+<p align="center"><em>Queue panel — view, reorder, and manage upcoming tracks.</em></p>
 
 Slide-out panel showing the current playback queue. Reorder tracks, remove individual items, or clear the entire queue.
 
 ### Home Dashboard
 
-<!-- SCREENSHOT: Home page with recent plays, top artists widget, quick stats -->
+<p align="center">
+  <img src="docs/sonance-home.jpg" alt="Home dashboard with recent plays and top artists" width="700" />
+</p>
+<p align="center"><em>Home — recently played, top artists, and listening stats at a glance.</em></p>
 
 Personalized landing page with recently played tracks, top artists, and quick listening stats.
 
 ### Listening Stats & Scrobbling
 
-<!-- SCREENSHOT: Stats page with summary cards, daily chart, and top lists -->
+<p align="center">
+  <img src="docs/sonance-stats-1.png" alt="Stats — summary cards and daily plays chart" width="700" />
+</p>
+<p align="center">
+  <img src="docs/sonance-stats-2.png" alt="Stats — top albums and top artists" width="700" />
+</p>
+<p align="center"><em>Listening stats — summary cards, daily chart, top albums, and top artists.</em></p>
 
 **Play tracking** fires at 50% of track duration — no accidental skips counted.
 
@@ -485,29 +523,40 @@ cd sonance-ui && npm run test:e2e
 
 ## More Screenshots
 
-<!-- SCREENSHOT: Album detail page with track list, cover art, and player bar -->
-
-<!-- SCREENSHOT: Artist detail page with album discography -->
-
-<!-- SCREENSHOT: Search results page showing tracks, albums, and artists -->
-
-<!-- SCREENSHOT: Settings page with scrobble config and EQ popover open -->
-
-<!-- SCREENSHOT: Login page with particle background -->
+<p align="center">
+  <img src="docs/sonance-album-detail.png" alt="Album detail with tracklist" width="700" />
+</p>
+<p align="center"><em>Album detail — cover art, track list with duration, and player bar.</em></p>
 
 <p align="center">
-  <img src="docs/assets/sonance-health.png" alt="Library Health dashboard" width="700" />
+  <img src="docs/sonance-artist.png" alt="Artist detail with discography" width="700" />
 </p>
-<p align="center"><em>Library Health dashboard — detect metadata issues, missing covers, and orphan files.</em></p>
-
-### Responsive Layout
+<p align="center"><em>Artist page — discography grid with album covers.</em></p>
 
 <p align="center">
-  <img src="docs/assets/sonance-mobile-library.jpg" alt="Mobile — Album grid with compact sidebar" width="300" />
-  &nbsp;&nbsp;&nbsp;
-  <img src="docs/assets/sonance-mobile-player.png" alt="Mobile — Now Playing with vinyl visualizer" width="300" />
+  <img src="docs/sonance-search.png" alt="Search results showing tracks, albums, and artists" width="700" />
 </p>
-<p align="center"><em>Responsive layout — collapsible icon sidebar, adaptive player bar, and full Now Playing view.</em></p>
+<p align="center"><em>Search — results across tracks, albums, and artists.</em></p>
+
+<p align="center">
+  <img src="docs/sonance-settings.png" alt="Settings page with scrobble configuration" width="700" />
+</p>
+<p align="center"><em>Settings — scrobble configuration and app preferences.</em></p>
+
+<p align="center">
+  <img src="docs/sonance-login.png" alt="Login page with particle background" width="700" />
+</p>
+<p align="center"><em>Login — particle background with dark theme.</em></p>
+
+<p align="center">
+  <img src="docs/sonance-desktop-app.png" alt="Electron desktop app with system tray" width="700" />
+</p>
+<p align="center"><em>Desktop app — Electron wrapper with system tray integration.</em></p>
+
+<p align="center">
+  <img src="docs/sonance-metadata.png" alt="Track metadata details" width="700" />
+</p>
+<p align="center"><em>Track metadata — file format, bitrate, sample rate, and embedded tags.</em></p>
 
 ---
 

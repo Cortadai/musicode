@@ -8,7 +8,7 @@ Electron wrapper that bundles the Sonance frontend + backend into a standalone W
 ┌─────────────────────────────────────────────────────┐
 │  Electron (main.js)                                 │
 │  ├── BrowserWindow → loads localhost:17380          │
-│  ├── Sidecar (sidecar.js) → spawns java -jar       │
+│  ├── Sidecar (sidecar.js) → spawns java -jar        │
 │  ├── Tray icon + context menu                       │
 │  ├── Global media key shortcuts                     │
 │  └── IPC bridge (preload.js)                        │
@@ -23,17 +23,17 @@ Electron wrapper that bundles the Sonance frontend + backend into a standalone W
 
 ## Features
 
-| Feature | Implementation |
-|---------|----------------|
-| Sidecar management | Spawns/kills Java process, health polling via `/actuator/health` |
-| Zombie cleanup | Detects stale processes on port 17380, kills them before starting |
-| Server adoption | If a healthy server already runs on the port, reuses it |
-| Loading screen | Minimal splash shown while Spring Boot starts (~8-15s) |
-| Media keys | Global shortcuts: Play/Pause, Next, Previous, Stop |
-| System tray | Background playback controls, show/quit actions |
-| Titlebar theming | IPC bridge syncs window chrome color with active UI palette |
-| Encryption key | Auto-generated per-machine key for token encryption at rest |
-| Data isolation | User data stored in `~/.sonance/data/` (DB, covers, waveforms) |
+| Feature            | Implementation                                                    |
+| ------------------ | ----------------------------------------------------------------- |
+| Sidecar management | Spawns/kills Java process, health polling via `/actuator/health`  |
+| Zombie cleanup     | Detects stale processes on port 17380, kills them before starting |
+| Server adoption    | If a healthy server already runs on the port, reuses it           |
+| Loading screen     | Minimal splash shown while Spring Boot starts (~8-15s)            |
+| Media keys         | Global shortcuts: Play/Pause, Next, Previous, Stop                |
+| System tray        | Background playback controls, show/quit actions                   |
+| Titlebar theming   | IPC bridge syncs window chrome color with active UI palette       |
+| Encryption key     | Auto-generated per-machine key for token encryption at rest       |
+| Data isolation     | User data stored in `~/.sonance/data/` (DB, covers, waveforms)    |
 
 ## Prerequisites
 
@@ -53,6 +53,7 @@ npm start
 ```
 
 In dev mode:
+
 - Loads UI from `http://localhost:17381` (Vite)
 - Does NOT start the sidecar (expects server running separately)
 - Opens DevTools detached
@@ -81,6 +82,7 @@ npm run build:app
 ```
 
 Runs the build pipeline:
+
 1. Builds React frontend (`sonance-ui`)
 2. Copies dist to Spring Boot `static/` resources
 3. Runs `mvn package -DskipTests`
@@ -93,6 +95,7 @@ npm run dist
 ```
 
 Produces:
+
 - `dist/win-unpacked/Sonance.exe` — portable executable (~180 MB)
 - `dist/Sonance Setup *.exe` — NSIS installer
 
@@ -115,12 +118,12 @@ Sonance.exe
 
 ## Window Configuration
 
-| Property | Value |
-|----------|-------|
-| Default size | 1400 × 900 |
-| Minimum size | 900 × 600 |
-| Title bar | Hidden (Windows overlay with themed colors) |
-| Background | `#0a0a0f` |
+| Property     | Value                                       |
+| ------------ | ------------------------------------------- |
+| Default size | 1400 × 900                                  |
+| Minimum size | 900 × 600                                   |
+| Title bar    | Hidden (Windows overlay with themed colors) |
+| Background   | `#0a0a0f`                                   |
 
 ## IPC Bridge (preload.js)
 
@@ -136,16 +139,16 @@ interface ElectronAPI {
 
 ## Data Paths
 
-| Path | Contents |
-|------|----------|
-| `~/.sonance/data/` | H2 database, cover art cache, waveform cache |
-| `%APPDATA%/Sonance/encryption.key` | Token encryption key (auto-generated) |
+| Path                               | Contents                                     |
+| ---------------------------------- | -------------------------------------------- |
+| `~/.sonance/data/`                 | H2 database, cover art cache, waveform cache |
+| `%APPDATA%/Sonance/encryption.key` | Token encryption key (auto-generated)        |
 
 ## Troubleshooting
 
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| App shows loading screen forever | Server JAR missing or Java not found | Run `npm run build:app` first, ensure JRE is downloaded |
-| "Port 17380 still in use" | Zombie Java process from previous crash | Will auto-kill; if persistent, manually kill via Task Manager |
-| White/blank window after load | Vite not running (dev mode) | Start Vite first: `cd ../sonance-ui && npm run dev` |
-| Media keys not working | Another app captured global shortcuts | Close conflicting media key apps |
+| Problem                          | Cause                                   | Fix                                                           |
+| -------------------------------- | --------------------------------------- | ------------------------------------------------------------- |
+| App shows loading screen forever | Server JAR missing or Java not found    | Run `npm run build:app` first, ensure JRE is downloaded       |
+| "Port 17380 still in use"        | Zombie Java process from previous crash | Will auto-kill; if persistent, manually kill via Task Manager |
+| White/blank window after load    | Vite not running (dev mode)             | Start Vite first: `cd ../sonance-ui && npm run dev`           |
+| Media keys not working           | Another app captured global shortcuts   | Close conflicting media key apps                              |
