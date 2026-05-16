@@ -6,16 +6,17 @@
 
 <p align="center">
   <strong>A personal music streaming app for your audio library.</strong><br/>
-  Scan your FLAC, MP3, OGG, and M4A collection. Browse by album and artist. Desktop app with gapless playback, crossfade, EQ, visualizers, scrobbling, and more.
+  Scan your FLAC, MP3, OGG, M4A, and WAV collection. Stream to any browser or run as a desktop app with gapless playback, crossfade, parametric EQ, audio analysis, scrobbling, and more.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Java-21-orange?logo=openjdk" alt="Java 21" />
-  <img src="https://img.shields.io/badge/Spring_Boot-3.4-brightgreen?logo=spring-boot" alt="Spring Boot 3.4" />
+  <img src="https://img.shields.io/badge/Spring_Boot-3.4.4-brightgreen?logo=spring-boot" alt="Spring Boot 3.4.4" />
   <img src="https://img.shields.io/badge/React-19-blue?logo=react" alt="React 19" />
-  <img src="https://img.shields.io/badge/TypeScript-5-blue?logo=typescript" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript" alt="TypeScript 5.9" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?logo=tailwindcss" alt="Tailwind CSS v4" />
-  <img src="https://img.shields.io/badge/Tests-547+-green" alt="Tests 547+" />
+  <img src="https://img.shields.io/badge/Tests-534-green" alt="Tests 534" />
+  <img src="https://img.shields.io/badge/Version-0.1.0--beta.1-yellow" alt="Version 0.1.0-beta.1" />
   <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License" />
 </p>
 
@@ -31,13 +32,15 @@
 | | Feature | Description |
 |---|---|---|
 | :headphones: | **Gapless & Crossfade** | Dual HTMLAudioElement engine with pre-loading and configurable 0-12s crossfade |
-| :musical_score: | **5-Band EQ** | Parametric equalizer (60 Hz - 14 kHz) with 5 presets |
-| :bar_chart: | **5 Visualizers** | Frequency bars, waveform, circular, vinyl, and cassette deck — all driven by Web Audio API |
+| :musical_score: | **Parametric EQ** | 1-10 band parametric equalizer with 6 built-in presets and custom preset save/export/import |
+| :bar_chart: | **4 Visualizers** | Frequency bars, waveform, circular, and vinyl — all driven by Web Audio API |
+| :film_strip: | **Analyzer Deck** | 8 professional audio scopes: spectrum analyzer, spectrogram, vectorscope, oscilloscope, VU meter, LUFS meter, classic bars, waveform — resizable, configurable FFT |
 | :vhs: | **Cassette Deck** | Full retro mode with animated reels, VU meters, odometer, and 3 visual themes |
 | :microphone: | **Synced Lyrics** | Auto-scrolling lyrics panel with LRC timing support |
 | :cd: | **Scrobbling** | Last.fm + ListenBrainz integration with async retry |
 | :chart_with_upwards_trend: | **Listening Stats** | Top artists/albums/tracks, plays-per-day chart, period filtering |
-| :performing_arts: | **Dynamic Colors** | UI theme extracted from album artwork with saturation-weighted scoring |
+| :performing_arts: | **3 Shells + 9 Palettes** | Evolved (full sidebar), Nova (icon sidebar), Minimal (top nav) — each with 9 color palettes |
+| :art: | **Dynamic Colors** | UI theme extracted from album artwork with saturation-weighted scoring |
 | :ocean: | **Waveform Seek Bar** | Server-generated audio waveform as the progress bar |
 | :busts_in_silhouette: | **Multi-User** | JWT auth with ADMIN/LISTENER roles, per-user scrobble config |
 | :heart: | **Favorites** | Heart any track — persisted per user, filterable in library |
@@ -45,7 +48,8 @@
 | :notes: | **Queue Panel** | View, reorder, and clear the playback queue on the fly |
 | :satellite: | **Activity Feed** | Real-time SSE stream showing what users are listening to |
 | :house: | **Home Dashboard** | Recently played, top artists, quick stats — personalized landing page |
-| :iphone: | **Responsive** | Collapsible sidebar, adaptive player bar, desktop to tablet |
+| :desktop_computer: | **Desktop App** | Electron wrapper with Spring Boot sidecar, media keys, and system tray |
+| :iphone: | **Responsive** | Container queries adapt the player bar per-shell; works from maximized to compact windows |
 
 ---
 
@@ -53,9 +57,9 @@
 
 ```mermaid
 graph LR
-    subgraph Client ["Browser"]
+    subgraph Client ["Browser / Electron"]
         React["React 19 SPA<br/>Tailwind CSS v4<br/>TanStack Query"]
-        WebAudio["Web Audio API<br/>Dual-element engine<br/>EQ + Visualizer"]
+        WebAudio["Web Audio API<br/>Dual-element engine<br/>EQ + Visualizers + Analyzer"]
     end
 
     subgraph Proxy ["Caddy :443"]
@@ -91,14 +95,16 @@ graph LR
 | Layer | Technology |
 |---|---|
 | **Desktop** | Electron 33 (BrowserWindow + Spring Boot sidecar) |
-| **Frontend** | React 19 + Vite 8 + TypeScript + Tailwind CSS v4 |
-| **Backend** | Spring Boot 3.4 + Java 21 + Maven |
+| **Frontend** | React 19 + Vite 8 + TypeScript 5.9 + Tailwind CSS v4 |
+| **Backend** | Spring Boot 3.4.4 + Java 21 + Maven |
 | **Database** | H2 (embedded, zero config) + Flyway migrations |
 | **Audio Engine** | Web Audio API (dual HTMLAudioElement + AudioContext graph) |
-| **Metadata** | JAudioTagger 2.2.5 (FLAC, MP3, OGG, M4A) |
+| **Audio Analysis** | AnalyserNode with configurable FFT (1024–16384), 8 canvas scopes |
+| **Metadata** | JAudioTagger 2.2.5 (FLAC, MP3, OGG, M4A, WAV) |
 | **Auth** | Spring Security + JWT in HttpOnly cookies |
 | **Proxy** | Caddy (automatic HTTPS + static file serving, server mode) |
 | **Containers** | Docker Compose (multi-stage builds, server mode) |
+| **Animations** | GSAP (page transitions) + tsParticles (login background) |
 | **Tests** | JUnit 5 + WireMock + Vitest + Playwright |
 
 ---
@@ -114,9 +120,11 @@ npm run download-jre       # Downloads Adoptium JRE 21
 npm run dist               # Builds React + Spring Boot JAR + Electron installer
 ```
 
-Run `dist/win-unpacked/Sonance.exe`. The app starts a local server, shows a loading screen, and opens the full UI once ready.
+Run `dist/win-unpacked/Sonance.exe`. The app starts a local Spring Boot server, shows a loading screen, and opens the full UI once ready.
 
 **Required environment variable:** `SONANCE_TOKEN_ENCRYPTION_KEY` — generate with `openssl rand -hex 32`.
+
+> See [sonance-desktop/README.md](sonance-desktop/README.md) for full build and packaging details.
 
 ### Docker Compose (server mode)
 
@@ -144,8 +152,8 @@ npm install && npm run dev
 
 # Desktop (Electron wrapper, optional)
 cd sonance-desktop
-npm run dev
-# Opens Electron window loading vite dev server + hot reload
+npm start
+# Opens Electron window loading Vite dev server + hot reload
 ```
 
 ---
@@ -165,8 +173,8 @@ graph LR
 
     subgraph Processing ["Audio Processing"]
         Master["Master Gain<br/>(Volume)"]
-        EQ["5-Band EQ<br/>60Hz · 230Hz · 910Hz<br/>3.6kHz · 14kHz"]
-        Analyser["AnalyserNode<br/>(FFT 256)"]
+        EQ["Parametric EQ<br/>(1–10 bands)"]
+        Analyser["AnalyserNode<br/>(FFT 1024–16384)"]
     end
 
     Dest["Speakers"]
@@ -177,6 +185,15 @@ graph LR
 ```
 
 **How gapless works:** While track A plays, the inactive element B pre-loads the next track. At transition time, gain A ramps to 0 and gain B ramps to 1 — either instantly (gapless) or over a configurable duration (crossfade). No disconnect/reconnect race conditions.
+
+### Parametric EQ
+
+The equalizer supports **1 to 10 bands** with per-band frequency, gain (-12 to +12 dB), Q factor, and filter type (lowshelf, peaking, highshelf). Six built-in presets (Flat, Bass Boost, Treble Boost, Vocal, Rock, Loudness) plus a full custom preset system:
+
+- **Save** custom presets with a name
+- **Export** presets to JSON files
+- **Import** presets from JSON files
+- **Per-band preamp** for gain compensation
 
 ### Visualizer Modes
 
@@ -191,9 +208,27 @@ graph LR
 | **Waveform** | Time-domain data with temporal smoothing (lerp 0.25) and glow effect |
 | **Circular** | Radial frequency bars (64 bins) with inner glow gradient |
 | **Vinyl** | CSS-animated spinning disc with cover art, slides out on play |
-| **Cassette Deck** | Full-screen retro mode with animated reels, VU meters, and odometer (see below) |
 
 All canvas-based modes run at 60fps via `requestAnimationFrame`, pause on page visibility change, and fade out gracefully when playback stops.
+
+### Analyzer Deck
+
+Eight professional audio analysis scopes in a resizable, collapsible panel:
+
+| Scope | What it shows |
+|---|---|
+| **Classic Bars** | Traditional frequency bar visualization |
+| **Spectrum Analyzer** | Detailed frequency spectrum with configurable resolution |
+| **Vectorscope** | Stereo field analysis (Lissajous or polar mode) |
+| **Oscilloscope** | Time-domain waveform with adjustable speed |
+| **Spectrogram** | Frequency over time as a heat-mapped waterfall |
+| **VU Meter** | Signal level with bars or needle display mode |
+| **LUFS Meter** | Loudness metering (integrated loudness standard) |
+| **Waveform** | Scrolling waveform with configurable speed |
+
+- Configurable FFT size (1024, 2048, 4096, 8192, 16384)
+- Resizable panes with drag handles and per-scope proportions
+- Add, remove, and reorder scopes at will
 
 ### Cassette Deck (Retro Mode)
 
@@ -207,8 +242,22 @@ Full-screen retro cassette experience:
 - **VU meters** — Frequency data drives needle deflection
 - **Mechanical odometer** — Digit-by-digit rolling counter
 - **LED indicators** — Play/pause/record state
-- **3 visual themes** — Switch deck aesthetics on the fly
+- **3 visual themes** — Classic, Indigo, and Synthwave
 - **Cover art on cassette label** — With text overlay and shadow effects
+
+### UI System: Shells & Palettes
+
+Three distinct layout shells, each with a different navigation paradigm:
+
+| Shell | Layout | Best for |
+|---|---|---|
+| **Evolved** | Full sidebar with labels (224px) | Desktop, wide screens |
+| **Nova** | Icon-only sidebar (56px) | Moderate width, more content space |
+| **Minimal** | Top navigation bar, no sidebar | Compact layouts, maximum content area |
+
+Nine color palettes — **Indigo** (default), Zinc, Crimson, Emerald, Amber, Cyan, Daylight, Sunrise, Frost — applied globally via CSS custom properties through `ThemeProvider`.
+
+**Dynamic colors** extracted from album artwork override the palette while playing, adapting the player bar, visualizers, and overlay background.
 
 ### Dynamic Color Extraction
 
@@ -221,8 +270,6 @@ graph LR
     Score --> Palette["Primary<br/>Secondary<br/>Background"]
     Palette --> UI["Apply to<br/>Player UI"]
 ```
-
-Colors extracted from album artwork adapt the entire player UI — progress bar, visualizer, overlay background, and cassette deck. Saturation-weighted scoring prevents washed-out grays from dominating.
 
 ### Synced Lyrics
 
@@ -239,25 +286,25 @@ Colors extracted from album artwork adapt the entire player UI — progress bar,
 
 ### Favorites & Playlists
 
-<!-- 📸 SCREENSHOT: Playlist detail page with drag-and-drop reorder + sidebar playlist list -->
+<!-- SCREENSHOT: Playlist detail page with drag-and-drop reorder + sidebar playlist list -->
 
 **Favorites** — heart any track from anywhere in the UI; favorites are per-user and persisted on the server. **Playlists** — create, rename, delete playlists with drag-and-drop track reorder and context menu integration from album/track views.
 
 ### Queue Panel
 
-<!-- 📸 SCREENSHOT: Queue panel slide-out from the player bar -->
+<!-- SCREENSHOT: Queue panel slide-out from the player bar -->
 
 Slide-out panel showing the current playback queue. Reorder tracks, remove individual items, or clear the entire queue.
 
 ### Home Dashboard
 
-<!-- 📸 SCREENSHOT: Home page with recent plays, top artists widget, quick stats -->
+<!-- SCREENSHOT: Home page with recent plays, top artists widget, quick stats -->
 
 Personalized landing page with recently played tracks, top artists, and quick listening stats.
 
 ### Listening Stats & Scrobbling
 
-<!-- 📸 SCREENSHOT: Stats page with summary cards, daily chart, and top lists -->
+<!-- SCREENSHOT: Stats page with summary cards, daily chart, and top lists -->
 
 **Play tracking** fires at 50% of track duration — no accidental skips counted.
 
@@ -355,13 +402,25 @@ sequenceDiagram
     Note over S: Dead connection cleanup during broadcast
 ```
 
+### Responsive Design
+
+The player bar uses **CSS container queries** instead of viewport media queries. This means the layout adapts to the actual available space within each shell:
+
+| Shell | Sidebar width | Player bar space at 900px viewport |
+|---|---|---|
+| Evolved | 224px | ~676px |
+| Nova | 56px | ~844px |
+| Minimal | 0px | ~900px |
+
+At narrow widths, cover art, tech badges, and secondary controls collapse progressively — the progress bar and playback controls always stay visible.
+
 ---
 
 ## Project Structure
 
 ```
 sonance/
-├── sonance-desktop/         Electron desktop shell
+├── sonance-desktop/         Electron desktop shell (see desktop README)
 │   ├── main.js              Main process (window, sidecar, media keys, tray)
 │   ├── sidecar.js           Spring Boot JAR lifecycle manager
 │   ├── preload.js           Context bridge (IPC for media keys)
@@ -372,8 +431,8 @@ sonance/
 │   ├── src/test/java/        282 tests (unit + integration + WireMock)
 │   └── pom.xml               Maven build with JaCoCo ≥80%
 ├── sonance-ui/              React frontend (see UI README)
-│   ├── src/                  Components, hooks, audio pipeline, pages
-│   ├── e2e/                  Playwright E2E tests
+│   ├── src/                  Components, hooks, audio pipeline, themes, pages
+│   ├── e2e/                  Playwright E2E tests (21 tests)
 │   └── package.json          Vite 8, Vitest, Tailwind v4
 ├── caddy/                    Caddy Dockerfile
 ├── Caddyfile                 Reverse proxy + static serving config
@@ -407,34 +466,34 @@ See `.env.example` for full documentation. See `SCROBBLING.md` for Last.fm/Liste
 # Backend — 282 tests (unit + integration + WireMock contract)
 cd sonance-server && mvn clean verify     # JaCoCo ≥80% enforced
 
-# Frontend — 244 unit tests
+# Frontend — 231 unit tests
 cd sonance-ui && npm run test:coverage    # Vitest v8 coverage thresholds
 
-# E2E — Playwright tests (requires backend on :17380)
+# E2E — 21 Playwright tests (requires backend on :17380)
 cd sonance-ui && npm run test:e2e
 ```
 
 | Suite | Count | What it covers |
 |---|---|---|
-| **Backend unit** | ~130 | Service logic, DTO mapping, utilities |
+| **Backend unit** | ~130 | Service logic, DTO mapping, utilities, filters |
 | **Backend integration** | ~110 | Controller endpoints, auth flows, DB queries |
 | **Backend contract** | ~40 | WireMock stubs for Last.fm + ListenBrainz wire format |
-| **Frontend unit** | 244 | Components, contexts, hooks, pages, error handling |
+| **Frontend unit** | 231 | Components, contexts, hooks, pages, audio pipeline |
 | **E2E (Playwright)** | 21 | Auth, browse, playback, admin, search, stats, settings |
 
 ---
 
 ## More Screenshots
 
-<!-- 📸 SCREENSHOT: Album detail page with track list, cover art, and player bar -->
+<!-- SCREENSHOT: Album detail page with track list, cover art, and player bar -->
 
-<!-- 📸 SCREENSHOT: Artist detail page with album discography -->
+<!-- SCREENSHOT: Artist detail page with album discography -->
 
-<!-- 📸 SCREENSHOT: Search results page showing tracks, albums, and artists -->
+<!-- SCREENSHOT: Search results page showing tracks, albums, and artists -->
 
-<!-- 📸 SCREENSHOT: Settings page with scrobble config and EQ popover open -->
+<!-- SCREENSHOT: Settings page with scrobble config and EQ popover open -->
 
-<!-- 📸 SCREENSHOT: Login page with particle background -->
+<!-- SCREENSHOT: Login page with particle background -->
 
 <p align="center">
   <img src="docs/assets/sonance-health.png" alt="Library Health dashboard" width="700" />
@@ -448,7 +507,7 @@ cd sonance-ui && npm run test:e2e
   &nbsp;&nbsp;&nbsp;
   <img src="docs/assets/sonance-mobile-player.png" alt="Mobile — Now Playing with vinyl visualizer" width="300" />
 </p>
-<p align="center"><em>Fully responsive — collapsible icon sidebar, adaptive player bar, and full Now Playing on mobile.</em></p>
+<p align="center"><em>Responsive layout — collapsible icon sidebar, adaptive player bar, and full Now Playing view.</em></p>
 
 ---
 
