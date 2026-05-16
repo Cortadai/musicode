@@ -17,6 +17,12 @@ Thumbs.db
 .gsd/browser-state/
 .gsd/browser-baselines/
 .gsd/STATE.md
+.gsd/event-log.jsonl
+.gsd/notifications.jsonl
+.gsd/state-manifest.json
+.gsd/doctor-history.jsonl
+.gsd/metrics.json
+.gsd/journal/
 
 # Build outputs
 musicode-server/build/
@@ -27,6 +33,10 @@ node_modules/
 # Env
 .env
 .env.local
+
+# Electron local data (DB with personal library)
+sonance-desktop/data/
+sonance-desktop/sonance-server.jar
 
 # Background shell
 .bg-shell/
