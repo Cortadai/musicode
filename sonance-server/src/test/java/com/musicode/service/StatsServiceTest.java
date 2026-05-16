@@ -37,15 +37,17 @@ class StatsServiceTest {
     @Test
     void getTopArtists_mapsRowsToDtos() {
         when(repo.findTopArtists(eq(user), any(Instant.class), eq(5))).thenReturn(List.<Object[]>of(
-                new Object[]{"Radiohead", 12L},
-                new Object[]{"Pixies", 7L}
+                new Object[]{1L, "Radiohead", 12L},
+                new Object[]{2L, "Pixies", 7L}
         ));
 
         var result = service.getTopArtists(user, "month", 5);
 
         assertThat(result).hasSize(2);
+        assertThat(result.get(0).artistId()).isEqualTo(1L);
         assertThat(result.get(0).name()).isEqualTo("Radiohead");
         assertThat(result.get(0).playCount()).isEqualTo(12L);
+        assertThat(result.get(1).artistId()).isEqualTo(2L);
         assertThat(result.get(1).name()).isEqualTo("Pixies");
         assertThat(result.get(1).playCount()).isEqualTo(7L);
     }

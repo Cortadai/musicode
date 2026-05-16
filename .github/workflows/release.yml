@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build-server:
+    name: Build Server JAR
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sonance-server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - run: mvn -B package -DskipTests
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server-jar
+          path: sonance-server/target/sonance-server-*.jar
+          if-no-files-found: error
+
+  build-desktop:
+    name: Build Desktop (Windows)
+    needs: build-server
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: sonance-desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: sonance-desktop/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: server-jar
+          path: sonance-server/target
+
+      - run: npm ci
+      - run: npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-installer
+          path: |
+            sonance-desktop/dist/*.exe
+            sonance-desktop/dist/*.yml
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-server, build-desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: server-jar
+          path: artifacts/server
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: desktop-installer
+          path: artifacts/desktop
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            artifacts/server/*.jar
+            artifacts/desktop/*.exe
+            artifacts/desktop/*.yml

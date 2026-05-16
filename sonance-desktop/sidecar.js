@@ -23,9 +23,9 @@ function getDataDir() {
   return path.join(app.getPath('home'), '.sonance', 'data');
 }
 
-function getEncryptionKey() {
+function getOrCreateKey(filename) {
   const appDataDir = getAppDataDir();
-  const keyFile = path.join(appDataDir, 'encryption.key');
+  const keyFile = path.join(appDataDir, filename);
 
   if (fs.existsSync(keyFile)) {
     return fs.readFileSync(keyFile, 'utf8').trim();
@@ -34,8 +34,16 @@ function getEncryptionKey() {
   fs.mkdirSync(appDataDir, { recursive: true });
   const key = crypto.randomBytes(32).toString('hex');
   fs.writeFileSync(keyFile, key, { mode: 0o600 });
-  console.log(`[sidecar] Generated encryption key at ${keyFile}`);
+  console.log(`[sidecar] Generated ${filename} at ${keyFile}`);
   return key;
+}
+
+function getEncryptionKey() {
+  return getOrCreateKey('encryption.key');
+}
+
+function getJwtSecret() {
+  return getOrCreateKey('jwt.secret');
 }
 
 function getJarPath() {
@@ -180,6 +188,7 @@ async function start() {
   const jarPath = getJarPath();
   const javaPath = getJavaPath();
   const encryptionKey = getEncryptionKey();
+  const jwtSecret = getJwtSecret();
   const dataDir = getDataDir();
 
   fs.mkdirSync(dataDir, { recursive: true });
@@ -188,6 +197,7 @@ async function start() {
 
   const jvmArgs = [
     `-Dsonance.data-dir=${dataDir.replace(/\\/g, '/')}`,
+    `-Dsonance.jwt.secret=${jwtSecret}`,
     '-jar', jarPath,
     '--spring.profiles.active=desktop',
   ];

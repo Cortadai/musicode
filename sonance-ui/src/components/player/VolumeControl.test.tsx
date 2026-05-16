@@ -13,10 +13,8 @@ describe('VolumeControl', () => {
     expect(screen.getByRole('button', { name: /mute/i })).toBeInTheDocument();
   });
 
-  it('shows volume slider on hover', () => {
+  it('shows volume slider always visible', () => {
     render(<VolumeControl volume={0.8} onVolumeChange={onVolumeChange} />);
-    expect(screen.queryByRole('slider', { name: /volume/i })).not.toBeInTheDocument();
-    fireEvent.mouseEnter(screen.getByRole('button', { name: /mute/i }).parentElement!);
     expect(screen.getByRole('slider', { name: /volume/i })).toBeInTheDocument();
   });
 
@@ -37,9 +35,8 @@ describe('VolumeControl', () => {
     expect(screen.getByRole('button', { name: /unmute/i })).toBeInTheDocument();
   });
 
-  it('slider has accessible valuetext with percentage on hover', () => {
+  it('slider has accessible valuetext with percentage', () => {
     render(<VolumeControl volume={0.75} onVolumeChange={onVolumeChange} />);
-    fireEvent.mouseEnter(screen.getByRole('button', { name: /mute/i }).parentElement!);
     const slider = screen.getByRole('slider', { name: /volume/i });
     expect(slider).toHaveAttribute('aria-valuetext', '75%');
   });
