@@ -1,6 +1,6 @@
 {
   "name": "sonance",
-  "version": "1.0.0",
+  "version": "0.1.0-beta.1",
   "description": "Sonance — personal music streaming desktop app",
   "main": "main.js",
   "author": "David",

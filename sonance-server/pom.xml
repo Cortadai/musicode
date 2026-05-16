@@ -13,7 +13,7 @@
 
     <groupId>com.musicode</groupId>
     <artifactId>sonance-server</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0-beta.1</version>
     <name>sonance-server</name>
     <description>Sonance — Personal music player backend</description>
 

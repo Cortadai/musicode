@@ -4,7 +4,7 @@ import api from '../api/client';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus, resetLibrary } from '../api/library';
 import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers, Sparkles, Wand2 } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers, Sparkles, Wand2, Info } from 'lucide-react';
 import type { LoginTransition } from '../audio/audioPreferences';
 import ThemeSelector from '../components/layout/ThemeSelector';
 import PaletteSelector from '../components/layout/PaletteSelector';
@@ -543,6 +543,20 @@ export default function SettingsPage() {
 
       {/* Scrobbling */}
       <ScrobbleSection />
+
+      {/* About */}
+      <section className="mt-8 mb-8">
+        <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>About</h3>
+        <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+          <div className="flex items-center gap-3">
+            <Info className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+            <div>
+              <p className="text-sm font-medium" style={{ color: 'var(--mc-text-primary)' }}>Sonance</p>
+              <p className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>v0.1.0-beta.1</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
