@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/TypeScript-5-blue?logo=typescript" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?logo=tailwindcss" alt="Tailwind CSS v4" />
   <img src="https://img.shields.io/badge/Tests-547+-green" alt="Tests 547+" />
-  <img src="https://img.shields.io/badge/License-Private-lightgrey" alt="Private" />
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License" />
 </p>
 
 ---
@@ -452,6 +452,10 @@ cd sonance-ui && npm run test:e2e
 
 ---
 
+## Acknowledgments
+
+Sonance was inspired by [Astra](https://github.com/Boof2015/astra), an open-source desktop music player by Boof2015 (GPL-3.0). Astra's architecture and UI patterns served as a reference during early development. The `/reference/` directory contains a snapshot of the Astra source used for study.
+
 ## License
 
-Personal project. Not licensed for redistribution.
+[MIT](LICENSE) — use it however you want.
