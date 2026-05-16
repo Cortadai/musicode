@@ -1,15 +1,15 @@
 # Sonance Server
 
-Spring Boot 3 backend for Sonance. Scans local music folders, reads audio metadata, streams files with HTTP Range support, manages authentication, tracks plays, and integrates with external scrobbling services.
+Spring Boot backend for Sonance. Scans local music folders, reads audio metadata, streams files with HTTP Range support, manages authentication, tracks plays, fetches lyrics and artist bios, and integrates with external scrobbling services.
 
 ## Tech Stack
 
 | Component | Technology |
 |---|---|
-| Runtime | Java 21 + Spring Boot 3.4 |
+| Runtime | Java 21 + Spring Boot 3.4.4 |
 | Security | Spring Security + JWT (JJWT 0.12.6) in HttpOnly cookies |
-| Data | Spring Data JPA + H2 (embedded) + Flyway migrations |
-| Metadata | JAudioTagger 2.2.5 (FLAC, MP3, OGG, M4A) |
+| Data | Spring Data JPA + H2 (embedded, file mode) + Flyway migrations |
+| Metadata | JAudioTagger 2.2.5 (FLAC, MP3, OGG, M4A, WAV) |
 | Docs | SpringDoc OpenAPI 2.8.14 (Swagger UI) |
 | Real-time | Server-Sent Events (SseEmitter) |
 | Async | Spring `@Async` with configurable thread pool |
@@ -75,7 +75,7 @@ graph TD
     JWT --> Auth{"Authorization Rules"}
 
     Auth -->|"permitAll"| Public["Public Endpoints<br/>/api/auth/login<br/>/api/auth/refresh<br/>/api/covers/**<br/>/swagger-ui/**<br/>/actuator/health"]
-    Auth -->|"ADMIN role"| Admin["Admin Endpoints<br/>POST /api/library/scan<br/>POST /api/library/folders<br/>POST /api/library/cleanup<br/>/api/users/**"]
+    Auth -->|"ADMIN role"| Admin["Admin Endpoints<br/>POST /api/library/scan<br/>POST /api/library/folders<br/>POST /api/library/cleanup<br/>DELETE /api/library/reset<br/>/api/users/**"]
     Auth -->|"authenticated"| User["Authenticated Endpoints<br/>Everything else<br/>(ADMIN or LISTENER)"]
     Auth -->|"denied"| Err["401 / 403 JSON response"]
 ```
@@ -175,10 +175,11 @@ graph LR
 |---|---|---|---|
 | GET | `/api/library/folders` | any | List registered folders |
 | POST | `/api/library/folders` | ADMIN | Add folder to scan |
-| DELETE | `/api/library/folders/{id}` | ADMIN | Remove folder |
+| DELETE | `/api/library/folders/{id}` | ADMIN | Remove folder and its tracks |
 | POST | `/api/library/scan` | ADMIN | Start async library scan |
 | GET | `/api/library/scan/status` | any | Scan progress (poll) |
-| POST | `/api/library/cleanup` | ADMIN | Remove orphan tracks |
+| POST | `/api/library/cleanup` | ADMIN | Remove orphan tracks (files no longer on disk) |
+| DELETE | `/api/library/reset` | ADMIN | Wipe all library data (tracks, albums, artists, covers, folders, play history) |
 
 ### Library Health (ADMIN)
 
@@ -197,6 +198,7 @@ graph LR
 | GET | `/api/albums/{id}` | Album with tracks (EntityGraph) |
 | GET | `/api/artists?page,size` | Paginated artists |
 | GET | `/api/artists/{id}` | Artist with albums (EntityGraph) |
+| GET | `/api/artists/{id}/bio` | Artist biography from Last.fm (cached 7d, 1h if empty) |
 | GET | `/api/search?q=` | Combined search across tracks, albums, artists |
 | GET | `/api/stream/{trackId}` | Audio stream (HTTP Range support) |
 | GET | `/api/covers/{albumId}` | Cover art JPEG (7-day cache) |
@@ -223,12 +225,13 @@ graph LR
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/plays/{trackId}` | Record play event |
+| POST | `/api/plays/{trackId}` | Record play event (triggers scrobble if configured) |
+| GET | `/api/stats/recent-plays?limit` | Most recent play events (default 20) |
 | GET | `/api/stats/top-artists?period,limit` | Top artists by play count |
 | GET | `/api/stats/top-albums?period,limit` | Top albums by play count |
 | GET | `/api/stats/top-tracks?period,limit` | Top tracks by play count |
 | GET | `/api/stats/summary?period` | Total plays, listening time, unique counts |
-| GET | `/api/stats/history?period` | Plays per day (Recharts-compatible) |
+| GET | `/api/stats/history?period` | Plays per day (chart-compatible) |
 
 ### Scrobble Settings (per user)
 
@@ -243,9 +246,10 @@ graph LR
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/favorites` | List user's favorite track IDs |
-| POST | `/api/favorites/{trackId}` | Add track to favorites |
-| DELETE | `/api/favorites/{trackId}` | Remove track from favorites |
+| GET | `/api/favorites?page,size` | Paginated favorite tracks with full details (newest first) |
+| GET | `/api/favorites/ids` | Set of all favorited track IDs (for UI state) |
+| GET | `/api/favorites/count` | Total favorite count |
+| PUT | `/api/favorites/{trackId}` | Toggle favorite (returns `{ trackId, favorited }`) |
 
 ### Playlists (per user)
 
@@ -273,30 +277,37 @@ graph LR
 
 ```
 src/main/java/com/musicode/
-├── config/          Security, AdminSeeder, Async, Jackson, OpenAPI, LastFM, CORS, TokenMigration
+├── config/          SecurityConfig, AdminSeeder, AsyncConfig, JacksonConfig,
+│                    OpenApiConfig, LastfmConfig, WebConfig (CORS), TokenMigrationRunner
 ├── controller/      18 REST controllers
 ├── exception/       GlobalExceptionHandler + custom exceptions (BadRequest, Conflict, NotFound)
 ├── filter/          JwtAuthFilter, LoginRateLimitFilter, RequestIdFilter
 ├── model/
 │   ├── dto/         29 records (LoginRequest, UserResponse, StatsSummary, ActivityEvent,
-│   │                CreatePlaylistRequest, ScrobbleSettingsRequest, HealthIssue, ...)
+│   │                ArtistBioDTO, RecentPlay, CreatePlaylistRequest, ScrobbleSettingsRequest,
+│   │                HealthIssue, WaveformResponse, ...)
 │   └── entity/      12 JPA entities (Track, Album, Artist, User, RefreshToken, PlaybackEvent,
 │                    LibraryFolder, LyricsStatus, Role, Favorite, Playlist, PlaylistTrack)
 ├── repository/      10 Spring Data JPA repositories
 ├── service/         18 services (Auth, JWT, Scan, Stream, CoverArt, Waveform, Lyrics,
 │                    Stats, Scrobble, LastFM, ListenBrainz, Activity, Health, Metadata,
-│                    Playlist, TokenEncryption, ...)
+│                    Playlist, TokenEncryption, UserDetails, RefreshToken)
 └── util/            CookieUtil, TokenHashUtil, EncryptedStringConverter
 
 src/test/java/       282 tests across 38 test classes
 ├── config/          AdminSeeder, TokenMigrationRunner
-├── controller/      Integration tests for all 18 controllers
-└── service/         Unit + WireMock contract tests for all services
+├── controller/      Integration tests for all controllers (WebMvcTest + WithMockUser)
+├── filter/          LoginRateLimitFilter
+├── model/dto/       ScrobbleSettingsResponse, ScanStatus
+├── repository/      UserRepository
+├── service/         Unit + WireMock contract tests
+└── util/            EncryptedStringConverter
 
 src/main/resources/
-├── application.yml          Dev config (H2 file, relaxed rate limits)
-├── application-docker.yml   Docker profile (secure cookies, env secrets)
-├── logback-spring.xml       Colored console (dev) / JSON (docker)
+├── application.yml              Dev config (H2 file, relaxed rate limits)
+├── application-docker.yml       Docker profile (secure cookies, env secrets)
+├── application-desktop.yml      Electron/desktop profile (custom data dir, no H2 console)
+├── logback-spring.xml           Colored console (dev) / JSON (docker)
 └── db/migration/
     ├── V1__baseline.sql              Schema: users, tracks, albums, artists, tokens, events, folders
     ├── V2__add_lyrics_columns.sql    Lyrics status + instrumental flag
@@ -307,6 +318,14 @@ src/main/resources/
 ---
 
 ## Configuration
+
+### Profiles
+
+| Profile | Activated by | Description |
+|---|---|---|
+| _(default)_ | `mvn spring-boot:run` | Dev mode: H2 console enabled, relaxed rate limits, dev JWT key |
+| `docker` | `SPRING_PROFILES_ACTIVE=docker` | Production: secure cookies, env-based secrets, JSON logging |
+| `desktop` | Electron sidecar | Custom data dir (`sonance.data-dir`), no H2 console |
 
 ### Key Properties
 
@@ -324,7 +343,7 @@ src/main/resources/
 | `sonance.security.login-rate-limit.window-seconds` | `60` | Rate limit window |
 | `sonance.scrobble.retry-delay-ms` | `1000` | Base delay for exponential backoff |
 
-Docker profile (`application-docker.yml`) overrides: `cookies.secure=true`, reads secrets from environment variables.
+Docker profile (`application-docker.yml`) overrides: `cookies.secure=true`, reads secrets from environment variables, stricter rate limits (5 attempts/60s).
 
 ---
 
@@ -360,9 +379,13 @@ mvn clean verify   # Runs all 282 tests + JaCoCo coverage check
 
 | Category | Count | Description |
 |---|---|---|
-| **Controller integration** | ~115 | `@WebMvcTest` with `@WithMockUser`, real filter chain |
-| **Service unit** | ~125 | Mockito-based, logic isolation |
-| **Contract (WireMock)** | ~40 | Last.fm + ListenBrainz wire format validation |
-| **Config** | ~4 | AdminSeeder, TokenMigrationRunner |
+| **Controller integration** | 111 | `@WebMvcTest` with `@WithMockUser`, real filter chain |
+| **Service unit** | 111 | Mockito-based, logic isolation |
+| **WireMock contract** | 19 | Last.fm + ListenBrainz wire format validation |
+| **DTO / Model** | 18 | Serialization, edge cases |
+| **Config** | 6 | AdminSeeder, TokenMigrationRunner |
+| **Filter** | 6 | LoginRateLimitFilter |
+| **Util** | 6 | EncryptedStringConverter |
+| **Repository** | 5 | UserRepository |
 
 WireMock contract tests validate actual HTTP request bodies, signatures, and headers — catching wire format bugs that Mockito tests can't see.
