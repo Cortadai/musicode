@@ -1,13 +1,14 @@
 # Codebase Map
 
-Generated: 2026-05-10T13:40:21Z | Files: 377 | Described: 0/377
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-10T13:40:21Z","fingerprint":"e0c204c4a934dc4c2d83468d8e3ccf0a02ada3da","fileCount":377,"truncated":false} -->
+Generated: 2026-05-16T14:45:53Z | Files: 427 | Described: 0/427
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-16T14:45:53Z","fingerprint":"023f1012a9d264b4053fdf25f4328a533b565745","fileCount":427,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
 - `.gitignore`
 - `Caddyfile`
 - `docker-compose.yml`
+- `LICENSE`
 - `README.md`
 - `SCROBBLING.md`
 - `start-sonance.bat`
@@ -17,15 +18,33 @@ Generated: 2026-05-10T13:40:21Z | Files: 377 | Described: 0/377
 
 ### .github/workflows/
 - `.github/workflows/ci.yml`
+- `.github/workflows/release.yml`
 
 ### caddy/
 - `caddy/Dockerfile`
 
+### docs/
+- `docs/SCREENSHOT-AUDIT.md`
+
 ### scripts/
 - `scripts/configure-scrobble.ps1`
-- `scripts/get-lastfm-session.ps1`
 - `scripts/register-and-scan.ps1`
 - `scripts/verify-scrobble.ps1`
+
+### sonance-desktop/
+- `sonance-desktop/.gitignore`
+- `sonance-desktop/afterPack.js`
+- `sonance-desktop/loading.html`
+- `sonance-desktop/main.js`
+- `sonance-desktop/package-lock.json`
+- `sonance-desktop/package.json`
+- `sonance-desktop/preload.js`
+- `sonance-desktop/README.md`
+- `sonance-desktop/sidecar.js`
+
+### sonance-desktop/scripts/
+- `sonance-desktop/scripts/build-app.sh`
+- `sonance-desktop/scripts/download-jre.ps1`
 
 ### sonance-server/
 - `sonance-server/.dockerignore`
@@ -134,6 +153,7 @@ Generated: 2026-05-10T13:40:21Z | Files: 377 | Described: 0/377
 - `sonance-server/src/main/java/com/musicode/util/TokenHashUtil.java`
 
 ### sonance-server/src/main/resources/
+- `sonance-server/src/main/resources/application-desktop.yml`
 - `sonance-server/src/main/resources/application-docker.yml`
 - `sonance-server/src/main/resources/application.yml`
 - `sonance-server/src/main/resources/logback-spring.xml`
@@ -145,7 +165,12 @@ Generated: 2026-05-10T13:40:21Z | Files: 377 | Described: 0/377
 - `sonance-server/src/main/resources/db/migration/V4__playlists.sql`
 
 ### sonance-server/src/main/resources/static/
-- `sonance-server/src/main/resources/static/test.html`
+- `sonance-server/src/main/resources/static/index.html`
+- `sonance-server/src/main/resources/static/manifest.json`
+- `sonance-server/src/main/resources/static/sw.js`
+
+### sonance-server/src/main/resources/static/assets/
+- *(32 files: 31 .js, 1 .css)*
 
 ### sonance-server/src/test/java/com/musicode/config/
 - `sonance-server/src/test/java/com/musicode/config/AdminSeederTest.java`
@@ -343,7 +368,7 @@ Generated: 2026-05-10T13:40:21Z | Files: 377 | Described: 0/377
 - `sonance-ui/src/components/library/TrackList.tsx`
 
 ### sonance-ui/src/components/player/
-- *(27 files: 27 .tsx)*
+- *(28 files: 28 .tsx)*
 
 ### sonance-ui/src/components/player/cassette/
 - `sonance-ui/src/components/player/cassette/CassetteCanvas.tsx`
@@ -365,6 +390,7 @@ Generated: 2026-05-10T13:40:21Z | Files: 377 | Described: 0/377
 
 ### sonance-ui/src/hooks/
 - `sonance-ui/src/hooks/useDynamicTheme.ts`
+- `sonance-ui/src/hooks/useElectronMediaKeys.ts`
 - `sonance-ui/src/hooks/useFavorites.ts`
 - `sonance-ui/src/hooks/useFrameScheduler.ts`
 - `sonance-ui/src/hooks/useGapless.ts`

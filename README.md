@@ -128,6 +128,8 @@ Run `dist/win-unpacked/Sonance.exe`. The app starts a local Spring Boot server, 
 
 **Required environment variable:** `SONANCE_TOKEN_ENCRYPTION_KEY` — generate with `openssl rand -hex 32`.
 
+**Default credentials:** `admin` / `changeme` — change the password after first login.
+
 > See [sonance-desktop/README.md](sonance-desktop/README.md) for full build and packaging details.
 
 ### Docker Compose (server mode)
@@ -159,6 +161,8 @@ cd sonance-desktop
 npm start
 # Opens Electron window loading Vite dev server + hot reload
 ```
+
+**Default credentials:** `admin` / `changeme` — change the password after first login.
 
 ---
 

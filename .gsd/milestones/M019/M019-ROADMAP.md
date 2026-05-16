@@ -6,7 +6,7 @@ Elevar Musicode a nivel de reproductor premium con tres themes intercambiables (
 ## Slice Overview
 | ID | Slice | Risk | Depends | Done | After this |
 |----|-------|------|---------|------|------------|
-| S01 | Theme Foundation | high | — | ✅ | Theme selector switches between Evolved layout (sidebar) and placeholder shells for Novatouch/Minimal. CSS variables change colors/spacing per theme. |
+| S01 | S01 | high | — | ✅ | Theme selector switches between Evolved layout (sidebar) and placeholder shells for Novatouch/Minimal. CSS variables change colors/spacing per theme. |
 | S02 | Home Page | medium | S01 | ✅ | Home page con saludo dinámico, carruseles de recently played/albums/artists con datos reales, stats de librería, glassmorphism cards con hover lift. |
 | S03 | Play Bar Redesign | high | S01 | ✅ | Play bar con 3 secciones (now playing / controles+waveform / utilidades), badges técnicos FMT|BIT|KHZ, volumen numérico, marquee en títulos largos. |
 | S04 | Library Enhancement | medium | S01 | ✅ | Library con tabs TRACKS|ALBUMS|ARTISTS con contadores, tabla de tracks enriquecida con codec badges y miniaturas, artist avatares circulares. |
