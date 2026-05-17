@@ -22,3 +22,13 @@ export async function getArtistBio(id: number) {
   const { data } = await api.get<ArtistBio>(`/artists/${id}/bio`);
   return data;
 }
+
+export async function toggleArtistVisibility(id: number) {
+  const { data } = await api.patch<Artist>(`/artists/${id}/visibility`);
+  return data;
+}
+
+export async function getHiddenArtists() {
+  const { data } = await api.get<Artist[]>('/artists/hidden');
+  return data;
+}

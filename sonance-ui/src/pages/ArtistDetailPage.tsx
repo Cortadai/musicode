@@ -1,8 +1,8 @@
 import { useParams, Link } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
-import { getArtist } from '../api/artists';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getArtist, toggleArtistVisibility } from '../api/artists';
 import AlbumCard from '../components/library/AlbumCard';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ExternalLink, EyeOff, Eye } from 'lucide-react';
 import { artistGradient, artistInitials } from '../utils/artistAvatar';
 import type { Album } from '../types';
 import { ArtistDetailSkeleton } from '../components/common/Skeletons';
@@ -13,6 +13,7 @@ import { useArtistLastfmUrl } from '../components/library/AlbumInfoCard';
 export default function ArtistDetailPage() {
   const { id } = useParams<{ id: string }>();
   const artistId = Number(id);
+  const queryClient = useQueryClient();
 
   const { data: artist, isLoading, error } = useQuery({
     queryKey: ['artist', artistId],
@@ -20,6 +21,17 @@ export default function ArtistDetailPage() {
     enabled: !isNaN(artistId),
   });
   const lastfmUrl = useArtistLastfmUrl(artistId);
+
+  const hideMutation = useMutation({
+    mutationFn: () => toggleArtistVisibility(artistId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['artist', artistId] });
+      queryClient.invalidateQueries({ queryKey: ['artists'] });
+      queryClient.invalidateQueries({ queryKey: ['albums'] });
+      queryClient.invalidateQueries({ queryKey: ['hiddenArtists'] });
+      queryClient.invalidateQueries({ queryKey: ['search'] });
+    },
+  });
 
   if (isLoading) return <ArtistDetailSkeleton />;
   if (error || !artist) return <ErrorMessage message="Artist not found" detail={getErrorMessage(error)} />;
@@ -39,20 +51,31 @@ export default function ArtistDetailPage() {
         <div>
           <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--mc-text-muted)' }}>Artist</p>
           <h2 className="text-3xl font-bold" style={{ color: 'var(--mc-text-primary)' }}>{artist.name}</h2>
-          <p className="text-sm mt-1" style={{ color: 'var(--mc-text-secondary)' }}>
-            {albums.length} album{albums.length !== 1 ? 's' : ''}
-            {lastfmUrl && (
-              <a
-                href={lastfmUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-0.5 mc-interactive-muted ml-2"
-                title="View on Last.fm"
-              >
-                <ExternalLink className="w-3 h-3" />
-                <span className="text-xs">Last.fm</span>
-              </a>
-            )}
+          <p className="text-sm mt-1 flex items-center gap-2" style={{ color: 'var(--mc-text-secondary)' }}>
+            <span>
+              {albums.length} album{albums.length !== 1 ? 's' : ''}
+              {lastfmUrl && (
+                <a
+                  href={lastfmUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-0.5 mc-interactive-muted ml-2"
+                  title="View on Last.fm"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span className="text-xs">Last.fm</span>
+                </a>
+              )}
+            </span>
+            <button
+              onClick={() => hideMutation.mutate()}
+              disabled={hideMutation.isPending}
+              className="inline-flex items-center gap-1 text-xs mc-interactive-muted transition-colors disabled:opacity-50"
+              title={artist.hidden ? 'Show albums in library' : 'Hide albums from library'}
+            >
+              {artist.hidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              <span>{artist.hidden ? 'Show albums' : 'Hide albums'}</span>
+            </button>
           </p>
         </div>
       </div>

@@ -1,1 +1,0 @@
-import{t as e}from"./client-DUUTen9c.js";async function t(t=0,n=30){let{data:r}=await e.get(`/artists`,{params:{page:t,size:n}});return r}async function n(t){let{data:n}=await e.get(`/artists/${t}`);return n}async function r(t){let{data:n}=await e.get(`/artists/${t}/bio`);return n}export{r as n,t as r,n as t};

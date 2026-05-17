@@ -30,6 +30,7 @@ export interface Album {
 export interface Artist {
   id: number;
   name: string;
+  hidden: boolean;
   albums: Album[] | null;
   tracks: Track[] | null;
 }

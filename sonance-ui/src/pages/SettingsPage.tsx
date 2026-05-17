@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/client';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus, resetLibrary } from '../api/library';
+import { getHiddenArtists, toggleArtistVisibility } from '../api/artists';
 import { getVideoFolders, addVideoFolder, removeVideoFolder, listVideos } from '../api/videoFolders';
 import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers, Sparkles, Wand2, Info, Film } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers, Sparkles, Wand2, Info, Film, EyeOff, Eye } from 'lucide-react';
 import type { LoginTransition } from '../audio/audioPreferences';
 import ThemeSelector from '../components/layout/ThemeSelector';
 import PaletteSelector from '../components/layout/PaletteSelector';
@@ -103,6 +104,21 @@ export default function SettingsPage() {
   const scanMutation = useMutation({
     mutationFn: startScan,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['scanStatus'] }),
+  });
+
+  const { data: hiddenArtists, isLoading: hiddenLoading } = useQuery({
+    queryKey: ['hiddenArtists'],
+    queryFn: getHiddenArtists,
+  });
+
+  const unhideMutation = useMutation({
+    mutationFn: toggleArtistVisibility,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hiddenArtists'] });
+      queryClient.invalidateQueries({ queryKey: ['artists'] });
+      queryClient.invalidateQueries({ queryKey: ['albums'] });
+      queryClient.invalidateQueries({ queryKey: ['search'] });
+    },
   });
 
   const { data: videoFolders, isLoading: videoFoldersLoading } = useQuery({
@@ -326,6 +342,34 @@ export default function SettingsPage() {
             </button>
           </div>
         </div>
+      </section>
+
+      {/* Hidden Artists */}
+      <section className="mb-8">
+        <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Hidden Albums</h3>
+        {hiddenLoading ? (
+          <p className="text-sm" style={{ color: 'var(--mc-text-muted)' }}>Loading…</p>
+        ) : hiddenArtists && hiddenArtists.length > 0 ? (
+          <div className="space-y-2">
+            {hiddenArtists.map((artist) => (
+              <div key={artist.id} className="flex items-center gap-3 px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+                <EyeOff className="w-4 h-4 shrink-0" style={{ color: 'var(--mc-text-muted)' }} />
+                <span className="text-sm flex-1" style={{ color: 'var(--mc-text-primary)' }}>{artist.name}</span>
+                <button
+                  onClick={() => unhideMutation.mutate(artist.id)}
+                  disabled={unhideMutation.isPending}
+                  className="flex items-center gap-1 text-xs mc-interactive-muted transition-colors disabled:opacity-50"
+                  title="Show albums in library again"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Show albums</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm" style={{ color: 'var(--mc-text-muted)' }}>No hidden albums. Use the "Hide albums" button on any artist page to exclude their albums from the library.</p>
+        )}
       </section>
 
       {isAdmin && (

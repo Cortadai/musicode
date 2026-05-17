@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import java.util.List;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +40,21 @@ public class ArtistController {
     public Artist getArtist(@PathVariable Long id) {
         return artistRepository.findWithAlbumsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Artist", id));
+    }
+
+    @GetMapping("/hidden")
+    @Operation(summary = "List hidden artists", description = "Returns all artists marked as hidden, sorted by name.")
+    public List<Artist> getHiddenArtists() {
+        return artistRepository.findByHiddenTrueOrderByNameAsc();
+    }
+
+    @PatchMapping("/{id}/visibility")
+    @Operation(summary = "Toggle artist visibility", description = "Toggles the hidden flag on an artist. Hidden artists' albums are excluded from the library and search results.")
+    public Artist toggleVisibility(@PathVariable Long id) {
+        Artist artist = artistRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Artist", id));
+        artist.setHidden(!artist.isHidden());
+        return artistRepository.save(artist);
     }
 
     @GetMapping("/{id}/bio")

@@ -24,4 +24,6 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     @Query("SELECT a FROM Artist a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :name, '%')) AND SIZE(a.albums) > 0")
     List<Artist> findAlbumArtistsByNameContaining(String name);
+
+    List<Artist> findByHiddenTrueOrderByNameAsc();
 }

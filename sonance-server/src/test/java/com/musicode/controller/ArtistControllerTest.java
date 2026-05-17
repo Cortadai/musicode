@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -83,5 +84,69 @@ class ArtistControllerTest {
     void getArtist_nonExistentId_returns404() throws Exception {
         mockMvc.perform(get("/api/artists/{id}", 99999))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getAllArtists_includesHiddenArtists() throws Exception {
+        savedArtist.setHidden(true);
+        artistRepository.save(savedArtist);
+
+        mockMvc.perform(get("/api/artists"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].hidden", is(true)));
+    }
+
+    @Test
+    void toggleVisibility_hidesArtist() throws Exception {
+        mockMvc.perform(patch("/api/artists/{id}/visibility", savedArtist.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hidden", is(true)));
+
+        mockMvc.perform(get("/api/artists"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].hidden", is(true)));
+    }
+
+    @Test
+    void toggleVisibility_unhidesArtist() throws Exception {
+        savedArtist.setHidden(true);
+        artistRepository.save(savedArtist);
+
+        mockMvc.perform(patch("/api/artists/{id}/visibility", savedArtist.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hidden", is(false)));
+
+        mockMvc.perform(get("/api/artists"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].hidden", is(false)));
+    }
+
+    @Test
+    void hiddenArtist_albumsExcludedFromListing() throws Exception {
+        savedArtist.setHidden(true);
+        artistRepository.save(savedArtist);
+
+        mockMvc.perform(get("/api/albums"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(0)));
+    }
+
+    @Test
+    void getHiddenArtists_returnsOnlyHidden() throws Exception {
+        Artist hiddenArtist = artistRepository.save(Artist.builder().name("Hidden Band").hidden(true).build());
+        albumRepository.save(Album.builder()
+                .title("Secret Album")
+                .year(2024)
+                .artist(hiddenArtist)
+                .hasCoverArt(false)
+                .build());
+
+        mockMvc.perform(get("/api/artists/hidden"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name", is("Hidden Band")));
     }
 }

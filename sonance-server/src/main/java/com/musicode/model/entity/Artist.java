@@ -21,6 +21,10 @@ public class Artist {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean hidden = false;
+
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @JsonIgnoreProperties({"artist", "tracks"})

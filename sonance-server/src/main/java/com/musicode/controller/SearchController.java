@@ -33,8 +33,8 @@ public class SearchController {
             return new SearchResults(List.of(), List.of(), List.of());
         }
 
-        List<Track> tracks = trackRepository.findByTitleContainingIgnoreCase(query);
-        List<Album> albums = albumRepository.findByTitleContainingIgnoreCase(query);
+        List<Track> tracks = trackRepository.findVisibleByTitleContaining(query);
+        List<Album> albums = albumRepository.findVisibleByTitleContaining(query);
         List<Artist> artists = artistRepository.findAlbumArtistsByNameContaining(query);
 
         return new SearchResults(tracks, albums, artists);

@@ -105,4 +105,28 @@ class SearchControllerTest {
                 .andExpect(jsonPath("$.albums", hasSize(0)))
                 .andExpect(jsonPath("$.artists", hasSize(0)));
     }
+
+    @Test
+    void search_hiddenArtist_excludesAlbumsAndTracks() throws Exception {
+        Artist hidden = artistRepository.findAll().get(0);
+        hidden.setHidden(true);
+        artistRepository.save(hidden);
+
+        mockMvc.perform(get("/api/search").param("q", "neon"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.albums", hasSize(0)))
+                .andExpect(jsonPath("$.tracks", hasSize(0)));
+    }
+
+    @Test
+    void search_hiddenArtist_stillAppearsInArtistResults() throws Exception {
+        Artist hidden = artistRepository.findAll().get(0);
+        hidden.setHidden(true);
+        artistRepository.save(hidden);
+
+        mockMvc.perform(get("/api/search").param("q", "echo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.artists", hasSize(1)))
+                .andExpect(jsonPath("$.artists[0].name", is("Echo Synth")));
+    }
 }

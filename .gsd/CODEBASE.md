@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-17T16:08:16Z | Files: 428 | Described: 0/428
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-17T16:08:16Z","fingerprint":"2a8fe79f15c8077d0873ec7376b083151cc5b46b","fileCount":428,"truncated":false} -->
+Generated: 2026-05-17T19:55:40Z | Files: 436 | Described: 0/436
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-17T19:55:40Z","fingerprint":"4efbfd91236f69b99150a9ada91152c543dac6bc","fileCount":436,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -24,6 +24,7 @@ Generated: 2026-05-17T16:08:16Z | Files: 428 | Described: 0/428
 - `caddy/Dockerfile`
 
 ### docs/
+- `docs/mockup-video-mode.html`
 - `docs/SCREENSHOT-AUDIT.md`
 
 ### scripts/
@@ -84,6 +85,7 @@ Generated: 2026-05-17T16:08:16Z | Files: 428 | Described: 0/428
 - `sonance-server/src/main/java/com/musicode/controller/StreamController.java`
 - `sonance-server/src/main/java/com/musicode/controller/TrackController.java`
 - `sonance-server/src/main/java/com/musicode/controller/UserController.java`
+- `sonance-server/src/main/java/com/musicode/controller/VideoController.java`
 - `sonance-server/src/main/java/com/musicode/controller/WaveformController.java`
 
 ### sonance-server/src/main/java/com/musicode/exception/
@@ -114,6 +116,7 @@ Generated: 2026-05-17T16:08:16Z | Files: 428 | Described: 0/428
 - `sonance-server/src/main/java/com/musicode/model/entity/Role.java`
 - `sonance-server/src/main/java/com/musicode/model/entity/Track.java`
 - `sonance-server/src/main/java/com/musicode/model/entity/User.java`
+- `sonance-server/src/main/java/com/musicode/model/entity/VideoFolder.java`
 
 ### sonance-server/src/main/java/com/musicode/repository/
 - `sonance-server/src/main/java/com/musicode/repository/AlbumRepository.java`
@@ -126,6 +129,7 @@ Generated: 2026-05-17T16:08:16Z | Files: 428 | Described: 0/428
 - `sonance-server/src/main/java/com/musicode/repository/RefreshTokenRepository.java`
 - `sonance-server/src/main/java/com/musicode/repository/TrackRepository.java`
 - `sonance-server/src/main/java/com/musicode/repository/UserRepository.java`
+- `sonance-server/src/main/java/com/musicode/repository/VideoFolderRepository.java`
 
 ### sonance-server/src/main/java/com/musicode/service/
 - `sonance-server/src/main/java/com/musicode/service/ActivityService.java`
@@ -145,6 +149,7 @@ Generated: 2026-05-17T16:08:16Z | Files: 428 | Described: 0/428
 - `sonance-server/src/main/java/com/musicode/service/ScrobbleService.java`
 - `sonance-server/src/main/java/com/musicode/service/StatsService.java`
 - `sonance-server/src/main/java/com/musicode/service/TokenEncryptionService.java`
+- `sonance-server/src/main/java/com/musicode/service/VideoStreamService.java`
 - `sonance-server/src/main/java/com/musicode/service/WaveformService.java`
 
 ### sonance-server/src/main/java/com/musicode/util/
@@ -164,6 +169,7 @@ Generated: 2026-05-17T16:08:16Z | Files: 428 | Described: 0/428
 - `sonance-server/src/main/resources/db/migration/V3__user_favorites.sql`
 - `sonance-server/src/main/resources/db/migration/V4__playlists.sql`
 - `sonance-server/src/main/resources/db/migration/V5__add_lyrics_offset.sql`
+- `sonance-server/src/main/resources/db/migration/V6__video_folders.sql`
 
 ### sonance-server/src/main/resources/static/
 - `sonance-server/src/main/resources/static/index.html`
@@ -290,6 +296,7 @@ Generated: 2026-05-17T16:08:16Z | Files: 428 | Described: 0/428
 - `sonance-ui/src/api/search.ts`
 - `sonance-ui/src/api/stats.ts`
 - `sonance-ui/src/api/tracks.ts`
+- `sonance-ui/src/api/videoFolders.ts`
 - `sonance-ui/src/api/waveforms.ts`
 
 ### sonance-ui/src/audio/
@@ -369,7 +376,7 @@ Generated: 2026-05-17T16:08:16Z | Files: 428 | Described: 0/428
 - `sonance-ui/src/components/library/TrackList.tsx`
 
 ### sonance-ui/src/components/player/
-- *(28 files: 28 .tsx)*
+- *(29 files: 29 .tsx)*
 
 ### sonance-ui/src/components/player/cassette/
 - `sonance-ui/src/components/player/cassette/CassetteCanvas.tsx`

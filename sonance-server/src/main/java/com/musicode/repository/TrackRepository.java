@@ -17,6 +17,9 @@ public interface TrackRepository extends JpaRepository<Track, Long> {
 
     List<Track> findByTitleContainingIgnoreCase(String title);
 
+    @Query("SELECT t FROM Track t WHERE LOWER(t.title) LIKE LOWER(CONCAT('%', :title, '%')) AND t.album.artist.hidden = false")
+    List<Track> findVisibleByTitleContaining(String title);
+
     long countByAlbumId(Long albumId);
 
     long countByArtistId(Long artistId);

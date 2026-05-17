@@ -24,7 +24,7 @@ public class AlbumController {
     @Operation(summary = "List albums", description = "Paginated album list sorted by title. Tracks are not included — use the detail endpoint.")
     public Page<Album> getAllAlbums(
             @PageableDefault(size = 30, sort = "title", direction = Sort.Direction.ASC) Pageable pageable) {
-        return albumRepository.findAll(pageable);
+        return albumRepository.findVisibleAlbums(pageable);
     }
 
     @GetMapping("/{id}")
