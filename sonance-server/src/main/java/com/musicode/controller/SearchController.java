@@ -35,7 +35,7 @@ public class SearchController {
 
         List<Track> tracks = trackRepository.findByTitleContainingIgnoreCase(query);
         List<Album> albums = albumRepository.findByTitleContainingIgnoreCase(query);
-        List<Artist> artists = artistRepository.findByNameContainingIgnoreCase(query);
+        List<Artist> artists = artistRepository.findAlbumArtistsByNameContaining(query);
 
         return new SearchResults(tracks, albums, artists);
     }

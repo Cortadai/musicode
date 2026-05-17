@@ -28,10 +28,10 @@ public class ArtistController {
     private final LastfmService lastfmService;
 
     @GetMapping
-    @Operation(summary = "List artists", description = "Paginated artist list sorted by name. Albums are not included — use the detail endpoint.")
+    @Operation(summary = "List artists", description = "Paginated list of album artists sorted by name. Track-only artists (collaborators, featured) are excluded.")
     public Page<Artist> getAllArtists(
             @PageableDefault(size = 30, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
-        return artistRepository.findAll(pageable);
+        return artistRepository.findAlbumArtists(pageable);
     }
 
     @GetMapping("/{id}")
