@@ -6,6 +6,7 @@ declare global {
     electronAPI?: {
       platform: string;
       onMediaKey: (callback: (key: string) => void) => void;
+      setTitleBarOverlayVisible?: (visible: boolean) => void;
     };
   }
 }

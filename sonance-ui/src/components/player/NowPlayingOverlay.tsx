@@ -77,6 +77,13 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
     if (open) overlayRef.current?.focus();
   }, [open]);
 
+  useEffect(() => {
+    const fn = window.electronAPI?.setTitleBarOverlayVisible;
+    if (!fn) return;
+    fn(!open);
+    return () => { fn(true); };
+  }, [open]);
+
   // Artwork crossfade on track change
   useEffect(() => {
     if (!currentTrack || !open) return;

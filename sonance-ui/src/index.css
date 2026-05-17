@@ -511,6 +511,7 @@ summary, .cursor-pointer {
   flex-direction: column;
   background: var(--mc-bg-base);
   outline: none;
+  -webkit-app-region: no-drag;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
 }
 

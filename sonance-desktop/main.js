@@ -7,6 +7,7 @@ const isDev = !app.isPackaged && !forceDesktop;
 
 let mainWindow;
 let tray;
+let lastThemeColors = { color: '#0a0a0f', symbolColor: '#e2e2e2' };
 
 function getAppUrl() {
   if (isDev) {
@@ -105,8 +106,23 @@ async function createWindow() {
   }
 }
 
+ipcMain.on('set-titlebar-overlay-visible', (_event, visible) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      if (visible) {
+        mainWindow.setTitleBarOverlay({ ...lastThemeColors, height: 32 });
+      } else {
+        mainWindow.setTitleBarOverlay({ color: '#00000000', symbolColor: '#00000000', height: 1 });
+      }
+    } catch (err) {
+      console.error('[main] setTitleBarOverlay visible failed:', err.message);
+    }
+  }
+});
+
 ipcMain.on('set-titlebar-colors', (_event, bgColor, symbolColor) => {
   console.log('[main] setTitleBarOverlay called with bg:', bgColor, 'symbol:', symbolColor);
+  lastThemeColors = { color: bgColor, symbolColor: symbolColor };
   if (mainWindow && !mainWindow.isDestroyed()) {
     try {
       mainWindow.setTitleBarOverlay({
