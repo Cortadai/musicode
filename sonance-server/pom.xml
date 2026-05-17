@@ -166,6 +166,8 @@
                         <exclude>com/musicode/service/MetadataService.class</exclude>
                         <exclude>com/musicode/service/CoverArtService.class</exclude>
                         <exclude>com/musicode/service/AudioStreamService.class</exclude>
+                        <exclude>com/musicode/service/VideoStreamService.class</exclude>
+                        <exclude>com/musicode/controller/VideoController.class</exclude>
                         <exclude>com/musicode/MusicodeApplication.class</exclude>
                     </excludes>
                 </configuration>
