@@ -36,7 +36,11 @@ export default function NowPlayingOverlay({ open, onClose, onVideoMode }: Props)
   const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => loadPreferences().visualizerMode);
   const [showLyrics, setShowLyrics] = useState(false);
   const [waveformEnabled, setWaveformEnabled] = useState(() => loadPreferences().waveformEnabled);
-  const [videoEnabled] = useState(() => loadPreferences().videoEnabled);
+  const [videoEnabled, setVideoEnabled] = useState(() => loadPreferences().videoEnabled);
+
+  useEffect(() => {
+    if (open) setVideoEnabled(loadPreferences().videoEnabled);
+  }, [open]);
 
   const handleToggleWaveform = useCallback(() => {
     setWaveformEnabled((v) => {

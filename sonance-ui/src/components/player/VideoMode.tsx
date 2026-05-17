@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, ChevronLeft, ChevronRight, SkipBack, Play, Pause, SkipForward, Film } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, SkipBack, Play, Pause, SkipForward } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { listVideos } from '../../api/videoFolders';
 import ProgressBar from './ProgressBar';
@@ -51,7 +51,7 @@ export default function VideoMode({ open, onClose }: Props) {
   const [videos, setVideos] = useState<string[]>([]);
   const [currentVideoIdx, setCurrentVideoIdx] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(true);
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const handleVideoEnded = useCallback(() => {
     if (videos.length > 1) {

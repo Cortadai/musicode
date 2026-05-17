@@ -63,6 +63,28 @@ public class CoverArtService {
         }
     }
 
+    public int deleteCoversNotIn(java.util.Set<Long> validAlbumIds) {
+        int deleted = 0;
+        try (var stream = Files.list(coversDir)) {
+            for (Path file : stream.toList()) {
+                String name = file.getFileName().toString();
+                if (name.endsWith(".jpg")) {
+                    try {
+                        long id = Long.parseLong(name.substring(0, name.length() - 4));
+                        if (!validAlbumIds.contains(id)) {
+                            Files.deleteIfExists(file);
+                            deleted++;
+                        }
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+            }
+        } catch (IOException e) {
+            log.error("Failed to clean orphan covers: {}", e.getMessage());
+        }
+        return deleted;
+    }
+
     public int deleteAllCovers() {
         int deleted = 0;
         try (var stream = Files.list(coversDir)) {

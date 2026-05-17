@@ -74,6 +74,9 @@ public class LibraryScanService {
         log.info("Starting library scan of {} folder(s)", folders.size());
 
         try {
+            // Clean orphan covers — files whose album ID no longer exists in DB
+            cleanOrphanCoverFiles();
+
             // Count total audio files across all folders
             int totalFiles = 0;
             for (LibraryFolder folder : folders) {
@@ -173,7 +176,9 @@ public class LibraryScanService {
                                 .year(metadata.getYear())
                                 .build();
                         log.debug("New album: {} by {}", albumTitle, albumArtistName);
-                        return albumRepository.save(newAlbum);
+                        Album saved = albumRepository.save(newAlbum);
+                        coverArtService.deleteCoverArt(saved.getId());
+                        return saved;
                     });
 
             // Save cover art if album doesn't have one yet (or if file is missing on disk)
@@ -273,6 +278,20 @@ public class LibraryScanService {
         }
         cleanupOrphanAlbumsAndArtists();
         return removed;
+    }
+
+    /**
+     * Remove cover files whose album ID doesn't exist in the database.
+     * Catches stale covers from previous DB lifecycles (e.g. DB file deleted but covers dir kept).
+     */
+    private void cleanOrphanCoverFiles() {
+        Set<Long> albumIds = albumRepository.findAll().stream()
+                .map(Album::getId)
+                .collect(Collectors.toSet());
+        int cleaned = coverArtService.deleteCoversNotIn(albumIds);
+        if (cleaned > 0) {
+            log.info("Cleaned {} orphan cover files from previous DB state", cleaned);
+        }
     }
 
     /**

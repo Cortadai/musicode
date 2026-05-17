@@ -1,5 +1,6 @@
 package com.musicode.controller;
 
+import com.musicode.repository.AlbumRepository;
 import com.musicode.service.CoverArtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,10 +25,18 @@ import java.util.concurrent.TimeUnit;
 public class CoverArtController {
 
     private final CoverArtService coverArtService;
+    private final AlbumRepository albumRepository;
 
     @GetMapping("/{albumId}")
     @Operation(summary = "Get album cover art", description = "Returns the cover art JPEG for an album. Uses ETag for cache revalidation. Returns 404 if no cover art exists.")
     public ResponseEntity<Resource> getCoverArt(@PathVariable Long albumId, WebRequest request) {
+        boolean albumHasCover = albumRepository.findById(albumId)
+                .map(a -> a.isHasCoverArt())
+                .orElse(false);
+        if (!albumHasCover) {
+            return ResponseEntity.notFound().build();
+        }
+
         Path coverPath = coverArtService.getCoverArtPath(albumId);
         if (coverPath == null) {
             return ResponseEntity.notFound().build();
