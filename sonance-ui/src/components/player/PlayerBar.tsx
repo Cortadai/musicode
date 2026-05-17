@@ -14,6 +14,7 @@ import EqPopover from './EqPopover';
 import EqMiniCurve from './EqMiniCurve';
 import NowPlayingOverlay from './NowPlayingOverlay';
 import RetroMode from './RetroMode';
+import VideoMode from './VideoMode';
 import ScrobbleIndicator from './ScrobbleIndicator';
 import HeartButton from '../common/HeartButton';
 import { useFavorites } from '../../hooks/useFavorites';
@@ -37,6 +38,7 @@ export default function PlayerBar() {
 
   const [showNowPlaying, setShowNowPlaying] = useState(false);
   const [showRetroMode, setShowRetroMode] = useState(false);
+  const [showVideoMode, setShowVideoMode] = useState(false);
   const [eqOpen, setEqOpen] = useState(false);
   const [eqEnabled, setEqEnabled] = useState(() => loadPreferences().eqEnabled);
   const [eqBands, setEqBands] = useState<EqBand[]>(() => loadPreferences().eqBands);
@@ -209,8 +211,9 @@ export default function PlayerBar() {
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
         </div>
       </div>
-      <NowPlayingOverlay open={showNowPlaying} onClose={() => setShowNowPlaying(false)} />
+      <NowPlayingOverlay open={showNowPlaying} onClose={() => setShowNowPlaying(false)} onVideoMode={() => { setShowNowPlaying(false); setShowVideoMode(true); }} />
       <RetroMode open={showRetroMode} onClose={() => setShowRetroMode(false)} />
+      <VideoMode open={showVideoMode} onClose={() => setShowVideoMode(false)} />
     </div>
   );
 }

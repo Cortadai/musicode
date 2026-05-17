@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/client';
 import { getFolders, addFolder, removeFolder, startScan, getScanStatus, resetLibrary } from '../api/library';
+import { getVideoFolders, addVideoFolder, removeVideoFolder, listVideos } from '../api/videoFolders';
 import { getScrobbleSettings, updateScrobbleSettings, disconnectLastfm, disconnectListenBrainz } from '../api/scrobble';
 import { getErrorMessage } from '../utils/errors';
-import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers, Sparkles, Wand2, Info } from 'lucide-react';
+import { FolderOpen, Trash2, RefreshCw, Plus, Radio, Unlink, AlertTriangle, Palette, SlidersHorizontal, MessageSquare, UserPlus, Shield, Headphones, ChevronDown, Layers, Sparkles, Wand2, Info, Film } from 'lucide-react';
 import type { LoginTransition } from '../audio/audioPreferences';
 import ThemeSelector from '../components/layout/ThemeSelector';
 import PaletteSelector from '../components/layout/PaletteSelector';
@@ -27,6 +28,8 @@ export default function SettingsPage() {
   const [greetingMessages, setGreetingMessages] = useState(() => loadPreferences().greetingMessages);
   const [particlesEnabled, setParticlesEnabled] = useState(() => loadPreferences().particlesEnabled);
   const [loginTransition, setLoginTransition] = useState<LoginTransition>(() => loadPreferences().loginTransition);
+  const [videoEnabled, setVideoEnabled] = useState(() => loadPreferences().videoEnabled);
+  const [newVideoPath, setNewVideoPath] = useState('');
 
   const { data: folders, isLoading: foldersLoading } = useQuery({
     queryKey: ['folders'],
@@ -101,6 +104,42 @@ export default function SettingsPage() {
     mutationFn: startScan,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['scanStatus'] }),
   });
+
+  const { data: videoFolders, isLoading: videoFoldersLoading } = useQuery({
+    queryKey: ['videoFolders'],
+    queryFn: getVideoFolders,
+    enabled: isAdmin,
+  });
+
+  const { data: videos } = useQuery({
+    queryKey: ['videos'],
+    queryFn: listVideos,
+    enabled: isAdmin && (videoFolders ?? []).length > 0,
+  });
+
+  const addVideoMutation = useMutation({
+    mutationFn: addVideoFolder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['videoFolders'] });
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
+      setNewVideoPath('');
+    },
+  });
+
+  const removeVideoMutation = useMutation({
+    mutationFn: removeVideoFolder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['videoFolders'] });
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
+    },
+  });
+
+  function handleAddVideo(e: React.FormEvent) {
+    e.preventDefault();
+    if (newVideoPath.trim()) {
+      addVideoMutation.mutate(newVideoPath.trim());
+    }
+  }
 
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['users'],
@@ -481,6 +520,99 @@ export default function SettingsPage() {
                 {scanStatus.errors > 0 && (
                   <p style={{ color: 'var(--mc-text-error)' }}>Errors: {scanStatus.errors}</p>
                 )}
+              </div>
+            )}
+          </section>
+
+          {/* Video Backgrounds */}
+          <section className="mt-8 mb-8">
+            <h3 className="text-sm font-medium uppercase tracking-wider mb-3" style={{ color: 'var(--mc-text-secondary)' }}>Video Backgrounds</h3>
+
+            <div className="flex items-center justify-between px-4 py-3 rounded-lg mb-3" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+              <div className="flex items-center gap-2">
+                <Film className="w-4 h-4" style={{ color: 'var(--mc-text-muted)' }} />
+                <div>
+                  <span className="text-sm" style={{ color: 'var(--mc-text-primary)' }}>Video mode</span>
+                  <p className="text-xs" style={{ color: 'var(--mc-text-muted)' }}>Show video backgrounds as a visualizer option in Now Playing</p>
+                </div>
+              </div>
+              <button
+                role="switch"
+                aria-checked={videoEnabled}
+                onClick={() => {
+                  const next = !videoEnabled;
+                  setVideoEnabled(next);
+                  savePreferences({ videoEnabled: next });
+                }}
+                className="mc-toggle"
+                data-on={videoEnabled || undefined}
+              >
+                <span className="mc-toggle__thumb" />
+              </button>
+            </div>
+
+            {videoFoldersLoading ? (
+              <p className="text-sm" style={{ color: 'var(--mc-text-muted)' }}>Loading…</p>
+            ) : videoFolders && videoFolders.length > 0 ? (
+              <div className="space-y-2 mb-4">
+                {videoFolders.map((folder) => (
+                  <div key={folder.id} className="flex items-center gap-3 px-4 py-3 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+                    <FolderOpen className="w-4 h-4 shrink-0" style={{ color: 'var(--mc-text-muted)' }} />
+                    <span className="text-sm flex-1 truncate" style={{ color: 'var(--mc-text-primary)' }}>{folder.path}</span>
+                    <button
+                      onClick={() => removeVideoMutation.mutate(folder.id)}
+                      className="mc-interactive-danger transition-colors"
+                      aria-label="Remove video folder"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm mb-4" style={{ color: 'var(--mc-text-muted)' }}>No video folders added yet.</p>
+            )}
+
+            <form onSubmit={handleAddVideo} className="flex gap-2">
+              <input
+                type="text"
+                value={newVideoPath}
+                onChange={(e) => setNewVideoPath(e.target.value)}
+                aria-label="Video folder path"
+                placeholder="C:\Users\you\Videos"
+                className="flex-1 px-4 py-2 text-sm mc-input"
+              />
+              <button
+                type="submit"
+                disabled={addVideoMutation.isPending}
+                className="flex items-center gap-1.5 px-4 py-2 mc-btn-primary text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                <Plus className="w-4 h-4" /> Add
+              </button>
+            </form>
+            {addVideoMutation.isError && (
+              <p className="text-sm mt-2" style={{ color: 'var(--mc-text-error)' }}>
+                {getErrorMessage(addVideoMutation.error, 'Failed to add video folder')}
+              </p>
+            )}
+
+            {videos && videos.length > 0 && (
+              <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: 'var(--mc-bg-surface)' }}>
+                <p className="text-xs font-medium mb-2" style={{ color: 'var(--mc-text-secondary)' }}>
+                  {videos.length} video{videos.length !== 1 ? 's' : ''} found
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {videos.slice(0, 20).map((name) => (
+                    <span key={name} className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--mc-bg-surface-hover)', color: 'var(--mc-text-muted)' }}>
+                      {name.length > 40 ? name.slice(0, 37) + '…' : name}
+                    </span>
+                  ))}
+                  {videos.length > 20 && (
+                    <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--mc-bg-surface-hover)', color: 'var(--mc-text-muted)' }}>
+                      +{videos.length - 20} more
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </section>

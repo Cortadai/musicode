@@ -34,9 +34,16 @@ node_modules/
 .env
 .env.local
 
-# Electron local data (DB with personal library)
+# Electron local data and build artifacts
 sonance-desktop/data/
 sonance-desktop/sonance-server.jar
+sonance-desktop/resources/*.jar
+
+# Runtime data (H2 DB, covers cache, waveforms, logs)
+data/
+
+# Claude Code local settings
+.claude/
 
 # Background shell
 .bg-shell/
@@ -58,6 +65,7 @@ reference/
 *.png
 !docs/*.png
 !docs/assets/*.png
+!sonance-desktop/resources/tray-icon.png
 cookies.txt
 .mcp.json
 

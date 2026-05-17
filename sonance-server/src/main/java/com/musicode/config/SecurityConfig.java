@@ -90,8 +90,10 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 // Swagger UI and OpenAPI spec
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
-                // Admin-only: library mutations and user management
+                // Admin-only: library mutations, video folder mutations, user management
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/videos/folders").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/videos/folders/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/library/folders").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/library/folders/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/library/scan").hasRole("ADMIN")

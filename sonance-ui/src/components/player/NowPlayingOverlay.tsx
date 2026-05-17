@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Palette, BarChart3, AudioWaveform, Disc3, Orbit, ChevronDown, MicVocal, Activity } from 'lucide-react';
+import { X, Palette, BarChart3, AudioWaveform, Disc3, Orbit, ChevronDown, MicVocal, Activity, Film } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useDynamicTheme } from '../../hooks/useDynamicTheme';
 import audioGraph from '../../audio/audioGraph';
@@ -18,9 +18,10 @@ import LyricsPanel from './LyricsPanel';
 interface Props {
   open: boolean;
   onClose: () => void;
+  onVideoMode?: () => void;
 }
 
-export default function NowPlayingOverlay({ open, onClose }: Props) {
+export default function NowPlayingOverlay({ open, onClose, onVideoMode }: Props) {
   const {
     currentTrack, isPlaying, currentTime, duration, volume,
     queue, queueIndex, shuffle, repeatMode,
@@ -35,6 +36,7 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
   const [visualizerMode, setVisualizerMode] = useState<VisualizerMode>(() => loadPreferences().visualizerMode);
   const [showLyrics, setShowLyrics] = useState(false);
   const [waveformEnabled, setWaveformEnabled] = useState(() => loadPreferences().waveformEnabled);
+  const [videoEnabled] = useState(() => loadPreferences().videoEnabled);
 
   const handleToggleWaveform = useCallback(() => {
     setWaveformEnabled((v) => {
@@ -197,6 +199,16 @@ export default function NowPlayingOverlay({ open, onClose }: Props) {
               </button>
             );
           })}
+
+          {onVideoMode && videoEnabled && (
+            <button
+              onClick={onVideoMode}
+              aria-label="Video mode"
+              className="p-1.5 rounded transition-colors mc-interactive-muted"
+            >
+              <Film className="w-4 h-4" />
+            </button>
+          )}
 
           <div className="w-px h-4 mx-1" style={{ backgroundColor: 'var(--mc-waveform-buffered)' }} />
 

@@ -527,6 +527,29 @@ summary, .cursor-pointer {
   pointer-events: none;
 }
 
+/* Video Mode overlay */
+.video-mode-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  outline: none;
+  -webkit-app-region: no-drag;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+  --mc-text-primary: #fff;
+  --mc-text-secondary: rgba(255, 255, 255, 0.7);
+  --mc-text-muted: rgba(255, 255, 255, 0.5);
+  --mc-waveform-buffered: rgba(255, 255, 255, 0.2);
+  --mc-accent-primary: #fff;
+  --mc-player-background: transparent;
+}
+
+.video-mode-overlay.video-mode-idle {
+  cursor: none;
+}
+
 /* Now Playing artwork crossfade */
 @keyframes np-fade-in {
   from { opacity: 0; }

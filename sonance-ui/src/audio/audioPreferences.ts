@@ -15,7 +15,7 @@ import { DEFAULT_BANDS, GAIN_MIN, GAIN_MAX, PREAMP_MIN, PREAMP_MAX, Q_MIN, Q_MAX
 
 const STORAGE_KEY = 'sonance-prefs';
 
-export type VisualizerMode = 'bars' | 'waveform' | 'circular' | 'vinyl';
+export type VisualizerMode = 'bars' | 'waveform' | 'circular' | 'vinyl' | 'video';
 export type LoginTransition = 'random' | 'ripple' | 'curtain' | 'fade' | 'sweep' | 'pixels' | 'diagonal' | 'wave' | 'none';
 
 export interface AudioPreferences {
@@ -35,6 +35,7 @@ export interface AudioPreferences {
   greetingMessages: boolean;
   particlesEnabled: boolean;
   loginTransition: LoginTransition;
+  videoEnabled: boolean;
 }
 
 const DEFAULTS: AudioPreferences = {
@@ -54,6 +55,7 @@ const DEFAULTS: AudioPreferences = {
   greetingMessages: true,
   particlesEnabled: true,
   loginTransition: 'random',
+  videoEnabled: false,
 };
 
 const VALID_FILTER_TYPES: EqFilterType[] = ['lowshelf', 'peaking', 'highshelf', 'highpass', 'lowpass'];
@@ -148,7 +150,7 @@ export function loadPreferences(): AudioPreferences {
       typeof parsed.eqPreset === 'string' ? parsed.eqPreset : DEFAULTS.eqPreset;
 
     const visualizerMode: VisualizerMode =
-      ['bars', 'waveform', 'circular', 'vinyl'].includes(parsed.visualizerMode)
+      ['bars', 'waveform', 'circular', 'vinyl', 'video'].includes(parsed.visualizerMode)
         ? (parsed.visualizerMode as VisualizerMode)
         : DEFAULTS.visualizerMode;
 
@@ -158,13 +160,14 @@ export function loadPreferences(): AudioPreferences {
     const marqueeAlbumCards = typeof parsed.marqueeAlbumCards === 'boolean' ? parsed.marqueeAlbumCards : DEFAULTS.marqueeAlbumCards;
     const greetingMessages = typeof parsed.greetingMessages === 'boolean' ? parsed.greetingMessages : DEFAULTS.greetingMessages;
     const particlesEnabled = typeof parsed.particlesEnabled === 'boolean' ? parsed.particlesEnabled : DEFAULTS.particlesEnabled;
+    const videoEnabled = typeof parsed.videoEnabled === 'boolean' ? parsed.videoEnabled : DEFAULTS.videoEnabled;
 
     const VALID_TRANSITIONS: LoginTransition[] = ['random', 'ripple', 'curtain', 'fade', 'sweep', 'pixels', 'diagonal', 'wave', 'none'];
     const loginTransition: LoginTransition = VALID_TRANSITIONS.includes(parsed.loginTransition)
       ? parsed.loginTransition as LoginTransition
       : DEFAULTS.loginTransition;
 
-    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreamp, eqPreset, visualizerMode, dynamicTheme, waveformEnabled, marqueePlaybar, marqueeAlbumCards, greetingMessages, particlesEnabled, loginTransition };
+    return { volume, shuffle, repeatMode, crossfadeDuration, eqEnabled, eqBands, eqPreamp, eqPreset, visualizerMode, dynamicTheme, waveformEnabled, marqueePlaybar, marqueeAlbumCards, greetingMessages, particlesEnabled, loginTransition, videoEnabled };
   } catch {
     localStorage.removeItem(STORAGE_KEY);
     return { ...DEFAULTS, eqBands: DEFAULTS.eqBands.map((b) => ({ ...b })) };

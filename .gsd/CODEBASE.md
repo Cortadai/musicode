@@ -1,7 +1,7 @@
 # Codebase Map
 
-Generated: 2026-05-17T14:23:55Z | Files: 427 | Described: 0/427
-<!-- gsd:codebase-meta {"generatedAt":"2026-05-17T14:23:55Z","fingerprint":"023f1012a9d264b4053fdf25f4328a533b565745","fileCount":427,"truncated":false} -->
+Generated: 2026-05-17T16:08:16Z | Files: 428 | Described: 0/428
+<!-- gsd:codebase-meta {"generatedAt":"2026-05-17T16:08:16Z","fingerprint":"2a8fe79f15c8077d0873ec7376b083151cc5b46b","fileCount":428,"truncated":false} -->
 
 ### (root)/
 - `.env.example`
@@ -163,6 +163,7 @@ Generated: 2026-05-17T14:23:55Z | Files: 427 | Described: 0/427
 - `sonance-server/src/main/resources/db/migration/V2__add_lyrics_columns.sql`
 - `sonance-server/src/main/resources/db/migration/V3__user_favorites.sql`
 - `sonance-server/src/main/resources/db/migration/V4__playlists.sql`
+- `sonance-server/src/main/resources/db/migration/V5__add_lyrics_offset.sql`
 
 ### sonance-server/src/main/resources/static/
 - `sonance-server/src/main/resources/static/index.html`

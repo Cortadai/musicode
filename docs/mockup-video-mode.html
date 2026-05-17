@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonance — Video Background Mode Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-base: #0a0a0f;
+    --bg-surface: #14141c;
+    --text-primary: #e2e2e6;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --accent: #8b5cf6;
+    --accent-muted: rgba(139, 92, 246, 0.15);
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #111;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    padding: 40px 20px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  h1 small {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .section-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 20px;
+    line-height: 1.5;
+  }
+
+  /* --- Player frame --- */
+  .player-frame {
+    width: 960px;
+    height: 600px;
+    background: var(--bg-base);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  /* --- Video background layer --- */
+  .video-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .video-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .video-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* Simulated video frame — in real app this is <video loop muted> */
+  .video-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0c1445 0%, #1a0a2e 30%, #0d1b3e 60%, #0a0a1f 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .video-placeholder::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(100,140,255,0.15) 0%, transparent 70%);
+    top: 20%;
+    left: 30%;
+    animation: float1 8s ease-in-out infinite;
+  }
+  .video-placeholder::after {
+    content: '';
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(180,100,255,0.12) 0%, transparent 70%);
+    bottom: 15%;
+    right: 25%;
+    animation: float2 10s ease-in-out infinite;
+  }
+  @keyframes float1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, -20px) scale(1.1); }
+  }
+  @keyframes float2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-25px, 15px) scale(1.15); }
+  }
+
+  .video-label {
+    position: relative;
+    z-index: 2;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.25);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 14px;
+    border-radius: 6px;
+  }
+
+  /* --- Top bar --- */
+  .top-bar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px 8px;
+  }
+  .top-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .top-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .btn-icon {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.15s;
+  }
+  .btn-icon:hover { color: var(--text-primary); background: rgba(255,255,255,0.06); }
+  .btn-icon.active { color: var(--accent); background: var(--accent-muted); }
+  .chevron { font-size: 1.1rem; }
+  .np-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .divider {
+    width: 1px;
+    height: 16px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+  }
+  .pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse-anim 2s ease-in-out infinite;
+    display: inline-block;
+    margin-left: 6px;
+  }
+  @keyframes pulse-anim {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ============================================
+     OPTION A — Bottom-left overlay (cinematic)
+     ============================================ */
+  .layout-a .content-overlay {
+    position: absolute;
+    z-index: 10;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0 28px 28px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
+  }
+  .layout-a .track-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+  }
+  .layout-a .mini-cover {
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    background: var(--bg-surface);
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .layout-a .mini-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .layout-a .track-meta {
+    flex: 1;
+    min-width: 0;
+  }
+  .layout-a .track-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+  }
+  .layout-a .track-artist {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.65);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+  .layout-a .controls-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .layout-a .progress-bar {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+  }
+  .layout-a .progress-fill {
+    width: 35%;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .layout-a .time {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.45);
+    font-variant-numeric: tabular-nums;
+    min-width: 32px;
+  }
+  .layout-a .transport {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 16px;
+  }
+  .transport-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 4px;
+    transition: color 0.15s;
+  }
+  .transport-btn:hover { color: #fff; }
+  .transport-btn.play-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.95);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+
+  /* ============================================
+     OPTION B — Side panel (ambient)
+     ============================================ */
+  .layout-b .side-panel {
+    position: absolute;
+    z-index: 10;
+    top: 50px;
+    bottom: 0;
+    left: 0;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 32px 28px;
+    background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+  }
+  .layout-b .side-cover {
+    width: 160px;
+    height: 160px;
+    border-radius: 14px;
+    background: var(--bg-surface);
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+  }
+  .layout-b .side-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .layout-b .side-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .layout-b .side-artist {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .layout-b .side-progress {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .layout-b .progress-bar {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .layout-b .progress-fill {
+    width: 35%;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .layout-b .time {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.45);
+    font-variant-numeric: tabular-nums;
+    min-width: 32px;
+  }
+  .layout-b .side-transport {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  /* ============================================
+     OPTION C — Minimal bottom bar (TV mode)
+     ============================================ */
+  .layout-c .bottom-strip {
+    position: absolute;
+    z-index: 10;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 24px;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+  }
+  .layout-c .strip-cover {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: var(--bg-surface);
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  }
+  .layout-c .strip-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .layout-c .strip-meta {
+    flex-shrink: 0;
+    min-width: 0;
+    max-width: 200px;
+  }
+  .layout-c .strip-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .layout-c .strip-artist {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.55);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .layout-c .strip-progress {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .layout-c .progress-bar {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 1px;
+    cursor: pointer;
+  }
+  .layout-c .progress-fill {
+    width: 35%;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+  .layout-c .time {
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.4);
+    font-variant-numeric: tabular-nums;
+  }
+  .layout-c .strip-transport {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  /* --- Cover art placeholder --- */
+  .cover-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: rgba(255,255,255,0.15);
+    font-size: 1.5rem;
+  }
+
+  /* --- Comparison notes --- */
+  .notes {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 24px 28px;
+    background: var(--bg-surface);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .notes h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+  }
+  .notes table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+  }
+  .notes th {
+    text-align: left;
+    padding: 6px 10px;
+    color: var(--accent);
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .notes td {
+    padding: 6px 10px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .notes td:first-child {
+    color: var(--text-primary);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .interaction-hint {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>
+  Sonance — Video Background Mode
+  <small>3 layout proposals for NowPlaying with user-provided video backgrounds</small>
+</h1>
+
+<!-- ==================== OPTION A ==================== -->
+<div>
+  <div class="section-label">Option A — Cinematic Bottom Overlay</div>
+  <div class="section-desc">
+    Track info + controls float at the bottom with a gradient fade.
+    Maximum video visibility. Inspired by music video players (YouTube Music, Apple TV).
+  </div>
+
+  <div class="player-frame layout-a">
+    <!-- Video background -->
+    <div class="video-bg">
+      <div class="video-placeholder">
+        <span class="video-label">&#9654; user video playing</span>
+      </div>
+    </div>
+
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="top-left">
+        <button class="btn-icon chevron">&#x2304;</button>
+        <span class="np-label">Now Playing <span class="pulse"></span></span>
+        <span class="badge">FLAC</span>
+        <span class="badge">1411 kbps</span>
+        <span class="badge">44.1 kHz</span>
+      </div>
+      <div class="top-right">
+        <button class="btn-icon" title="Vinyl">&#9898;</button>
+        <button class="btn-icon" title="Bars">&#9612;</button>
+        <button class="btn-icon" title="Waveform">&#126;</button>
+        <button class="btn-icon" title="Circular">&#9711;</button>
+        <button class="btn-icon active" title="Video BG">&#9654;</button>
+        <span class="divider"></span>
+        <button class="btn-icon" title="Colors">&#9670;</button>
+        <button class="btn-icon" title="Lyrics">&#127908;</button>
+        <span class="divider"></span>
+        <button class="btn-icon" title="Close">&#10005;</button>
+      </div>
+    </div>
+
+    <!-- Bottom overlay content -->
+    <div class="content-overlay">
+      <div class="track-row">
+        <div class="mini-cover">
+          <div class="cover-placeholder" style="width:100%;height:100%">&#9835;</div>
+        </div>
+        <div class="track-meta">
+          <div class="track-title">Weightless — Marconi Union</div>
+          <div class="track-artist">Ambient / Weightless (Ambient Transmission Vol. 2)</div>
+        </div>
+      </div>
+      <div class="controls-row">
+        <span class="time">1:42</span>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <span class="time">4:56</span>
+        <div class="transport">
+          <button class="transport-btn">&#8645;</button>
+          <button class="transport-btn">&#9198;</button>
+          <button class="transport-btn play-btn">&#9208;</button>
+          <button class="transport-btn">&#9197;</button>
+          <button class="transport-btn">&#8634;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== OPTION B ==================== -->
+<div>
+  <div class="section-label">Option B — Side Panel (Ambient)</div>
+  <div class="section-desc">
+    Info panel on the left with larger cover art. Video fills the right ~2/3.
+    Good balance between info density and video real estate. Like a heads-up display.
+  </div>
+
+  <div class="player-frame layout-b">
+    <div class="video-bg">
+      <div class="video-placeholder">
+        <span class="video-label">&#9654; user video playing</span>
+      </div>
+    </div>
+
+    <div class="top-bar">
+      <div class="top-left">
+        <button class="btn-icon chevron">&#x2304;</button>
+        <span class="np-label">Now Playing <span class="pulse"></span></span>
+        <span class="badge">FLAC</span>
+        <span class="badge">1411 kbps</span>
+      </div>
+      <div class="top-right">
+        <button class="btn-icon" title="Vinyl">&#9898;</button>
+        <button class="btn-icon" title="Bars">&#9612;</button>
+        <button class="btn-icon" title="Waveform">&#126;</button>
+        <button class="btn-icon" title="Circular">&#9711;</button>
+        <button class="btn-icon active" title="Video BG">&#9654;</button>
+        <span class="divider"></span>
+        <button class="btn-icon" title="Colors">&#9670;</button>
+        <button class="btn-icon" title="Lyrics">&#127908;</button>
+        <span class="divider"></span>
+        <button class="btn-icon" title="Close">&#10005;</button>
+      </div>
+    </div>
+
+    <div class="side-panel">
+      <div class="side-cover">
+        <div class="cover-placeholder" style="width:100%;height:100%;font-size:2.5rem">&#9835;</div>
+      </div>
+      <div class="side-title">Weightless</div>
+      <div class="side-artist">Marconi Union — Weightless (Vol. 2)</div>
+      <div class="side-progress">
+        <span class="time">1:42</span>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <span class="time">4:56</span>
+      </div>
+      <div class="side-transport">
+        <button class="transport-btn">&#8645;</button>
+        <button class="transport-btn">&#9198;</button>
+        <button class="transport-btn play-btn">&#9208;</button>
+        <button class="transport-btn">&#9197;</button>
+        <button class="transport-btn">&#8634;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== OPTION C ==================== -->
+<div>
+  <div class="section-label">Option C — Minimal Strip (TV / Lofi Mode)</div>
+  <div class="section-desc">
+    Tiny bar at the bottom, almost invisible. Video takes 95% of the screen.
+    Maximum immersion. Like a lofi stream — the video IS the experience.
+    Controls auto-hide on mouse idle (not shown in mockup).
+  </div>
+
+  <div class="player-frame layout-c">
+    <div class="video-bg">
+      <div class="video-placeholder">
+        <span class="video-label">&#9654; user video playing</span>
+      </div>
+    </div>
+
+    <div class="top-bar">
+      <div class="top-left">
+        <button class="btn-icon chevron">&#x2304;</button>
+        <span class="np-label">Now Playing <span class="pulse"></span></span>
+      </div>
+      <div class="top-right">
+        <button class="btn-icon" title="Vinyl">&#9898;</button>
+        <button class="btn-icon" title="Bars">&#9612;</button>
+        <button class="btn-icon active" title="Video BG">&#9654;</button>
+        <span class="divider"></span>
+        <button class="btn-icon" title="Close">&#10005;</button>
+      </div>
+    </div>
+
+    <div class="bottom-strip">
+      <div class="strip-cover">
+        <div class="cover-placeholder" style="width:100%;height:100%;font-size:1rem">&#9835;</div>
+      </div>
+      <div class="strip-meta">
+        <div class="strip-title">Weightless</div>
+        <div class="strip-artist">Marconi Union</div>
+      </div>
+      <div class="strip-progress">
+        <span class="time">1:42</span>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <span class="time">4:56</span>
+      </div>
+      <div class="strip-transport">
+        <button class="transport-btn">&#9198;</button>
+        <button class="transport-btn play-btn" style="width:32px;height:32px;font-size:0.8rem">&#9208;</button>
+        <button class="transport-btn">&#9197;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== COMPARISON TABLE ==================== -->
+<div class="notes">
+  <h3>Comparison</h3>
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>A — Cinematic</th>
+        <th>B — Side Panel</th>
+        <th>C — Minimal Strip</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Video visibility</td>
+        <td>~80% — gradient covers bottom 30%</td>
+        <td>~65% — left panel + gradient</td>
+        <td>~95% — thin bar only</td>
+      </tr>
+      <tr>
+        <td>Cover art</td>
+        <td>Small (72px), part of the info row</td>
+        <td>Medium (160px), prominent</td>
+        <td>Tiny (44px), thumbnail only</td>
+      </tr>
+      <tr>
+        <td>Track info</td>
+        <td>Title + artist, one line each</td>
+        <td>Full info, vertically stacked</td>
+        <td>Title + artist, compact</td>
+      </tr>
+      <tr>
+        <td>Controls</td>
+        <td>Full transport + progress</td>
+        <td>Full transport + progress</td>
+        <td>Prev/play/next + progress</td>
+      </tr>
+      <tr>
+        <td>Lyrics compat</td>
+        <td>Could split video/lyrics 50-50</td>
+        <td>Replace panel with lyrics</td>
+        <td>Hard to combine — video IS the point</td>
+      </tr>
+      <tr>
+        <td>Vibe</td>
+        <td>YouTube Music / Spotify Canvas</td>
+        <td>HUD / Dashboard</td>
+        <td>Lofi stream / screensaver</td>
+      </tr>
+      <tr>
+        <td>Auto-hide?</td>
+        <td>Optional — works either way</td>
+        <td>Optional — panel could fade</td>
+        <td>Almost necessary for full effect</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="interaction-hint" style="margin-top: 16px; font-size: 0.75rem; color: var(--text-muted);">
+    Note: All options keep the existing top bar with visualizer mode selector.
+    The video mode button (&#9654;) would be a 5th toggle alongside vinyl/bars/waveform/circular.
+  </p>
+</div>
+
+</body>
+</html>

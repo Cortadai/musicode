@@ -47,6 +47,13 @@ export interface LibraryFolder {
   trackCount: number | null;
 }
 
+export interface VideoFolder {
+  id: number;
+  path: string;
+  videoCount: number;
+  lastScannedAt: string | null;
+}
+
 export interface ScanStatus {
   scanning: boolean;
   currentFolder: string | null;
