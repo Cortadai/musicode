@@ -51,6 +51,9 @@ public class Track {
     @Column(columnDefinition = "CLOB")
     private String plainLyrics;
 
+    @Builder.Default
+    private Integer lyricsOffsetMs = 0;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     @Builder.Default

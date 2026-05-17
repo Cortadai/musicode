@@ -7,6 +7,7 @@ export interface LyricsResponse {
   status: LyricsStatus;
   syncedLyrics: string | null;
   plainLyrics: string | null;
+  offsetMs: number;
 }
 
 export async function getLyrics(trackId: number) {
@@ -17,4 +18,8 @@ export async function getLyrics(trackId: number) {
 export async function retryLyrics(trackId: number) {
   const { data } = await api.post<LyricsResponse>(`/lyrics/${trackId}/retry`);
   return data;
+}
+
+export async function updateLyricsOffset(trackId: number, offsetMs: number) {
+  await api.put(`/lyrics/${trackId}/offset`, { offsetMs });
 }

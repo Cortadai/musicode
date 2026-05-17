@@ -118,12 +118,20 @@ public class LyricsService {
         }
     }
 
+    public void updateOffset(Long trackId, int offsetMs) {
+        Track track = trackRepository.findById(trackId)
+                .orElseThrow(() -> new com.musicode.exception.ResourceNotFoundException("Track not found: " + trackId));
+        track.setLyricsOffsetMs(offsetMs);
+        trackRepository.save(track);
+    }
+
     private LyricsResponse toResponse(Track track) {
         return LyricsResponse.builder()
                 .trackId(track.getId())
                 .status(track.getLyricsStatus())
                 .syncedLyrics(track.getSyncedLyrics())
                 .plainLyrics(track.getPlainLyrics())
+                .offsetMs(track.getLyricsOffsetMs())
                 .build();
     }
 }

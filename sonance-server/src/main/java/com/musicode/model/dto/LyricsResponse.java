@@ -11,4 +11,5 @@ public class LyricsResponse {
     private final LyricsStatus status;
     private final String syncedLyrics;
     private final String plainLyrics;
+    private final Integer offsetMs;
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Music2, RefreshCw, Mic2 } from 'lucide-react';
-import { getLyrics, retryLyrics, type LyricsResponse } from '../../api/lyrics';
+import { Music2, RefreshCw, Mic2, Minus, Plus } from 'lucide-react';
+import { getLyrics, retryLyrics, updateLyricsOffset, type LyricsResponse } from '../../api/lyrics';
 import { parseLrc, findActiveLine, type LrcLine } from '../../utils/lrcParser';
 
 interface Props {
@@ -15,22 +15,26 @@ export default function LyricsPanel({ trackId, currentTime, compact = false }: P
   const [retrying, setRetrying] = useState(false);
   const [lines, setLines] = useState<LrcLine[]>([]);
   const [activeLine, setActiveLine] = useState(-1);
+  const [offsetMs, setOffsetMs] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const lineRefs = useRef<Map<number, HTMLParagraphElement>>(new Map());
   const userScrolledRef = useRef(false);
   const scrollTimerRef = useRef<number>(undefined);
+  const saveTimerRef = useRef<number>(undefined);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setLines([]);
     setActiveLine(-1);
+    setOffsetMs(0);
     userScrolledRef.current = false;
 
     getLyrics(trackId)
       .then((data) => {
         if (cancelled) return;
         setLyrics(data);
+        setOffsetMs(data.offsetMs ?? 0);
         if (data.syncedLyrics) {
           setLines(parseLrc(data.syncedLyrics));
         }
@@ -47,9 +51,10 @@ export default function LyricsPanel({ trackId, currentTime, compact = false }: P
 
   useEffect(() => {
     if (lines.length === 0) return;
-    const idx = findActiveLine(lines, currentTime);
+    const adjusted = currentTime + offsetMs / 1000;
+    const idx = findActiveLine(lines, adjusted);
     if (idx !== activeLine) setActiveLine(idx);
-  }, [currentTime, lines, activeLine]);
+  }, [currentTime, lines, activeLine, offsetMs]);
 
   useEffect(() => {
     if (activeLine < 0 || userScrolledRef.current) return;
@@ -68,8 +73,22 @@ export default function LyricsPanel({ trackId, currentTime, compact = false }: P
   }, []);
 
   useEffect(() => {
-    return () => clearTimeout(scrollTimerRef.current);
+    return () => {
+      clearTimeout(scrollTimerRef.current);
+      clearTimeout(saveTimerRef.current);
+    };
   }, []);
+
+  const adjustOffset = useCallback((delta: number) => {
+    setOffsetMs((prev) => {
+      const next = prev + delta;
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        updateLyricsOffset(trackId, next).catch(() => {});
+      }, 800);
+      return next;
+    });
+  }, [trackId]);
 
   const handleRetry = async () => {
     setRetrying(true);
@@ -128,8 +147,12 @@ export default function LyricsPanel({ trackId, currentTime, compact = false }: P
   }
 
   if (lines.length > 0) {
+    const offsetLabel = offsetMs === 0
+      ? '±0s'
+      : `${offsetMs > 0 ? '+' : ''}${(offsetMs / 1000).toFixed(1)}s`;
+
     return (
-      <div className="h-full flex flex-col py-12">
+      <div className="h-full flex flex-col">
         <div
           ref={containerRef}
           onScroll={handleScroll}
@@ -151,6 +174,28 @@ export default function LyricsPanel({ trackId, currentTime, compact = false }: P
               </p>
             ))}
           </div>
+        </div>
+        <div className="flex items-center justify-center gap-1.5 px-4 py-2 shrink-0">
+          <button
+            onClick={() => adjustOffset(-500)}
+            className="p-1 rounded mc-interactive-muted transition-colors"
+            title="Delay lyrics 0.5s"
+          >
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+          <span
+            className="text-xs font-mono min-w-[3.5rem] text-center"
+            style={{ color: offsetMs === 0 ? 'var(--mc-text-muted)' : 'var(--mc-text-secondary)' }}
+          >
+            {offsetLabel}
+          </span>
+          <button
+            onClick={() => adjustOffset(500)}
+            className="p-1 rounded mc-interactive-muted transition-colors"
+            title="Advance lyrics 0.5s"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     );

@@ -1,0 +1,1 @@
+ALTER TABLE tracks ADD COLUMN lyrics_offset_ms INTEGER DEFAULT 0;
