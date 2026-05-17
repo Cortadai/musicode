@@ -34,10 +34,6 @@ public class CoverArtService {
         }
 
         Path coverFile = coversDir.resolve(albumId + ".jpg");
-        if (Files.exists(coverFile)) {
-            // Already extracted — return normalized path
-            return albumId + ".jpg";
-        }
 
         try {
             Files.write(coverFile, imageData);

@@ -333,9 +333,8 @@ public class LibraryScanService {
         playbackEventRepository.deleteAll();
         trackRepository.deleteAll();
 
-        // Delete cover files for all albums before removing them
-        albumRepository.findAll().forEach(album -> coverArtService.deleteCoverArt(album.getId()));
         albumRepository.deleteAll();
+        coverArtService.deleteAllCovers();
 
         artistRepository.deleteAll();
         libraryFolderRepository.deleteAll();
